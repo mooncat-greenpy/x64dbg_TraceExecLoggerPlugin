@@ -93,6 +93,20 @@ extern "C" __declspec(dllexport) void CBTRACEEXECUTE(CBTYPE, PLUG_CB_TRACEEXECUT
 }
 
 
+extern "C" __declspec(dllexport) void CBSTEPPED(CBTYPE, PLUG_CB_STEPPED * info)
+{
+	log_exec();
+}
+
+
+/*** EIP address is sometimes wrong. ***
+extern "C" __declspec(dllexport) void CBDEBUGEVENT(CBTYPE, PLUG_CB_DEBUGEVENT * info)
+{
+	log_exec();
+}
+*/
+
+
 bool logger_plugin_init(PLUG_INITSTRUCT* init_struct)
 {
 	duint setting = regstep_enabled;
