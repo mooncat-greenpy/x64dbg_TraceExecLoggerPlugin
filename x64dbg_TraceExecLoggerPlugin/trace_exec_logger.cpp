@@ -1,7 +1,24 @@
 #include "trace_exec_logger.h"
 
 
-void make_inst_string(duint addr, char* text, size_t size)
+
+void make_hex_string(char* data, size_t data_size, char* text, size_t text_size)
+{
+	if (!data || !text)
+	{
+		return;
+	}
+
+	for (int i = 0; i < data_size; i++)
+	{
+		char tmp[10] = { 0 };
+		_snprintf_s(tmp, sizeof(tmp), _TRUNCATE, "%02x ", (unsigned char)data[i]);
+		strncat_s(text, text_size, tmp, _TRUNCATE);
+	}
+}
+
+
+void make_address_string(duint addr, char* text, size_t size)
 {
 	if (!text)
 	{
@@ -11,18 +28,62 @@ void make_inst_string(duint addr, char* text, size_t size)
 	char module_text[MAX_PATH] = { 0 };
 	char label_text[MAX_PATH] = { 0 };
 	char string[MAX_PATH] = { 0 };
+	char hex_string[MAX_PATH] = { 0 };
 	bool has_module = DbgGetModuleAt(addr, module_text);
 	bool has_label = DbgGetLabelAt(addr, SEG_DEFAULT, label_text);
 	bool has_string = DbgGetStringAt(addr, string);
+	bool has_data = false;
+	if (DbgMemIsValidReadPtr(addr))
+	{
+		char data[HEX_SIZE] = { 0 };
+		DbgMemRead(addr, data, sizeof(data));
+		make_hex_string(data, sizeof(data), hex_string, sizeof(hex_string));
+		has_data = true;
+	}
+
+	if (has_string)
+	{
+		_snprintf_s(text, size, _TRUNCATE, "%p %s", (char*)addr, string);
+	}
+	else if (has_module && has_label && strlen(module_text))
+	{
+		_snprintf_s(text, size, _TRUNCATE, "%p %s.%s", (char*)addr, module_text, label_text);
+	}
+	else if (module_text && strlen(module_text))
+	{
+		_snprintf_s(text, size, _TRUNCATE, "%p %s.%p", (char*)addr, module_text, (char*)addr);
+	}
+	else if (has_label)
+	{
+		_snprintf_s(text, size, _TRUNCATE, "%p <%s>", (char*)addr, label_text);
+	}
+	else if (has_data)
+	{
+		_snprintf_s(text, size, _TRUNCATE, "%p %s", (char*)addr, hex_string);
+	}
+	else
+	{
+		_snprintf_s(text, size, _TRUNCATE, "%p", (char*)addr);
+	}
+}
+
+
+void make_inst_string(duint addr, char* text, size_t size)
+{
+	if (!text)
+	{
+		return;
+	}
 
 	char asm_string[MAX_PATH] = { 0 };
 	GuiGetDisassembly(addr, asm_string);
 
-	if (has_string)
-	{
-		_snprintf_s(text, size, _TRUNCATE, "%p <%s> %s", (char*)addr, string, asm_string);
-	}
-	else if (has_module && has_label)
+	char module_text[MAX_PATH] = { 0 };
+	char label_text[MAX_PATH] = { 0 };
+	bool has_module = DbgGetModuleAt(addr, module_text);
+	bool has_label = DbgGetLabelAt(addr, SEG_DEFAULT, label_text);
+
+	if (has_module && has_label)
 	{
 		_snprintf_s(text, size, _TRUNCATE, "%s.%s %s", module_text, label_text, asm_string);
 	}
@@ -55,20 +116,47 @@ void log_exec()
 
 
 #ifdef _WIN64
-	_plugin_logprintf("%s rip=%p rax=%p rbx=%p rcx=%p rdx=%p rsi=%p rdi=%p rsp=%p rbp=%p r8=%p  r9=%p r10=%p r11=%p r12=%p r13=%p r14=%p r15=%p\n",
-		inst_point_string,
-		reg.cax, reg.cbx, reg.ccx,
-		reg.cdx, reg.csi, reg.cdi,
-		reg.cip, reg.csp, reg.cbp,
+	_plugin_logprintf("%s\n", inst_point_string);
+	char reg_string[MAX_PATH] = { 0 };
+	make_address_string(reg.cax, reg_string, sizeof(reg_string));
+	_plugin_logprintf("    rax=%s\n", reg_string);
+	make_address_string(reg.cbx, reg_string, sizeof(reg_string));
+	_plugin_logprintf("    rbx=%s\n", reg_string);
+	make_address_string(reg.ccx, reg_string, sizeof(reg_string));
+	_plugin_logprintf("    rcx=%s\n", reg_string);
+	make_address_string(reg.cdx, reg_string, sizeof(reg_string));
+	_plugin_logprintf("    rdx=%s\n", reg_string);
+	make_address_string(reg.csi, reg_string, sizeof(reg_string));
+	_plugin_logprintf("    rsi=%s\n", reg_string);
+	make_address_string(reg.cdi, reg_string, sizeof(reg_string));
+	_plugin_logprintf("    rdi=%s\n", reg_string);
+	make_address_string(reg.csp, reg_string, sizeof(reg_string));
+	_plugin_logprintf("    rsp=%s\n", reg_string);
+	make_address_string(reg.cbp, reg_string, sizeof(reg_string));
+	_plugin_logprintf("    rbp=%s\n", reg_string);
+	_plugin_logprintf("    r8=%p  r9=%p r10=%p r11=%p r12=%p r13=%p r14=%p r15=%p\n",
 		reg.r8, reg.r9, reg.r10,
 		reg.r11, reg.r12, reg.r13,
 		reg.r14, reg.r15);
 #else
-	_plugin_logprintf("%s eip=%p eax=%p ebx=%p ecx=%p edx=%p esi=%p edi=%p esp=%p ebp=%p\n",
-		inst_string,
-		reg.cax, reg.cbx, reg.ccx,
-		reg.cdx, reg.csi, reg.cdi,
-		reg.cip, reg.csp, reg.cbp);
+	_plugin_logprintf("%s\n", inst_string);
+	char reg_string[MAX_PATH] = { 0 };
+	make_address_string(reg.cax, reg_string, sizeof(reg_string));
+	_plugin_logprintf("    eax=%s\n", reg_string);
+	make_address_string(reg.cbx, reg_string, sizeof(reg_string));
+	_plugin_logprintf("    ebx=%s\n", reg_string);
+	make_address_string(reg.ccx, reg_string, sizeof(reg_string));
+	_plugin_logprintf("    ecx=%s\n", reg_string);
+	make_address_string(reg.cdx, reg_string, sizeof(reg_string));
+	_plugin_logprintf("    edx=%s\n", reg_string);
+	make_address_string(reg.csi, reg_string, sizeof(reg_string));
+	_plugin_logprintf("    esi=%s\n", reg_string);
+	make_address_string(reg.cdi, reg_string, sizeof(reg_string));
+	_plugin_logprintf("    edi=%s\n", reg_string);
+	make_address_string(reg.csp, reg_string, sizeof(reg_string));
+	_plugin_logprintf("    esp=%s\n", reg_string);
+	make_address_string(reg.cbp, reg_string, sizeof(reg_string));
+	_plugin_logprintf("    ebp=%s\n", reg_string);
 #endif
 }
 

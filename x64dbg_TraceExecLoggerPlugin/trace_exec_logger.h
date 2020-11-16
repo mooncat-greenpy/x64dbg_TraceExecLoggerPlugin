@@ -2,6 +2,9 @@
 
 #include "x64dbg_TraceExecLoggerPlugin.h"
 
+#define HEX_SIZE 0x30
+
+
 enum
 {
 	MENU_ENABLED,
