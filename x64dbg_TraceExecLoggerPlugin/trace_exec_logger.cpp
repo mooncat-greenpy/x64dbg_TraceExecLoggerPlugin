@@ -1,6 +1,44 @@
 #include "trace_exec_logger.h"
 
 
+HANDLE log_file_handle = NULL;
+
+
+void create_file(const char* file_name)
+{
+	if (!file_name || log_file_handle)
+	{
+		return;
+	}
+	SYSTEMTIME system_time = { 0 };
+	GetLocalTime(&system_time);
+	char log_file_name[MAX_PATH] = { 0 };
+	_snprintf_s(log_file_name, MAX_PATH, _TRUNCATE, "%s_%d-%d-%d-%d-%d-%d.txt", PathFindFileNameA(file_name), system_time.wYear, system_time.wMonth, system_time.wDay, system_time.wHour, system_time.wMinute, system_time.wSecond);
+	log_file_handle = CreateFileA(log_file_name, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+}
+
+
+void close_file()
+{
+	if (!log_file_handle)
+	{
+		return;
+	}
+	CloseHandle(log_file_handle);
+	log_file_handle = NULL;
+}
+
+
+void write_file(const char* buffer)
+{
+	if (!buffer || !log_file_handle)
+	{
+		return;
+	}
+	DWORD written = 0;
+	WriteFile(log_file_handle, buffer, strlen(buffer), &written, NULL);
+}
+
 
 void make_hex_string(char* data, size_t data_size, char* text, size_t text_size)
 {
@@ -115,53 +153,72 @@ void log_exec()
 	make_inst_string(reg.cip, inst_string, sizeof(inst_string));
 
 
+	char buffer[MAX_PATH] = { 0 };
+	char reg_string[MAX_PATH] = { 0 };
 #ifdef _WIN64
-	_plugin_logprintf("%s\n", inst_point_string);
-	char reg_string[MAX_PATH] = { 0 };
+	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "%s\n", inst_string);
+	write_file(buffer);
 	make_address_string(reg.cax, reg_string, sizeof(reg_string));
-	_plugin_logprintf("    rax=%s\n", reg_string);
+	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    rax=%s\n", reg_string);
+	write_file(buffer);
 	make_address_string(reg.cbx, reg_string, sizeof(reg_string));
-	_plugin_logprintf("    rbx=%s\n", reg_string);
+	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    rbx=%s\n", reg_string);
+	write_file(buffer);
 	make_address_string(reg.ccx, reg_string, sizeof(reg_string));
-	_plugin_logprintf("    rcx=%s\n", reg_string);
+	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    rcx=%s\n", reg_string);
+	write_file(buffer);
 	make_address_string(reg.cdx, reg_string, sizeof(reg_string));
-	_plugin_logprintf("    rdx=%s\n", reg_string);
+	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    rdx=%s\n", reg_string);
+	write_file(buffer);
 	make_address_string(reg.csi, reg_string, sizeof(reg_string));
-	_plugin_logprintf("    rsi=%s\n", reg_string);
+	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    rsi=%s\n", reg_string);
+	write_file(buffer);
 	make_address_string(reg.cdi, reg_string, sizeof(reg_string));
-	_plugin_logprintf("    rdi=%s\n", reg_string);
+	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    rdi=%s\n", reg_string);
+	write_file(buffer);
 	make_address_string(reg.csp, reg_string, sizeof(reg_string));
-	_plugin_logprintf("    rsp=%s\n", reg_string);
+	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    rsp=%s\n", reg_string);
+	write_file(buffer);
 	make_address_string(reg.cbp, reg_string, sizeof(reg_string));
-	_plugin_logprintf("    rbp=%s\n", reg_string);
-	_plugin_logprintf("    r8=%p  r9=%p r10=%p r11=%p r12=%p r13=%p r14=%p r15=%p\n",
-		reg.r8, reg.r9, reg.r10,
-		reg.r11, reg.r12, reg.r13,
-		reg.r14, reg.r15);
+	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    rbp=%s\n", reg_string);
+	write_file(buffer);
+	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    r8=%p  r9=%p r10=%p r11=%p r12=%p r13=%p r14=%p r15=%p\n",
+		(char*)reg.r8, (char*)reg.r9, (char*)reg.r10,
+		(char*)reg.r11, (char*)reg.r12, (char*)reg.r13,
+		(char*)reg.r14, (char*)reg.r15);
+	write_file(buffer);
 #else
-	_plugin_logprintf("%s\n", inst_string);
-	char reg_string[MAX_PATH] = { 0 };
+	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "%s\n", inst_string);
+	write_file(buffer);
 	make_address_string(reg.cax, reg_string, sizeof(reg_string));
-	_plugin_logprintf("    eax=%s\n", reg_string);
+	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    eax=%s\n", reg_string);
+	write_file(buffer);
 	make_address_string(reg.cbx, reg_string, sizeof(reg_string));
-	_plugin_logprintf("    ebx=%s\n", reg_string);
+	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    ebx=%s\n", reg_string);
+	write_file(buffer);
 	make_address_string(reg.ccx, reg_string, sizeof(reg_string));
-	_plugin_logprintf("    ecx=%s\n", reg_string);
+	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    ecx=%s\n", reg_string);
+	write_file(buffer);
 	make_address_string(reg.cdx, reg_string, sizeof(reg_string));
-	_plugin_logprintf("    edx=%s\n", reg_string);
+	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    edx=%s\n", reg_string);
+	write_file(buffer);
 	make_address_string(reg.csi, reg_string, sizeof(reg_string));
-	_plugin_logprintf("    esi=%s\n", reg_string);
+	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    esi=%s\n", reg_string);
+	write_file(buffer);
 	make_address_string(reg.cdi, reg_string, sizeof(reg_string));
-	_plugin_logprintf("    edi=%s\n", reg_string);
+	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    edi=%s\n", reg_string);
+	write_file(buffer);
 	make_address_string(reg.csp, reg_string, sizeof(reg_string));
-	_plugin_logprintf("    esp=%s\n", reg_string);
+	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    esp=%s\n", reg_string);
+	write_file(buffer);
 	make_address_string(reg.cbp, reg_string, sizeof(reg_string));
-	_plugin_logprintf("    ebp=%s\n", reg_string);
+	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    ebp=%s\n", reg_string);
+	write_file(buffer);
 #endif
 }
 
 
-extern "C" __declspec(dllexport) void CBMENUENTRY(CBTYPE, PLUG_CB_MENUENTRY * info)
+extern "C" __declspec(dllexport) void CBMENUENTRY(CBTYPE, PLUG_CB_MENUENTRY* info)
 {
 	switch (info->hEntry)
 	{
@@ -181,7 +238,7 @@ extern "C" __declspec(dllexport) void CBTRACEEXECUTE(CBTYPE, PLUG_CB_TRACEEXECUT
 }
 
 
-extern "C" __declspec(dllexport) void CBSTEPPED(CBTYPE, PLUG_CB_STEPPED * info)
+extern "C" __declspec(dllexport) void CBSTEPPED(CBTYPE, PLUG_CB_STEPPED* info)
 {
 	log_exec();
 }
@@ -193,6 +250,18 @@ extern "C" __declspec(dllexport) void CBDEBUGEVENT(CBTYPE, PLUG_CB_DEBUGEVENT * 
 	log_exec();
 }
 */
+
+
+extern "C" __declspec(dllexport) void CBINITDEBUG(CBTYPE, PLUG_CB_INITDEBUG* info)
+{
+	create_file(info->szFileName);
+}
+
+
+extern "C" __declspec(dllexport) void CBSTOPDEBUG(CBTYPE, PLUG_CB_STOPDEBUG* info)
+{
+	close_file();
+}
 
 
 bool logger_plugin_init(PLUG_INITSTRUCT* init_struct)

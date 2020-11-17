@@ -6,8 +6,11 @@
 #include <windows.h>
 #include <stdio.h>
 #include <psapi.h>
+#include <Shlwapi.h>
 #include "pluginsdk\_plugins.h"
 #include "pluginsdk/bridgemain.h"
+
+#pragma comment(lib, "Shlwapi.lib")
 
 #ifndef DLL_EXPORT
 #define DLL_EXPORT __declspec(dllexport)
