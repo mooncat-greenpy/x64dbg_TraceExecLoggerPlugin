@@ -13,7 +13,7 @@ void create_file(const char* file_name)
 	SYSTEMTIME system_time = { 0 };
 	GetLocalTime(&system_time);
 	char log_file_name[MAX_PATH] = { 0 };
-	_snprintf_s(log_file_name, MAX_PATH, _TRUNCATE, "%s_%d-%d-%d-%d-%d-%d.txt", PathFindFileNameA(file_name), system_time.wYear, system_time.wMonth, system_time.wDay, system_time.wHour, system_time.wMinute, system_time.wSecond);
+	_snprintf_s(log_file_name, sizeof(log_file_name), _TRUNCATE, "%s_%d-%d-%d-%d-%d-%d.txt", PathFindFileNameA(file_name), system_time.wYear, system_time.wMonth, system_time.wDay, system_time.wHour, system_time.wMinute, system_time.wSecond);
 	log_file_handle = CreateFileA(log_file_name, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 }
 
@@ -47,7 +47,7 @@ void make_hex_string(char* data, size_t data_size, char* text, size_t text_size)
 		return;
 	}
 
-	for (int i = 0; i < data_size; i++)
+	for (size_t i = 0; i < data_size; i++)
 	{
 		char tmp[10] = { 0 };
 		_snprintf_s(tmp, sizeof(tmp), _TRUNCATE, "%02x ", (unsigned char)data[i]);
@@ -140,24 +140,43 @@ void make_inst_string(duint addr, char* text, size_t size)
 }
 
 
-void log_exec()
+void log_stack()
 {
-	if (!regstep_enabled)
-		return;
-
 	REGDUMP reg_dump;
 	DbgGetRegDumpEx(&reg_dump, sizeof(reg_dump));
-	auto& reg = reg_dump.regcontext;
 
-	char inst_string[MAX_PATH] = { 0 };
-	make_inst_string(reg.cip, inst_string, sizeof(inst_string));
+	duint csp = reg_dump.regcontext.csp;
 
+	for (int i = 0; i < 0x10; i++)
+	{
+		char addr_string[MAX_PATH] = { 0 };
+		char buffer[MAX_PATH] = { 0 };
+		duint stack_addr = csp + i * sizeof(duint);
+		duint stack_value = 0;
+		if (!DbgMemIsValidReadPtr(stack_addr))
+		{
+			_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "%p\n", (char*)stack_addr);
+			write_file(buffer);
+			continue;
+		}
+		DbgMemRead(stack_addr, &stack_value, sizeof(stack_value));
+
+		make_address_string(stack_value, addr_string, sizeof(addr_string));
+		_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "%p %s\n", (char*)stack_addr, addr_string);
+		write_file(buffer);
+	}
+}
+
+
+void log_registry()
+{
+	REGDUMP reg_dump;
+	DbgGetRegDumpEx(&reg_dump, sizeof(reg_dump));
+	REGISTERCONTEXT reg = reg_dump.regcontext;
 
 	char buffer[MAX_PATH] = { 0 };
 	char reg_string[MAX_PATH] = { 0 };
 #ifdef _WIN64
-	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "%s\n", inst_string);
-	write_file(buffer);
 	make_address_string(reg.cax, reg_string, sizeof(reg_string));
 	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    rax=%s\n", reg_string);
 	write_file(buffer);
@@ -188,8 +207,6 @@ void log_exec()
 		(char*)reg.r14, (char*)reg.r15);
 	write_file(buffer);
 #else
-	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "%s\n", inst_string);
-	write_file(buffer);
 	make_address_string(reg.cax, reg_string, sizeof(reg_string));
 	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    eax=%s\n", reg_string);
 	write_file(buffer);
@@ -215,6 +232,31 @@ void log_exec()
 	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    ebp=%s\n", reg_string);
 	write_file(buffer);
 #endif
+}
+
+
+void log_instruction()
+{
+	REGDUMP reg_dump;
+	DbgGetRegDumpEx(&reg_dump, sizeof(reg_dump));
+	REGISTERCONTEXT reg = reg_dump.regcontext;
+
+	char inst_string[MAX_PATH] = { 0 };
+	char buffer[MAX_PATH] = { 0 };
+	make_inst_string(reg.cip, inst_string, sizeof(inst_string));
+	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "%s\n", inst_string);
+	write_file(buffer);
+}
+
+
+void log_exec()
+{
+	if (!regstep_enabled)
+		return;
+
+	log_instruction();
+	log_registry();
+	log_stack();
 }
 
 
