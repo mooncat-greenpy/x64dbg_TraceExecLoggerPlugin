@@ -43,6 +43,9 @@
     <Filter Include="Header Files\pluginsdk\yara\yara">
       <UniqueIdentifier>{7459ed30-6c92-481c-8add-0be8d296f015}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\nlohmann">
+      <UniqueIdentifier>{97dd1ea2-4be4-4c0f-802c-852b48568784}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="x64dbg_TraceExecLoggerPlugin.cpp">
@@ -253,6 +256,9 @@
     </ClInclude>
     <ClInclude Include="trace_exec_logger.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nlohmann\json.hpp">
+      <Filter>Header Files\nlohmann</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

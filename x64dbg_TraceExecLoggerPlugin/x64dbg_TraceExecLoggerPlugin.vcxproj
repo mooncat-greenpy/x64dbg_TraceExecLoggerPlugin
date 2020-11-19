@@ -183,6 +183,7 @@
     <ClCompile Include="x64dbg_TraceExecLoggerPlugin.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\nlohmann\json.hpp" />
     <ClInclude Include="pluginsdk\bridgelist.h" />
     <ClInclude Include="pluginsdk\bridgemain.h" />
     <ClInclude Include="pluginsdk\capstone\arm.h" />

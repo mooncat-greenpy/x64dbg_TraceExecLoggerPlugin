@@ -1,42 +1,34 @@
 #include "trace_exec_logger.h"
 
 
-HANDLE log_file_handle = NULL;
+using json = nlohmann::json;
+char file_path[MAX_PATH] = { 0 };
+json log_json = json::array();
 
 
-void create_file(const char* file_name)
+void save_json_file(const char* file_name, const char* buffer)
 {
-	if (!file_name || log_file_handle)
+	if (!file_name || !buffer)
 	{
 		return;
 	}
+
 	SYSTEMTIME system_time = { 0 };
 	GetLocalTime(&system_time);
+
+	HANDLE log_file_handle = INVALID_HANDLE_VALUE;
 	char log_file_name[MAX_PATH] = { 0 };
-	_snprintf_s(log_file_name, sizeof(log_file_name), _TRUNCATE, "%s_%d-%d-%d-%d-%d-%d.txt", PathFindFileNameA(file_name), system_time.wYear, system_time.wMonth, system_time.wDay, system_time.wHour, system_time.wMinute, system_time.wSecond);
+	_snprintf_s(log_file_name, sizeof(log_file_name), _TRUNCATE, "%s_%d-%d-%d-%d-%d-%d.json", PathFindFileNameA(file_name), system_time.wYear, system_time.wMonth, system_time.wDay, system_time.wHour, system_time.wMinute, system_time.wSecond);
 	log_file_handle = CreateFileA(log_file_name, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-}
-
-
-void close_file()
-{
-	if (!log_file_handle)
+	if (log_file_handle == INVALID_HANDLE_VALUE)
 	{
 		return;
 	}
-	CloseHandle(log_file_handle);
-	log_file_handle = NULL;
-}
 
-
-void write_file(const char* buffer)
-{
-	if (!buffer || !log_file_handle)
-	{
-		return;
-	}
 	DWORD written = 0;
 	WriteFile(log_file_handle, buffer, strlen(buffer), &written, NULL);
+
+	CloseHandle(log_file_handle);
 }
 
 
@@ -140,102 +132,107 @@ void make_inst_string(duint addr, char* text, size_t size)
 }
 
 
-void log_stack()
+json log_stack()
 {
+	json stack_json = json::object();
+	stack_json["type"] = "stack";
+	stack_json["data"] = json::array();
+
 	REGDUMP reg_dump;
 	DbgGetRegDumpEx(&reg_dump, sizeof(reg_dump));
-
 	duint csp = reg_dump.regcontext.csp;
 
 	for (int i = 0; i < 0x10; i++)
 	{
+		json tmp_json = json::object();
 		char addr_string[MAX_PATH] = { 0 };
-		char buffer[MAX_PATH] = { 0 };
 		duint stack_addr = csp + i * sizeof(duint);
 		duint stack_value = 0;
 		if (!DbgMemIsValidReadPtr(stack_addr))
 		{
-			_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "%p\n", (char*)stack_addr);
-			write_file(buffer);
+			tmp_json["address"] = stack_addr;
+			tmp_json["info"] = "";
+			stack_json["data"].push_back(tmp_json);
 			continue;
 		}
 		DbgMemRead(stack_addr, &stack_value, sizeof(stack_value));
 
 		make_address_string(stack_value, addr_string, sizeof(addr_string));
-		_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "%p %s\n", (char*)stack_addr, addr_string);
-		write_file(buffer);
+		tmp_json["address"] = stack_addr;
+		tmp_json["info"] = addr_string;
+		stack_json["data"].push_back(tmp_json);
 	}
+
+	return stack_json;
 }
 
 
-void log_registry()
+json log_registry()
 {
+	json reg_json = json::object();
+	reg_json["type"] = "register";
+
 	REGDUMP reg_dump;
 	DbgGetRegDumpEx(&reg_dump, sizeof(reg_dump));
 	REGISTERCONTEXT reg = reg_dump.regcontext;
 
-	char buffer[MAX_PATH] = { 0 };
 	char reg_string[MAX_PATH] = { 0 };
 #ifdef _WIN64
 	make_address_string(reg.cax, reg_string, sizeof(reg_string));
-	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    rax=%s\n", reg_string);
-	write_file(buffer);
+	reg_json["cax"] = reg_string;
 	make_address_string(reg.cbx, reg_string, sizeof(reg_string));
-	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    rbx=%s\n", reg_string);
-	write_file(buffer);
+	reg_json["cbx"] = reg_string;
 	make_address_string(reg.ccx, reg_string, sizeof(reg_string));
-	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    rcx=%s\n", reg_string);
-	write_file(buffer);
+	reg_json["ccx"] = reg_string;
 	make_address_string(reg.cdx, reg_string, sizeof(reg_string));
-	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    rdx=%s\n", reg_string);
-	write_file(buffer);
+	reg_json["cdx"] = reg_string;
 	make_address_string(reg.csi, reg_string, sizeof(reg_string));
-	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    rsi=%s\n", reg_string);
-	write_file(buffer);
+	reg_json["csi"] = reg_string;
 	make_address_string(reg.cdi, reg_string, sizeof(reg_string));
-	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    rdi=%s\n", reg_string);
-	write_file(buffer);
+	reg_json["cdi"] = reg_string;
 	make_address_string(reg.csp, reg_string, sizeof(reg_string));
-	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    rsp=%s\n", reg_string);
-	write_file(buffer);
+	reg_json["csp"] = reg_string;
 	make_address_string(reg.cbp, reg_string, sizeof(reg_string));
-	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    rbp=%s\n", reg_string);
-	write_file(buffer);
-	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    r8=%p  r9=%p r10=%p r11=%p r12=%p r13=%p r14=%p r15=%p\n",
-		(char*)reg.r8, (char*)reg.r9, (char*)reg.r10,
-		(char*)reg.r11, (char*)reg.r12, (char*)reg.r13,
-		(char*)reg.r14, (char*)reg.r15);
-	write_file(buffer);
+	reg_json["cbp"] = reg_string;
+	make_address_string(reg.r8, reg_string, sizeof(reg_string));
+	reg_json["r8"] = reg_string;
+	make_address_string(reg.r9, reg_string, sizeof(reg_string));
+	reg_json["r9"] = reg_string;
+	make_address_string(reg.r10, reg_string, sizeof(reg_string));
+	reg_json["r10"] = reg_string;
+	make_address_string(reg.r11, reg_string, sizeof(reg_string));
+	reg_json["r11"] = reg_string;
+	make_address_string(reg.r12, reg_string, sizeof(reg_string));
+	reg_json["r12"] = reg_string;
+	make_address_string(reg.r13, reg_string, sizeof(reg_string));
+	reg_json["r13"] = reg_string;
+	make_address_string(reg.r14, reg_string, sizeof(reg_string));
+	reg_json["r14"] = reg_string;
+	make_address_string(reg.r15, reg_string, sizeof(reg_string));
+	reg_json["r15"] = reg_string;
 #else
 	make_address_string(reg.cax, reg_string, sizeof(reg_string));
-	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    eax=%s\n", reg_string);
-	write_file(buffer);
+	reg_json["cax"] = reg_string;
 	make_address_string(reg.cbx, reg_string, sizeof(reg_string));
-	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    ebx=%s\n", reg_string);
-	write_file(buffer);
+	reg_json["cbx"] = reg_string;
 	make_address_string(reg.ccx, reg_string, sizeof(reg_string));
-	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    ecx=%s\n", reg_string);
-	write_file(buffer);
+	reg_json["ccx"] = reg_string;
 	make_address_string(reg.cdx, reg_string, sizeof(reg_string));
-	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    edx=%s\n", reg_string);
-	write_file(buffer);
+	reg_json["cdx"] = reg_string;
 	make_address_string(reg.csi, reg_string, sizeof(reg_string));
-	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    esi=%s\n", reg_string);
-	write_file(buffer);
+	reg_json["csi"] = reg_string;
 	make_address_string(reg.cdi, reg_string, sizeof(reg_string));
-	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    edi=%s\n", reg_string);
-	write_file(buffer);
+	reg_json["cdi"] = reg_string;
 	make_address_string(reg.csp, reg_string, sizeof(reg_string));
-	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    esp=%s\n", reg_string);
-	write_file(buffer);
+	reg_json["csp"] = reg_string;
 	make_address_string(reg.cbp, reg_string, sizeof(reg_string));
-	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "    ebp=%s\n", reg_string);
-	write_file(buffer);
+	reg_json["cbp"] = reg_string;
 #endif
+	return reg_json;
 }
 
 
-void log_instruction()
+json log_instruction()
 {
 	REGDUMP reg_dump;
 	DbgGetRegDumpEx(&reg_dump, sizeof(reg_dump));
@@ -244,8 +241,11 @@ void log_instruction()
 	char inst_string[MAX_PATH] = { 0 };
 	char buffer[MAX_PATH] = { 0 };
 	make_inst_string(reg.cip, inst_string, sizeof(inst_string));
-	_snprintf_s(buffer, sizeof(buffer), _TRUNCATE, "%s\n", inst_string);
-	write_file(buffer);
+	json inst_json = json::object();
+	inst_json["type"] = "instruction";
+	inst_json["address"] = reg.cip;
+	inst_json["asm"] = inst_string;
+	return inst_json;
 }
 
 
@@ -254,9 +254,11 @@ void log_exec()
 	if (!regstep_enabled)
 		return;
 
-	log_instruction();
-	log_registry();
-	log_stack();
+	json entry = json::object();
+	entry["inst"] = log_instruction();
+	entry["reg"] = log_registry();
+	entry["stack"] = log_stack();
+	log_json.push_back(entry);
 }
 
 
@@ -296,13 +298,16 @@ extern "C" __declspec(dllexport) void CBDEBUGEVENT(CBTYPE, PLUG_CB_DEBUGEVENT * 
 
 extern "C" __declspec(dllexport) void CBINITDEBUG(CBTYPE, PLUG_CB_INITDEBUG* info)
 {
-	create_file(info->szFileName);
+	log_json.clear();
+	strncpy_s(file_path, sizeof(file_path), info->szFileName, _TRUNCATE);
 }
 
 
 extern "C" __declspec(dllexport) void CBSTOPDEBUG(CBTYPE, PLUG_CB_STOPDEBUG* info)
 {
-	close_file();
+	save_json_file(file_path, log_json.dump().c_str());
+	memset(file_path, 0, sizeof(file_path));
+	log_json.clear();
 }
 
 
