@@ -48,19 +48,36 @@ void make_hex_string(char* data, size_t data_size, char* text, size_t text_size)
 }
 
 
-void make_address_string(duint addr, char* text, size_t size)
+json make_address_json(duint addr)
 {
-	if (!text)
-	{
-		return;
-	}
+	json address_json = json::object();
+	address_json["address"] = addr;
 
+	char text[MAX_PATH] = { 0 };
 	char module_text[MAX_PATH] = { 0 };
 	char label_text[MAX_PATH] = { 0 };
-	char string[MAX_PATH] = { 0 };
-	char hex_string[MAX_PATH] = { 0 };
 	bool has_module = DbgGetModuleAt(addr, module_text);
 	bool has_label = DbgGetLabelAt(addr, SEG_DEFAULT, label_text);
+	if (has_module && has_label && strlen(module_text))
+	{
+		_snprintf_s(text, sizeof(text), _TRUNCATE, "%s.%s", module_text, label_text);
+	}
+	else if (module_text && strlen(module_text))
+	{
+		_snprintf_s(text, sizeof(text), _TRUNCATE, "%s.%p", module_text, (char*)addr);
+	}
+	else if (has_label)
+	{
+		_snprintf_s(text, sizeof(text), _TRUNCATE, "%p<%s>", (char*)addr, label_text);
+	}
+	else
+	{
+		_snprintf_s(text, sizeof(text), _TRUNCATE, "%p", (char*)addr);
+	}
+	address_json["label"] = text;
+
+	char string[MAX_PATH] = { 0 };
+	char hex_string[MAX_PATH] = { 0 };
 	bool has_string = DbgGetStringAt(addr, string);
 	bool has_data = false;
 	if (DbgMemIsValidReadPtr(addr))
@@ -70,31 +87,21 @@ void make_address_string(duint addr, char* text, size_t size)
 		make_hex_string(data, sizeof(data), hex_string, sizeof(hex_string));
 		has_data = true;
 	}
-
 	if (has_string)
 	{
-		_snprintf_s(text, size, _TRUNCATE, "%p %s", (char*)addr, string);
-	}
-	else if (has_module && has_label && strlen(module_text))
-	{
-		_snprintf_s(text, size, _TRUNCATE, "%p %s.%s", (char*)addr, module_text, label_text);
-	}
-	else if (module_text && strlen(module_text))
-	{
-		_snprintf_s(text, size, _TRUNCATE, "%p %s.%p", (char*)addr, module_text, (char*)addr);
-	}
-	else if (has_label)
-	{
-		_snprintf_s(text, size, _TRUNCATE, "%p <%s>", (char*)addr, label_text);
+		_snprintf_s(text, sizeof(text), _TRUNCATE, "%s", string);
 	}
 	else if (has_data)
 	{
-		_snprintf_s(text, size, _TRUNCATE, "%p %s", (char*)addr, hex_string);
+		_snprintf_s(text, sizeof(text), _TRUNCATE, "%s", hex_string);
 	}
 	else
 	{
-		_snprintf_s(text, size, _TRUNCATE, "%p", (char*)addr);
+		_snprintf_s(text, sizeof(text), _TRUNCATE, "");
 	}
+	address_json["data"] = text;
+
+	return address_json;
 }
 
 
@@ -145,7 +152,6 @@ json log_stack()
 	for (int i = 0; i < 0x10; i++)
 	{
 		json tmp_json = json::object();
-		char addr_string[MAX_PATH] = { 0 };
 		duint stack_addr = csp + i * sizeof(duint);
 		duint stack_value = 0;
 		if (!DbgMemIsValidReadPtr(stack_addr))
@@ -157,9 +163,8 @@ json log_stack()
 		}
 		DbgMemRead(stack_addr, &stack_value, sizeof(stack_value));
 
-		make_address_string(stack_value, addr_string, sizeof(addr_string));
 		tmp_json["address"] = stack_addr;
-		tmp_json["info"] = addr_string;
+		tmp_json["info"] = make_address_json(stack_value);
 		stack_json["data"].push_back(tmp_json);
 	}
 
@@ -176,57 +181,23 @@ json log_registry()
 	DbgGetRegDumpEx(&reg_dump, sizeof(reg_dump));
 	REGISTERCONTEXT reg = reg_dump.regcontext;
 
-	char reg_string[MAX_PATH] = { 0 };
+	reg_json["cax"] = make_address_json(reg.cax);
+	reg_json["cbx"] = make_address_json(reg.cbx);
+	reg_json["ccx"] = make_address_json(reg.ccx);
+	reg_json["cdx"] = make_address_json(reg.cdx);
+	reg_json["csi"] = make_address_json(reg.csi);
+	reg_json["cdi"] = make_address_json(reg.cdi);
+	reg_json["csp"] = make_address_json(reg.csp);
+	reg_json["cbp"] = make_address_json(reg.cbp);
 #ifdef _WIN64
-	make_address_string(reg.cax, reg_string, sizeof(reg_string));
-	reg_json["cax"] = reg_string;
-	make_address_string(reg.cbx, reg_string, sizeof(reg_string));
-	reg_json["cbx"] = reg_string;
-	make_address_string(reg.ccx, reg_string, sizeof(reg_string));
-	reg_json["ccx"] = reg_string;
-	make_address_string(reg.cdx, reg_string, sizeof(reg_string));
-	reg_json["cdx"] = reg_string;
-	make_address_string(reg.csi, reg_string, sizeof(reg_string));
-	reg_json["csi"] = reg_string;
-	make_address_string(reg.cdi, reg_string, sizeof(reg_string));
-	reg_json["cdi"] = reg_string;
-	make_address_string(reg.csp, reg_string, sizeof(reg_string));
-	reg_json["csp"] = reg_string;
-	make_address_string(reg.cbp, reg_string, sizeof(reg_string));
-	reg_json["cbp"] = reg_string;
-	make_address_string(reg.r8, reg_string, sizeof(reg_string));
-	reg_json["r8"] = reg_string;
-	make_address_string(reg.r9, reg_string, sizeof(reg_string));
-	reg_json["r9"] = reg_string;
-	make_address_string(reg.r10, reg_string, sizeof(reg_string));
-	reg_json["r10"] = reg_string;
-	make_address_string(reg.r11, reg_string, sizeof(reg_string));
-	reg_json["r11"] = reg_string;
-	make_address_string(reg.r12, reg_string, sizeof(reg_string));
-	reg_json["r12"] = reg_string;
-	make_address_string(reg.r13, reg_string, sizeof(reg_string));
-	reg_json["r13"] = reg_string;
-	make_address_string(reg.r14, reg_string, sizeof(reg_string));
-	reg_json["r14"] = reg_string;
-	make_address_string(reg.r15, reg_string, sizeof(reg_string));
-	reg_json["r15"] = reg_string;
-#else
-	make_address_string(reg.cax, reg_string, sizeof(reg_string));
-	reg_json["cax"] = reg_string;
-	make_address_string(reg.cbx, reg_string, sizeof(reg_string));
-	reg_json["cbx"] = reg_string;
-	make_address_string(reg.ccx, reg_string, sizeof(reg_string));
-	reg_json["ccx"] = reg_string;
-	make_address_string(reg.cdx, reg_string, sizeof(reg_string));
-	reg_json["cdx"] = reg_string;
-	make_address_string(reg.csi, reg_string, sizeof(reg_string));
-	reg_json["csi"] = reg_string;
-	make_address_string(reg.cdi, reg_string, sizeof(reg_string));
-	reg_json["cdi"] = reg_string;
-	make_address_string(reg.csp, reg_string, sizeof(reg_string));
-	reg_json["csp"] = reg_string;
-	make_address_string(reg.cbp, reg_string, sizeof(reg_string));
-	reg_json["cbp"] = reg_string;
+	reg_json["r8"] = make_address_json(reg.r8);
+	reg_json["r9"] = make_address_json(reg.r9);
+	reg_json["r10"] = make_address_json(reg.r10);
+	reg_json["r11"] = make_address_json(reg.r11);
+	reg_json["r12"] = make_address_json(reg.r12);
+	reg_json["r13"] = make_address_json(reg.r13);
+	reg_json["r14"] = make_address_json(reg.r14);
+	reg_json["r15"] = make_address_json(reg.r15);
 #endif
 	return reg_json;
 }
