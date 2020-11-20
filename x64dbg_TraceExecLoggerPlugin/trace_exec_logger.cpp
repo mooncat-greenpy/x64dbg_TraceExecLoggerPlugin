@@ -105,40 +105,6 @@ json make_address_json(duint addr)
 }
 
 
-void make_inst_string(duint addr, char* text, size_t size)
-{
-	if (!text)
-	{
-		return;
-	}
-
-	char asm_string[MAX_PATH] = { 0 };
-	GuiGetDisassembly(addr, asm_string);
-
-	char module_text[MAX_PATH] = { 0 };
-	char label_text[MAX_PATH] = { 0 };
-	bool has_module = DbgGetModuleAt(addr, module_text);
-	bool has_label = DbgGetLabelAt(addr, SEG_DEFAULT, label_text);
-
-	if (has_module && has_label)
-	{
-		_snprintf_s(text, size, _TRUNCATE, "%s.%s %s", module_text, label_text, asm_string);
-	}
-	else if (module_text)
-	{
-		_snprintf_s(text, size, _TRUNCATE, "%s.%p %s", module_text, (char*)addr, asm_string);
-	}
-	else if (has_label)
-	{
-		_snprintf_s(text, size, _TRUNCATE, "%p <%s> %s", (char*)addr, label_text, asm_string);
-	}
-	else
-	{
-		_snprintf_s(text, size, _TRUNCATE, "%p %s", (char*)addr, asm_string);
-	}
-}
-
-
 json log_stack()
 {
 	json stack_json = json::object();
@@ -209,13 +175,37 @@ json log_instruction()
 	DbgGetRegDumpEx(&reg_dump, sizeof(reg_dump));
 	REGISTERCONTEXT reg = reg_dump.regcontext;
 
-	char inst_string[MAX_PATH] = { 0 };
-	char buffer[MAX_PATH] = { 0 };
-	make_inst_string(reg.cip, inst_string, sizeof(inst_string));
 	json inst_json = json::object();
 	inst_json["type"] = "instruction";
 	inst_json["address"] = reg.cip;
-	inst_json["asm"] = inst_string;
+
+	char asm_string[MAX_PATH] = { 0 };
+	GuiGetDisassembly(reg.cip, asm_string);
+	inst_json["asm_str"] = asm_string;
+
+	char text[MAX_PATH] = { 0 };
+	char module_text[MAX_PATH] = { 0 };
+	char label_text[MAX_PATH] = { 0 };
+	bool has_module = DbgGetModuleAt(reg.cip, module_text);
+	bool has_label = DbgGetLabelAt(reg.cip, SEG_DEFAULT, label_text);
+	if (has_module && has_label && strlen(module_text))
+	{
+		_snprintf_s(text, sizeof(text), _TRUNCATE, "%s.%s", module_text, label_text);
+	}
+	else if (module_text && strlen(module_text))
+	{
+		_snprintf_s(text, sizeof(text), _TRUNCATE, "%s.%p", module_text, (char*)reg.cip);
+	}
+	else if (has_label)
+	{
+		_snprintf_s(text, sizeof(text), _TRUNCATE, "%p<%s>", (char*)reg.cip, label_text);
+	}
+	else
+	{
+		_snprintf_s(text, sizeof(text), _TRUNCATE, "%p", (char*)reg.cip);
+	}
+	inst_json["label"] = text;
+
 	return inst_json;
 }
 
