@@ -2,9 +2,7 @@
 #include "trace_exec_logger.h"
 
 
-// Variables
-#define szx64dbg_TraceExecLoggerPluginInfo "TraceExecLoggerPlugin Usage:\n" 
-
+#define X64DBG_TRACEEXECLOGGER_PLUGIN_INFO "TraceExecLoggerPlugin Usage: TElogger.help\n"
 
 
 // GLOBAL Plugin SDK variables
@@ -24,9 +22,9 @@ extern "C" DLL_EXPORT BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason,
 
 DLL_EXPORT bool pluginit(PLUG_INITSTRUCT* initStruct)
 {
-    initStruct->pluginVersion = plugin_version;
+    initStruct->pluginVersion = PLUGIN_VERSION;
     initStruct->sdkVersion = PLUG_SDKVERSION;
-    strcpy(initStruct->pluginName, plugin_name);
+    strcpy(initStruct->pluginName, PLUGIN_NAME);
     pluginHandle = initStruct->pluginHandle;
 
     if (!logger_plugin_init(initStruct))
@@ -57,7 +55,7 @@ DLL_EXPORT void plugsetup(PLUG_SETUPSTRUCT* setupStruct)
     hMenuDump = setupStruct->hMenuDump;
     hMenuStack = setupStruct->hMenuStack;
     
-	GuiAddLogMessage, szx64dbg_TraceExecLoggerPluginInfo;
+	GuiAddLogMessage, X64DBG_TRACEEXECLOGGER_PLUGIN_INFO;
 	
     logger_plugin_setup();
 }

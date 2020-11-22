@@ -11,8 +11,6 @@ enum
 	MENU_HELP,
 };
 
-static bool regstep_enabled = true;
-
 
 bool logger_plugin_init(PLUG_INITSTRUCT* init_struct);
 

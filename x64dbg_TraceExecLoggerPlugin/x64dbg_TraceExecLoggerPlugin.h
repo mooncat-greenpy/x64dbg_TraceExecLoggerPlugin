@@ -13,10 +13,9 @@
 
 #pragma comment(lib, "Shlwapi.lib")
 
-// Plugin SDK required variables
-#define plugin_name "TraceExecLogger" // rename to your plugins name
-#define plugin_version 1
 
+#define PLUGIN_NAME "TraceExecLogger"
+#define PLUGIN_VERSION 1
 
 #ifndef DLL_EXPORT
 #define DLL_EXPORT __declspec(dllexport)

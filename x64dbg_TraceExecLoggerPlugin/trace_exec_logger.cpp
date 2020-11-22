@@ -4,6 +4,7 @@
 using json = nlohmann::json;
 char file_path[MAX_PATH] = { 0 };
 json log_json = json::array();
+static bool telogger_enabled = true;
 
 
 void save_json_file(const char* file_name, const char* buffer)
@@ -350,7 +351,7 @@ json log_instruction()
 
 void log_exec()
 {
-	if (!regstep_enabled)
+	if (!telogger_enabled)
 		return;
 
 	json entry = json::object();
@@ -376,15 +377,15 @@ bool command_callback(int argc, char* argv[])
 	}
 	else if (strstr(argv[0], "enable"))
 	{
-		regstep_enabled = true;
-		_plugin_menuentrysetchecked(pluginHandle, MENU_ENABLED, regstep_enabled);
-		_plugin_logputs(plugin_name " Enabled");
+		telogger_enabled = true;
+		_plugin_menuentrysetchecked(pluginHandle, MENU_ENABLED, telogger_enabled);
+		_plugin_logputs(PLUGIN_NAME " Enabled");
 	}
 	else if (strstr(argv[0], "disable"))
 	{
-		regstep_enabled = false;
-		_plugin_menuentrysetchecked(pluginHandle, MENU_ENABLED, regstep_enabled);
-		_plugin_logputs(plugin_name " Disabled");
+		telogger_enabled = false;
+		_plugin_menuentrysetchecked(pluginHandle, MENU_ENABLED, telogger_enabled);
+		_plugin_logputs(PLUGIN_NAME " Disabled");
 	}
 
 	return true;
@@ -397,18 +398,18 @@ extern "C" __declspec(dllexport) void CBMENUENTRY(CBTYPE, PLUG_CB_MENUENTRY* inf
 	{
 	case MENU_ENABLED:
 	{
-		regstep_enabled = !regstep_enabled;
-		BridgeSettingSetUint(plugin_name, "Enabled", regstep_enabled);
+		telogger_enabled = !telogger_enabled;
+		BridgeSettingSetUint(PLUGIN_NAME, "Enabled", telogger_enabled);
 	}
 	case MENU_HELP:
 	{
-		char help_text[] = "[ " plugin_name " ]\n"
+		char help_text[] = "[ " PLUGIN_NAME " ]\n"
 			"Collect logs when stepping and tracing.\n"
 			"Command:\n"
 			"    TElogger.help\n"
 			"    TElogger.enable\n"
 			"    TElogger.disable\n";
-		MessageBoxA(NULL, help_text, plugin_name, MB_OK);
+		MessageBoxA(NULL, help_text, PLUGIN_NAME, MB_OK);
 	}
 	break;
 	}
@@ -452,9 +453,9 @@ extern "C" __declspec(dllexport) void CBSTOPDEBUG(CBTYPE, PLUG_CB_STOPDEBUG* inf
 
 bool logger_plugin_init(PLUG_INITSTRUCT* init_struct)
 {
-	duint setting = regstep_enabled;
-	BridgeSettingGetUint(plugin_name, "Enabled", &setting);
-	regstep_enabled = !!setting;
+	duint setting = telogger_enabled;
+	BridgeSettingGetUint(PLUGIN_NAME, "Enabled", &setting);
+	telogger_enabled = !!setting;
 
 	_plugin_registercommand(pluginHandle, "TElogger.help", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.enable", command_callback, false);
@@ -472,7 +473,7 @@ bool logger_plugin_stop()
 void logger_plugin_setup()
 {
 	_plugin_menuaddentry(hMenu, MENU_ENABLED, "Enabled");
-	_plugin_menuentrysetchecked(pluginHandle, MENU_ENABLED, regstep_enabled);
+	_plugin_menuentrysetchecked(pluginHandle, MENU_ENABLED, telogger_enabled);
 	_plugin_menuaddentry(hMenu, MENU_HELP, "Help");
 }
 
