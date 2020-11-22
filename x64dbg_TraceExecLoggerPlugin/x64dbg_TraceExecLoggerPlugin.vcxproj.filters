@@ -54,6 +54,18 @@
     <ClCompile Include="trace_exec_logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="log_register.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="log_instruction.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="log_stack.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pluginsdk\_dbgfunctions.h">
@@ -259,6 +271,18 @@
     </ClInclude>
     <ClInclude Include="..\include\nlohmann\json.hpp">
       <Filter>Header Files\nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="log_register.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="log_instruction.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="log_stack.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

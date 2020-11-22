@@ -1,0 +1,112 @@
+#include "util.h"
+
+
+void save_json_file(const char* file_name, const char* buffer)
+{
+	if (!file_name || !buffer)
+	{
+		return;
+	}
+
+	SYSTEMTIME system_time = { 0 };
+	GetLocalTime(&system_time);
+
+	HANDLE log_file_handle = INVALID_HANDLE_VALUE;
+	char log_file_name[MAX_PATH] = { 0 };
+	_snprintf_s(log_file_name, sizeof(log_file_name), _TRUNCATE, "%s_%d-%d-%d-%d-%d-%d.json", PathFindFileNameA(file_name), system_time.wYear, system_time.wMonth, system_time.wDay, system_time.wHour, system_time.wMinute, system_time.wSecond);
+	log_file_handle = CreateFileA(log_file_name, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (log_file_handle == INVALID_HANDLE_VALUE)
+	{
+		return;
+	}
+
+	DWORD written = 0;
+	WriteFile(log_file_handle, buffer, strlen(buffer), &written, NULL);
+
+	CloseHandle(log_file_handle);
+}
+
+
+void make_address_label_string(duint addr, char* text, size_t text_size)
+{
+	if (!text)
+	{
+		return;
+	}
+
+	char module_text[MAX_PATH] = { 0 };
+	char label_text[MAX_PATH] = { 0 };
+	bool has_module = DbgGetModuleAt(addr, module_text);
+	bool has_label = DbgGetLabelAt(addr, SEG_DEFAULT, label_text);
+	if (has_module && has_label && strlen(module_text))
+	{
+		_snprintf_s(text, text_size, _TRUNCATE, "%s.%s", module_text, label_text);
+	}
+	else if (module_text && strlen(module_text))
+	{
+		_snprintf_s(text, text_size, _TRUNCATE, "%s.%p", module_text, (char*)addr);
+	}
+	else if (has_label)
+	{
+		_snprintf_s(text, text_size, _TRUNCATE, "%p<%s>", (char*)addr, label_text);
+	}
+	else
+	{
+		_snprintf_s(text, text_size, _TRUNCATE, "%p", (char*)addr);
+	}
+}
+
+
+void make_hex_string(char* data, size_t data_size, char* text, size_t text_size)
+{
+	if (!data || !text)
+	{
+		return;
+	}
+
+	for (size_t i = 0; i < data_size; i++)
+	{
+		char tmp[10] = { 0 };
+		_snprintf_s(tmp, sizeof(tmp), _TRUNCATE, "%02x ", (unsigned char)data[i]);
+		strncat_s(text, text_size, tmp, _TRUNCATE);
+	}
+}
+
+
+json make_address_json(duint addr)
+{
+	json address_json = json::object();
+	address_json["value"] = addr;
+
+	char label_text[MAX_PATH] = { 0 };
+	make_address_label_string(addr, label_text, sizeof(label_text));
+	address_json["label"] = label_text;
+
+	char text[MAX_PATH] = { 0 };
+	char string[MAX_PATH] = { 0 };
+	char hex_string[MAX_PATH] = { 0 };
+	bool has_string = DbgGetStringAt(addr, string);
+	bool has_data = false;
+	if (DbgMemIsValidReadPtr(addr))
+	{
+		char data[HEX_SIZE] = { 0 };
+		DbgMemRead(addr, data, sizeof(data));
+		make_hex_string(data, sizeof(data), hex_string, sizeof(hex_string));
+		has_data = true;
+	}
+	if (has_string)
+	{
+		_snprintf_s(text, sizeof(text), _TRUNCATE, "%s", string);
+	}
+	else if (has_data)
+	{
+		_snprintf_s(text, sizeof(text), _TRUNCATE, "%s", hex_string);
+	}
+	else
+	{
+		_snprintf_s(text, sizeof(text), _TRUNCATE, "");
+	}
+	address_json["data"] = text;
+
+	return address_json;
+}

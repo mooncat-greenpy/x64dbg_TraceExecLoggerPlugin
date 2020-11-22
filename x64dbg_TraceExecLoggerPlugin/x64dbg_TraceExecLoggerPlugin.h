@@ -10,6 +10,7 @@
 #include "pluginsdk\_plugins.h"
 #include "pluginsdk/bridgemain.h"
 #include "../include/nlohmann/json.hpp"
+#include "util.h"
 
 #pragma comment(lib, "Shlwapi.lib")
 
@@ -45,3 +46,6 @@ DLL_EXPORT void plugsetup(PLUG_SETUPSTRUCT* setupStruct);
 #endif
 
 #endif //_PLUGINMAIN_H
+
+
+using json = nlohmann::json;

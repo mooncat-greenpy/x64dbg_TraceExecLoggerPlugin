@@ -2,8 +2,9 @@
 
 #include "x64dbg_TraceExecLoggerPlugin.h"
 
-#define HEX_SIZE 0x30
-
+#include "log_instruction.h"
+#include "log_register.h"
+#include "log_stack.h"
 
 enum
 {
@@ -13,10 +14,5 @@ enum
 
 
 bool logger_plugin_init(PLUG_INITSTRUCT* init_struct);
-
-
 bool logger_plugin_stop();
-
-
 void logger_plugin_setup();
-

@@ -179,11 +179,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="log_instruction.cpp" />
+    <ClCompile Include="log_register.cpp" />
+    <ClCompile Include="log_stack.cpp" />
     <ClCompile Include="trace_exec_logger.cpp" />
+    <ClCompile Include="util.cpp" />
     <ClCompile Include="x64dbg_TraceExecLoggerPlugin.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\nlohmann\json.hpp" />
+    <ClInclude Include="log_instruction.h" />
+    <ClInclude Include="log_register.h" />
+    <ClInclude Include="log_stack.h" />
     <ClInclude Include="pluginsdk\bridgelist.h" />
     <ClInclude Include="pluginsdk\bridgemain.h" />
     <ClInclude Include="pluginsdk\capstone\arm.h" />
@@ -250,6 +257,7 @@
     <ClInclude Include="pluginsdk\_scriptapi_register.h" />
     <ClInclude Include="pluginsdk\_scriptapi_stack.h" />
     <ClInclude Include="trace_exec_logger.h" />
+    <ClInclude Include="util.h" />
     <ClInclude Include="x64dbg_TraceExecLoggerPlugin.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
