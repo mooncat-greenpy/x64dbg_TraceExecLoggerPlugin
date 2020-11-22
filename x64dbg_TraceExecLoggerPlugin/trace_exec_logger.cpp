@@ -361,6 +361,36 @@ void log_exec()
 }
 
 
+bool command_callback(int argc, char* argv[])
+{
+	if (argc < 1)
+	{
+		return false;
+	}
+	if (strstr(argv[0], "help"))
+	{
+		_plugin_logputs("Command:\n"
+			"    TElogger.help\n"
+			"    TElogger.enable\n"
+			"    TElogger.disable\n");
+	}
+	else if (strstr(argv[0], "enable"))
+	{
+		regstep_enabled = true;
+		_plugin_menuentrysetchecked(pluginHandle, MENU_ENABLED, regstep_enabled);
+		_plugin_logputs(plugin_name " Enabled");
+	}
+	else if (strstr(argv[0], "disable"))
+	{
+		regstep_enabled = false;
+		_plugin_menuentrysetchecked(pluginHandle, MENU_ENABLED, regstep_enabled);
+		_plugin_logputs(plugin_name " Disabled");
+	}
+
+	return true;
+}
+
+
 extern "C" __declspec(dllexport) void CBMENUENTRY(CBTYPE, PLUG_CB_MENUENTRY* info)
 {
 	switch (info->hEntry)
@@ -368,7 +398,17 @@ extern "C" __declspec(dllexport) void CBMENUENTRY(CBTYPE, PLUG_CB_MENUENTRY* inf
 	case MENU_ENABLED:
 	{
 		regstep_enabled = !regstep_enabled;
-		BridgeSettingSetUint("trace exec logger", "Enabled", regstep_enabled);
+		BridgeSettingSetUint(plugin_name, "Enabled", regstep_enabled);
+	}
+	case MENU_HELP:
+	{
+		char help_text[] = "[ " plugin_name " ]\n"
+			"Collect logs when stepping and tracing.\n"
+			"Command:\n"
+			"    TElogger.help\n"
+			"    TElogger.enable\n"
+			"    TElogger.disable\n";
+		MessageBoxA(NULL, help_text, plugin_name, MB_OK);
 	}
 	break;
 	}
@@ -413,8 +453,12 @@ extern "C" __declspec(dllexport) void CBSTOPDEBUG(CBTYPE, PLUG_CB_STOPDEBUG* inf
 bool logger_plugin_init(PLUG_INITSTRUCT* init_struct)
 {
 	duint setting = regstep_enabled;
-	BridgeSettingGetUint("trace exec logger", "Enabled", &setting);
+	BridgeSettingGetUint(plugin_name, "Enabled", &setting);
 	regstep_enabled = !!setting;
+
+	_plugin_registercommand(pluginHandle, "TElogger.help", command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.enable", command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.disable", command_callback, false);
 	return true;
 }
 
@@ -429,5 +473,6 @@ void logger_plugin_setup()
 {
 	_plugin_menuaddentry(hMenu, MENU_ENABLED, "Enabled");
 	_plugin_menuentrysetchecked(pluginHandle, MENU_ENABLED, regstep_enabled);
+	_plugin_menuaddentry(hMenu, MENU_HELP, "Help");
 }
 

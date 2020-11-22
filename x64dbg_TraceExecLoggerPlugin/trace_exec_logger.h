@@ -8,6 +8,7 @@
 enum
 {
 	MENU_ENABLED,
+	MENU_HELP,
 };
 
 static bool regstep_enabled = true;

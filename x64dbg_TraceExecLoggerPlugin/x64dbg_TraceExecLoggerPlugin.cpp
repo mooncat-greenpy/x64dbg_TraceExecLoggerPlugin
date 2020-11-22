@@ -6,9 +6,6 @@
 #define szx64dbg_TraceExecLoggerPluginInfo "TraceExecLoggerPlugin Usage:\n" 
 
 
-// Plugin SDK required variables
-#define plugin_name "TraceExecLogger" // rename to your plugins name 
-#define plugin_version 1
 
 // GLOBAL Plugin SDK variables
 int pluginHandle;
