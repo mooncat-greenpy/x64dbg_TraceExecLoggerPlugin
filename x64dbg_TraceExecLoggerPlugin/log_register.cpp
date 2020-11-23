@@ -1,9 +1,16 @@
 #include "log_instruction.h"
 
+static bool register_enabled = true;
 
-json log_registry()
+
+json log_register()
 {
 	json reg_json = json::object();
+	if (!register_enabled)
+	{
+		return reg_json;
+	}
+
 	reg_json["type"] = "register";
 
 	REGDUMP reg_dump;
@@ -29,4 +36,55 @@ json log_registry()
 	reg_json["r15"] = make_address_json(reg.r15);
 #endif
 	return reg_json;
+}
+
+
+bool register_command_callback(int argc, char* argv[])
+{
+	if (argc < 1)
+	{
+		return false;
+	}
+	if (strstr(argv[0], "help"))
+	{
+		_plugin_logputs("Command:\n"
+			"    TElogger.reg.help\n"
+			"    TElogger.reg.enable\n"
+			"    TElogger.reg.disable\n");
+	}
+	else if (strstr(argv[0], "enable"))
+	{
+		register_enabled = true;
+		_plugin_logputs("Register Log: Enabled");
+	}
+	else if (strstr(argv[0], "disable"))
+	{
+		register_enabled = false;
+		_plugin_logputs("Register Log: Disabled");
+	}
+
+	return true;
+}
+
+
+bool register_log_plugin_init(PLUG_INITSTRUCT* init_struct)
+{
+	_plugin_registercommand(pluginHandle, "TElogger.reg.help", register_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.reg.enable", register_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.reg.disable", register_command_callback, false);
+	return true;
+}
+
+
+bool register_log_plugin_stop()
+{
+	_plugin_unregistercommand(pluginHandle, "TElogger.reg.help");
+	_plugin_unregistercommand(pluginHandle, "TElogger.reg.enable");
+	_plugin_unregistercommand(pluginHandle, "TElogger.reg.disable");
+	return true;
+}
+
+
+void register_log_plugin_setup()
+{
 }

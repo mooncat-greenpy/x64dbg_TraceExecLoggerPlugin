@@ -1,5 +1,8 @@
 #include "log_instruction.h"
 
+static bool instruction_enabled = true;
+static int call_arg_log_count = 5;
+
 
 json make_asm_json(DISASM_INSTR* instr)
 {
@@ -103,7 +106,7 @@ json make_call_json(REGISTERCONTEXT* reg)
 	call_json["arg"][2]["name"] = "r8";
 	call_json["arg"].push_back(make_address_json(reg->r9));
 	call_json["arg"][3]["name"] = "r9";
-	for (duint i = 4; i < 5; i++)
+	for (duint i = 4; i < call_arg_log_count; i++)
 	{
 		duint arg_offset = 0x20 + (i - 4) * 8;
 		if (!DbgMemIsValidReadPtr(reg->csp + arg_offset))
@@ -117,7 +120,7 @@ json make_call_json(REGISTERCONTEXT* reg)
 		call_json["arg"][i]["name"] = value_name;
 	}
 #else
-	for (duint i = 0; i < 5; i++)
+	for (duint i = 0; i < call_arg_log_count; i++)
 	{
 		duint arg_offset = i * 4;
 		if (!DbgMemIsValidReadPtr(reg->csp + arg_offset))
@@ -137,11 +140,16 @@ json make_call_json(REGISTERCONTEXT* reg)
 
 json log_instruction()
 {
+	json inst_json = json::object();
+	if (!instruction_enabled)
+	{
+		return inst_json;
+	}
+
 	REGDUMP reg_dump;
 	DbgGetRegDumpEx(&reg_dump, sizeof(reg_dump));
 	REGISTERCONTEXT reg = reg_dump.regcontext;
 
-	json inst_json = json::object();
 	inst_json["type"] = "instruction";
 	inst_json["address"] = reg.cip;
 
@@ -165,4 +173,68 @@ json log_instruction()
 	}
 
 	return inst_json;
+}
+
+
+bool instruction_command_callback(int argc, char* argv[])
+{
+	if (argc < 1)
+	{
+		return false;
+	}
+	if (strstr(argv[0], "help"))
+	{
+		_plugin_logputs("Command:\n"
+			"    TElogger.inst.help\n"
+			"    TElogger.inst.enable\n"
+			"    TElogger.inst.disable\n"
+			"    TElogger.inst.arglogcount [num]\n");
+	}
+	else if (strstr(argv[0], "enable"))
+	{
+		instruction_enabled = true;
+		_plugin_logputs("Instruction Log: Enabled");
+	}
+	else if (strstr(argv[0], "disable"))
+	{
+		instruction_enabled = false;
+		_plugin_logputs("Instruction Log: Disabled");
+	}
+	else if (strstr(argv[0], "arglogcount"))
+	{
+		if (argc < 2)
+		{
+			_plugin_logprintf("Call Argument Log Count: %d\n", call_arg_log_count);
+			return true;
+		}
+		call_arg_log_count = atoi(argv[1]);
+		_plugin_logprintf("Call Argument Log Count: %d\n", call_arg_log_count);
+	}
+
+	return true;
+}
+
+
+bool instruction_log_plugin_init(PLUG_INITSTRUCT* init_struct)
+{
+	_plugin_registercommand(pluginHandle, "TElogger.inst.help", instruction_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.inst.enable", instruction_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.inst.disable", instruction_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.inst.arglogcount", instruction_command_callback, false);
+	return true;
+}
+
+
+bool instruction_log_plugin_stop()
+{
+	_plugin_unregistercommand(pluginHandle, "TElogger.inst.help");
+	_plugin_unregistercommand(pluginHandle, "TElogger.inst.enable");
+	_plugin_unregistercommand(pluginHandle, "TElogger.inst.disable");
+	_plugin_unregistercommand(pluginHandle, "TElogger.inst.arglogcount");
+	return true;
+}
+
+
+void instruction_log_plugin_setup()
+{
 }
