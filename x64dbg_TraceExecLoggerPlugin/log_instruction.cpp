@@ -171,6 +171,15 @@ json log_instruction()
 	{
 		inst_json["call"] = make_call_json(&reg);
 	}
+	char comment_text[MAX_COMMENT_SIZE] = { 0 };
+	if (DbgGetCommentAt(reg.cip, comment_text))
+	{
+		inst_json["comment"] = comment_text;
+	}
+	else
+	{
+		inst_json["comment"] = "";
+	}
 
 	return inst_json;
 }

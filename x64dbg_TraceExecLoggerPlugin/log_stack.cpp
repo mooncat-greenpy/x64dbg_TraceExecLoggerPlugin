@@ -24,10 +24,12 @@ json log_stack()
 		json tmp_json = json::object();
 		duint stack_addr = csp + i * sizeof(duint);
 		duint stack_value = 0;
+		STACK_COMMENT comment = { 0 };
 		if (!DbgMemIsValidReadPtr(stack_addr))
 		{
 			tmp_json["address"] = stack_addr;
 			tmp_json["value"] = "";
+			tmp_json["comment"] = "";
 			stack_json["data"].push_back(tmp_json);
 			continue;
 		}
@@ -35,6 +37,14 @@ json log_stack()
 
 		tmp_json["address"] = stack_addr;
 		tmp_json["value"] = make_address_json(stack_value);
+		if (DbgStackCommentGet(stack_addr, &comment))
+		{
+			tmp_json["comment"] = comment.comment;
+		}
+		else
+		{
+			tmp_json["comment"] = "";
+		}
 		stack_json["data"].push_back(tmp_json);
 	}
 
