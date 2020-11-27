@@ -5,11 +5,13 @@
 #include "log_instruction.h"
 #include "log_register.h"
 #include "log_stack.h"
+#include "log_proc_info.h"
 
 enum
 {
 	MENU_ENABLED,
 	MENU_HELP,
+	MENU_PROC_ENABLED,
 };
 
 

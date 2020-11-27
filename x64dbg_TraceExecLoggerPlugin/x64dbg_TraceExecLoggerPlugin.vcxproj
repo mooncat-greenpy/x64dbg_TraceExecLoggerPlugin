@@ -180,6 +180,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="log_instruction.cpp" />
+    <ClCompile Include="log_proc_info.cpp" />
     <ClCompile Include="log_register.cpp" />
     <ClCompile Include="log_stack.cpp" />
     <ClCompile Include="trace_exec_logger.cpp" />
@@ -189,6 +190,7 @@
   <ItemGroup>
     <ClInclude Include="..\include\nlohmann\json.hpp" />
     <ClInclude Include="log_instruction.h" />
+    <ClInclude Include="log_proc_info.h" />
     <ClInclude Include="log_register.h" />
     <ClInclude Include="log_stack.h" />
     <ClInclude Include="pluginsdk\bridgelist.h" />

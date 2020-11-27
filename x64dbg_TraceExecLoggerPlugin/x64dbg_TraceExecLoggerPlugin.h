@@ -9,6 +9,7 @@
 #include <Shlwapi.h>
 #include "pluginsdk\_plugins.h"
 #include "pluginsdk/bridgemain.h"
+#include "pluginsdk/_scriptapi_module.h"
 #include "../include/nlohmann/json.hpp"
 #include "util.h"
 
