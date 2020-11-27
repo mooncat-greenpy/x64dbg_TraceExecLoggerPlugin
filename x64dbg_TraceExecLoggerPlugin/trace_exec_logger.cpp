@@ -161,6 +161,27 @@ extern "C" __declspec(dllexport) void CBSTOPDEBUG(CBTYPE, PLUG_CB_STOPDEBUG* inf
 }
 
 
+extern "C" __declspec(dllexport) void CBCREATEPROCESS(CBTYPE, PLUG_CB_CREATEPROCESS * info)
+{
+	_plugin_logprintf("CREATEPROCESS ID = %d\n", info->fdProcessInfo->dwProcessId);
+	log_proc_info();
+}
+
+
+extern "C" __declspec(dllexport) void CBCREATETHREAD(CBTYPE, PLUG_CB_CREATETHREAD * info)
+{
+	_plugin_logprintf("CREATETHREAD ID = %d\n", info->dwThreadId);
+	log_proc_info();
+}
+
+
+extern "C" __declspec(dllexport) void CBLOADDLL(CBTYPE, PLUG_CB_LOADDLL * info)
+{
+	_plugin_logprintf("LOADDLL %s\n", info->modname);
+	log_proc_info();
+}
+
+
 bool logger_plugin_init(PLUG_INITSTRUCT* init_struct)
 {
 	duint setting = telogger_enabled;
