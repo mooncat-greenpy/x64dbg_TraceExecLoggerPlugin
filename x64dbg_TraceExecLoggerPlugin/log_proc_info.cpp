@@ -16,6 +16,7 @@ json log_module()
 	BridgeList<Script::Module::ModuleInfo> module_list;
 	Script::Module::GetList(&module_list);
 	module_json["type"] = "module";
+	module_json["count"] = module_list.Count();
 	module_json["list"] = json::array();
 	for (int i = 0; i < module_list.Count(); i++)
 	{
@@ -44,10 +45,15 @@ json log_thread()
 	THREADLIST thread_list = { 0 };
 	DbgGetThreadList(&thread_list);
 	thread_json["type"] = "thread";
-	thread_json["current"] = thread_list.CurrentThread;
+	thread_json["current_thread"] = thread_list.CurrentThread;
+	thread_json["count"] = thread_list.count;
 	thread_json["list"] = json::array();
 	for (int i = 0; i < thread_list.count; i++)
 	{
+		if (thread_list.list == NULL)
+		{
+			continue;
+		}
 		json thread_entry = json::object();
 		thread_entry["id"] = thread_list.list[i].BasicInfo.ThreadId;
 		thread_entry["handle"] = (duint)thread_list.list[i].BasicInfo.Handle;
@@ -56,8 +62,150 @@ json log_thread()
 		thread_entry["local_base"] = make_address_json(thread_list.list[i].BasicInfo.ThreadLocalBase);
 		thread_entry["cip"] = make_address_json(thread_list.list[i].ThreadCip);
 		thread_entry["suspend_count"] = thread_list.list[i].SuspendCount;
-		thread_entry["priority"] = thread_list.list[i].Priority;
-		thread_entry["wait_reason"] = thread_list.list[i].WaitReason;
+		switch (thread_list.list[i].Priority)
+		{
+		case _PriorityIdle:
+			thread_entry["priority"] = "Idle";
+			break;
+		case _PriorityAboveNormal:
+			thread_entry["priority"] = "AboveNormal";
+			break;
+		case _PriorityBelowNormal:
+			thread_entry["priority"] = "BelowNormal";
+			break;
+		case _PriorityHighest:
+			thread_entry["priority"] = "Highest";
+			break;
+		case _PriorityLowest:
+			thread_entry["priority"] = "Lowest";
+			break;
+		case _PriorityNormal:
+			thread_entry["priority"] = "Normal";
+			break;
+		case _PriorityTimeCritical:
+			thread_entry["priority"] = "TimeCritical";
+			break;
+		default:
+			thread_entry["priority"] = "Unknown";
+			break;
+		}
+		switch (thread_list.list[i].WaitReason)
+		{
+		case _Executive:
+			thread_entry["wait_reason"] = "Executive";
+			break;
+		case _FreePage:
+			thread_entry["wait_reason"] = "FreePage";
+			break;
+		case _PageIn:
+			thread_entry["wait_reason"] = "PageIn";
+			break;
+		case _PoolAllocation:
+			thread_entry["wait_reason"] = "PoolAllocation";
+			break;
+		case _DelayExecution:
+			thread_entry["wait_reason"] = "DelayExecution";
+			break;
+		case _Suspended:
+			thread_entry["wait_reason"] = "Suspended";
+			break;
+		case _UserRequest:
+			thread_entry["wait_reason"] = "UserRequest";
+			break;
+		case _WrExecutive:
+			thread_entry["wait_reason"] = "WrExecutive";
+			break;
+		case _WrFreePage:
+			thread_entry["wait_reason"] = "WrFreePage";
+			break;
+		case _WrPageIn:
+			thread_entry["wait_reason"] = "WrPageIn";
+			break;
+		case _WrPoolAllocation:
+			thread_entry["wait_reason"] = "WrPoolAllocation";
+			break;
+		case _WrDelayExecution:
+			thread_entry["wait_reason"] = "WrDelayExecution";
+			break;
+		case _WrSuspended:
+			thread_entry["wait_reason"] = "WrSuspended";
+			break;
+		case _WrUserRequest:
+			thread_entry["wait_reason"] = "WrUserRequest";
+			break;
+		case _WrEventPair:
+			thread_entry["wait_reason"] = "WrEventPair";
+			break;
+		case _WrQueue:
+			thread_entry["wait_reason"] = "WrQueue";
+			break;
+		case _WrLpcReceive:
+			thread_entry["wait_reason"] = "WrLpcReceive";
+			break;
+		case _WrLpcReply:
+			thread_entry["wait_reason"] = "WrLpcReply";
+			break;
+		case _WrVirtualMemory:
+			thread_entry["wait_reason"] = "WrVirtualMemory";
+			break;
+		case _WrPageOut:
+			thread_entry["wait_reason"] = "WrPageOut";
+			break;
+		case _WrRendezvous:
+			thread_entry["wait_reason"] = "WrRendezvous";
+			break;
+		case _Spare2:
+			thread_entry["wait_reason"] = "Spare2";
+			break;
+		case _Spare3:
+			thread_entry["wait_reason"] = "Spare3";
+			break;
+		case _Spare4:
+			thread_entry["wait_reason"] = "Spare4";
+			break;
+		case _Spare5:
+			thread_entry["wait_reason"] = "Spare5";
+			break;
+		case _WrCalloutStack:
+			thread_entry["wait_reason"] = "WrCalloutStack";
+			break;
+		case _WrKernel:
+			thread_entry["wait_reason"] = "WrKernel";
+			break;
+		case _WrResource:
+			thread_entry["wait_reason"] = "WrResource";
+			break;
+		case _WrPushLock:
+			thread_entry["wait_reason"] = "WrPushLock";
+			break;
+		case _WrMutex:
+			thread_entry["wait_reason"] = "WrMutex";
+			break;
+		case _WrQuantumEnd:
+			thread_entry["wait_reason"] = "WrQuantumEnd";
+			break;
+		case _WrDispatchInt:
+			thread_entry["wait_reason"] = "WrDispatchInt";
+			break;
+		case _WrPreempted:
+			thread_entry["wait_reason"] = "WrPreempted";
+			break;
+		case _WrYieldExecution:
+			thread_entry["wait_reason"] = "WrYieldExecution";
+			break;
+		case _WrFastMutex:
+			thread_entry["wait_reason"] = "WrFastMutex";
+			break;
+		case _WrGuardedMutex:
+			thread_entry["wait_reason"] = "WrGuardedMutex";
+			break;
+		case _WrRundown:
+			thread_entry["wait_reason"] = "WrRundown";
+			break;
+		default:
+			thread_entry["wait_reason"] = "Unknown";
+			break;
+		}
 		thread_json["list"].push_back(thread_entry);
 	}
 	return thread_json;
@@ -75,9 +223,14 @@ json log_memory()
 	MEMMAP memory_map = { 0 };
 	DbgMemMap(&memory_map);
 	memory_json["type"] = "memory";
+	memory_json["count"] = memory_map.count;
 	memory_json["list"] = json::array();
 	for (int i = 0; i < memory_map.count; i++)
 	{
+		if (memory_map.page == NULL)
+		{
+			continue;
+		}
 		json memory_entry = json::object();
 		memory_entry["info"] = memory_map.page[i].info;
 		memory_entry["base_address"] = make_address_json((duint)memory_map.page[i].mbi.BaseAddress);
