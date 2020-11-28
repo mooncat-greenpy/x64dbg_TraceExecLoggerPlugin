@@ -11,6 +11,6 @@
 
 void log_proc_info();
 
-bool logger_plugin_init(PLUG_INITSTRUCT* init_struct);
-bool logger_plugin_stop();
-void logger_plugin_setup();
+bool init_logger_plugin(PLUG_INITSTRUCT* init_struct);
+bool stop_logger_plugin();
+void setup_logger_plugin();

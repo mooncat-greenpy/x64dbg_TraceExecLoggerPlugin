@@ -90,7 +90,7 @@ bool stack_command_callback(int argc, char* argv[])
 }
 
 
-bool stack_log_plugin_init(PLUG_INITSTRUCT* init_struct)
+bool init_stack_log(PLUG_INITSTRUCT* init_struct)
 {
 	_plugin_registercommand(pluginHandle, "TElogger.stack.help", stack_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.stack.enable", stack_command_callback, false);
@@ -100,7 +100,7 @@ bool stack_log_plugin_init(PLUG_INITSTRUCT* init_struct)
 }
 
 
-bool stack_log_plugin_stop()
+bool stop_stack_log()
 {
 	_plugin_unregistercommand(pluginHandle, "TElogger.stack.help");
 	_plugin_unregistercommand(pluginHandle, "TElogger.stack.enable");
@@ -110,6 +110,6 @@ bool stack_log_plugin_stop()
 }
 
 
-void stack_log_plugin_setup()
+void setup_stack_log()
 {
 }

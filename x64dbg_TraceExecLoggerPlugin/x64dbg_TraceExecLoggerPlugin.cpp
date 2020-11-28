@@ -27,7 +27,7 @@ DLL_EXPORT bool pluginit(PLUG_INITSTRUCT* initStruct)
     strcpy(initStruct->pluginName, PLUGIN_NAME);
     pluginHandle = initStruct->pluginHandle;
 
-    if (!logger_plugin_init(initStruct))
+    if (!init_logger_plugin(initStruct))
     {
         return false;
     }
@@ -39,7 +39,7 @@ DLL_EXPORT bool plugstop()
 {
     _plugin_menuclear(hMenu);
 
-    if (!logger_plugin_stop())
+    if (!stop_logger_plugin())
     {
         return false;
     }
@@ -57,6 +57,6 @@ DLL_EXPORT void plugsetup(PLUG_SETUPSTRUCT* setupStruct)
     
 	GuiAddLogMessage, X64DBG_TRACEEXECLOGGER_PLUGIN_INFO;
 	
-    logger_plugin_setup();
+    setup_logger_plugin();
 }
 

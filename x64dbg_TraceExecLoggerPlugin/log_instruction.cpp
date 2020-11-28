@@ -223,7 +223,7 @@ bool instruction_command_callback(int argc, char* argv[])
 }
 
 
-bool instruction_log_plugin_init(PLUG_INITSTRUCT* init_struct)
+bool init_instruction_log(PLUG_INITSTRUCT* init_struct)
 {
 	_plugin_registercommand(pluginHandle, "TElogger.inst.help", instruction_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.inst.enable", instruction_command_callback, false);
@@ -233,7 +233,7 @@ bool instruction_log_plugin_init(PLUG_INITSTRUCT* init_struct)
 }
 
 
-bool instruction_log_plugin_stop()
+bool stop_instruction_log()
 {
 	_plugin_unregistercommand(pluginHandle, "TElogger.inst.help");
 	_plugin_unregistercommand(pluginHandle, "TElogger.inst.enable");
@@ -243,6 +243,6 @@ bool instruction_log_plugin_stop()
 }
 
 
-void instruction_log_plugin_setup()
+void setup_instruction_log()
 {
 }

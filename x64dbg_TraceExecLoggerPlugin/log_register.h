@@ -5,6 +5,6 @@
 
 json log_register();
 
-bool register_log_plugin_init(PLUG_INITSTRUCT* init_struct);
-bool register_log_plugin_stop();
-void register_log_plugin_setup();
+bool init_register_log(PLUG_INITSTRUCT* init_struct);
+bool stop_register_log();
+void setup_register_log();

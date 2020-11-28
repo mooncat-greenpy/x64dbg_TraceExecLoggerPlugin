@@ -162,9 +162,14 @@ extern "C" __declspec(dllexport) void CBLOADDLL(CBTYPE, PLUG_CB_LOADDLL * info)
 }
 
 
-bool logger_plugin_init(PLUG_INITSTRUCT* init_struct)
+bool init_logger_plugin(PLUG_INITSTRUCT* init_struct)
 {
 	init_menu();
+
+	init_instruction_log(init_struct);
+	init_register_log(init_struct);
+	init_stack_log(init_struct);
+	init_proc_info_log(init_struct);
 
 	_plugin_registercommand(pluginHandle, "TElogger.help", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.enable", command_callback, false);
@@ -174,28 +179,17 @@ bool logger_plugin_init(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.proc.enable", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.proc.disable", command_callback, false);
 
-	if (!instruction_log_plugin_init(init_struct))
-	{
-		return false;
-	}
-	if (!register_log_plugin_init(init_struct))
-	{
-		return false;
-	}
-	if (!stack_log_plugin_init(init_struct))
-	{
-		return false;
-	}
-	if (!proc_info_log_plugin_init(init_struct))
-	{
-		return false;
-	}
 	return true;
 }
 
 
-bool logger_plugin_stop()
+bool stop_logger_plugin()
 {
+	stop_instruction_log();
+	stop_register_log();
+	stop_stack_log();
+	stop_proc_info_log();
+
 	_plugin_unregistercommand(pluginHandle, "TElogger.help");
 	_plugin_unregistercommand(pluginHandle, "TElogger.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.disable");
@@ -204,31 +198,15 @@ bool logger_plugin_stop()
 	_plugin_unregistercommand(pluginHandle, "TElogger.proc.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.proc.disable");
 
-	if (!instruction_log_plugin_stop())
-	{
-		return false;
-	}
-	if (!register_log_plugin_stop())
-	{
-		return false;
-	}
-	if (!stack_log_plugin_stop())
-	{
-		return false;
-	}
-	if (!proc_info_log_plugin_stop())
-	{
-		return false;
-	}
 	return true;
 }
 
 
-void logger_plugin_setup()
+void setup_logger_plugin()
 {
 	setup_menu();
-	instruction_log_plugin_setup();
-	register_log_plugin_setup();
-	stack_log_plugin_setup();
-	proc_info_log_plugin_setup();
+	setup_instruction_log();
+	setup_register_log();
+	setup_stack_log();
+	setup_proc_info_log();
 }

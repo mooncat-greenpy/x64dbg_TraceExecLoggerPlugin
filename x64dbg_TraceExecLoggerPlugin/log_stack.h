@@ -5,6 +5,6 @@
 
 json log_stack();
 
-bool stack_log_plugin_init(PLUG_INITSTRUCT* init_struct);
-bool stack_log_plugin_stop();
-void stack_log_plugin_setup();
+bool init_stack_log(PLUG_INITSTRUCT* init_struct);
+bool stop_stack_log();
+void setup_stack_log();

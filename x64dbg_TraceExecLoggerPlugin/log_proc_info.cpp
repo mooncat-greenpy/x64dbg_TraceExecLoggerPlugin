@@ -322,7 +322,7 @@ bool memory_command_callback(int argc, char* argv[])
 }
 
 
-bool proc_info_log_plugin_init(PLUG_INITSTRUCT* init_struct)
+bool init_proc_info_log(PLUG_INITSTRUCT* init_struct)
 {
 	_plugin_registercommand(pluginHandle, "TElogger.proc.module.help", module_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.proc.module.enable", module_command_callback, false);
@@ -337,7 +337,7 @@ bool proc_info_log_plugin_init(PLUG_INITSTRUCT* init_struct)
 }
 
 
-bool proc_info_log_plugin_stop()
+bool stop_proc_info_log()
 {
 	_plugin_unregistercommand(pluginHandle, "TElogger.proc.module.help");
 	_plugin_unregistercommand(pluginHandle, "TElogger.proc.module.enable");
@@ -352,6 +352,6 @@ bool proc_info_log_plugin_stop()
 }
 
 
-void proc_info_log_plugin_setup()
+void setup_proc_info_log()
 {
 }

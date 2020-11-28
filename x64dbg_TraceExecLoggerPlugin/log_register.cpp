@@ -65,7 +65,7 @@ bool register_command_callback(int argc, char* argv[])
 }
 
 
-bool register_log_plugin_init(PLUG_INITSTRUCT* init_struct)
+bool init_register_log(PLUG_INITSTRUCT* init_struct)
 {
 	_plugin_registercommand(pluginHandle, "TElogger.reg.help", register_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.reg.enable", register_command_callback, false);
@@ -74,7 +74,7 @@ bool register_log_plugin_init(PLUG_INITSTRUCT* init_struct)
 }
 
 
-bool register_log_plugin_stop()
+bool stop_register_log()
 {
 	_plugin_unregistercommand(pluginHandle, "TElogger.reg.help");
 	_plugin_unregistercommand(pluginHandle, "TElogger.reg.enable");
@@ -83,6 +83,6 @@ bool register_log_plugin_stop()
 }
 
 
-void register_log_plugin_setup()
+void setup_register_log()
 {
 }
