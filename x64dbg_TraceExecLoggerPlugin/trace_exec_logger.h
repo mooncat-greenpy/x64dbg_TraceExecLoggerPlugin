@@ -7,6 +7,8 @@
 #include "log_stack.h"
 #include "log_proc_info.h"
 
+#define MAX_LOG_COUNT 50000
+
 enum
 {
 	MENU_ENABLED,

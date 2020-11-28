@@ -1,19 +1,16 @@
 #include "util.h"
 
 
-void save_json_file(const char* file_name, const char* buffer)
+void save_json_file(const char* file_name, SYSTEMTIME* system_time, int number, const char* buffer)
 {
 	if (!file_name || !buffer)
 	{
 		return;
 	}
 
-	SYSTEMTIME system_time = { 0 };
-	GetLocalTime(&system_time);
-
 	HANDLE log_file_handle = INVALID_HANDLE_VALUE;
 	char log_file_name[MAX_PATH] = { 0 };
-	_snprintf_s(log_file_name, sizeof(log_file_name), _TRUNCATE, "%s_%d-%d-%d-%d-%d-%d.json", PathFindFileNameA(file_name), system_time.wYear, system_time.wMonth, system_time.wDay, system_time.wHour, system_time.wMinute, system_time.wSecond);
+	_snprintf_s(log_file_name, sizeof(log_file_name), _TRUNCATE, "%s_%d-%d-%d-%d-%d-%d_%d.json", PathFindFileNameA(file_name), system_time->wYear, system_time->wMonth, system_time->wDay, system_time->wHour, system_time->wMinute, system_time->wSecond, number);
 	log_file_handle = CreateFileA(log_file_name, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (log_file_handle == INVALID_HANDLE_VALUE)
 	{

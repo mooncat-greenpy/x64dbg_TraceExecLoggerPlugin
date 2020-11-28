@@ -2,9 +2,11 @@
 
 
 char file_path[MAX_PATH] = { 0 };
+static SYSTEMTIME system_time = { 0 };
 json log_json = json::array();
 static bool telogger_enabled = true;
 static bool proc_enabled = true;
+static int log_count = 0;
 
 
 void log_proc_info()
@@ -34,6 +36,12 @@ void log_exec()
 	entry["reg"] = log_register();
 	entry["stack"] = log_stack();
 	log_json.push_back(entry);
+	log_count++;
+	if (log_count % MAX_LOG_COUNT == 0)
+	{
+		save_json_file(file_path, &system_time, log_count / MAX_LOG_COUNT, log_json.dump().c_str());
+		log_json.clear();
+	}
 }
 
 
@@ -150,12 +158,13 @@ extern "C" __declspec(dllexport) void CBINITDEBUG(CBTYPE, PLUG_CB_INITDEBUG* inf
 {
 	log_json.clear();
 	strncpy_s(file_path, sizeof(file_path), info->szFileName, _TRUNCATE);
+	GetLocalTime(&system_time);
 }
 
 
 extern "C" __declspec(dllexport) void CBSTOPDEBUG(CBTYPE, PLUG_CB_STOPDEBUG* info)
 {
-	save_json_file(file_path, log_json.dump().c_str());
+	save_json_file(file_path, &system_time, log_count / MAX_LOG_COUNT + 1, log_json.dump().c_str());
 	memset(file_path, 0, sizeof(file_path));
 	log_json.clear();
 }
