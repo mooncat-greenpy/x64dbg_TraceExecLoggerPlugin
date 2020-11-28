@@ -12,6 +12,7 @@
 #include "pluginsdk/_scriptapi_module.h"
 #include "../include/nlohmann/json.hpp"
 #include "util.h"
+#include "menu.h"
 
 #pragma comment(lib, "Shlwapi.lib")
 

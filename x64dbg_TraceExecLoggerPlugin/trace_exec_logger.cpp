@@ -4,14 +4,12 @@
 char file_path[MAX_PATH] = { 0 };
 static SYSTEMTIME system_time = { 0 };
 json log_json = json::array();
-static bool telogger_enabled = true;
-static bool proc_enabled = true;
 static int log_count = 0;
 
 
 void log_proc_info()
 {
-	if (!proc_enabled)
+	if (!get_proc_enabled())
 	{
 		return;
 	}
@@ -26,7 +24,7 @@ void log_proc_info()
 
 void log_exec()
 {
-	if (!telogger_enabled)
+	if (!get_telogger_enabled())
 	{
 		return;
 	}
@@ -64,14 +62,12 @@ bool command_callback(int argc, char* argv[])
 	}
 	else if (strstr(argv[0], "proc.enable"))
 	{
-		proc_enabled = true;
-		_plugin_menuentrysetchecked(pluginHandle, MENU_PROC_ENABLED, proc_enabled);
+		set_proc_enabled(true);
 		_plugin_logputs(PLUGIN_NAME ": Proc Log Enabled");
 	}
 	else if (strstr(argv[0], "proc.disable"))
 	{
-		proc_enabled = false;
-		_plugin_menuentrysetchecked(pluginHandle, MENU_PROC_ENABLED, proc_enabled);
+		set_proc_enabled(false);
 		_plugin_logputs(PLUGIN_NAME ": Proc Log Disabled");
 	}
 	else if (strstr(argv[0], "help"))
@@ -87,14 +83,12 @@ bool command_callback(int argc, char* argv[])
 	}
 	else if (strstr(argv[0], "enable"))
 	{
-		telogger_enabled = true;
-		_plugin_menuentrysetchecked(pluginHandle, MENU_ENABLED, telogger_enabled);
+		set_telogger_enabled(true);
 		_plugin_logputs(PLUGIN_NAME ": Enabled");
 	}
 	else if (strstr(argv[0], "disable"))
 	{
-		telogger_enabled = false;
-		_plugin_menuentrysetchecked(pluginHandle, MENU_ENABLED, telogger_enabled);
+		set_telogger_enabled(false);
 		_plugin_logputs(PLUGIN_NAME ": Disabled");
 	}
 
@@ -104,33 +98,7 @@ bool command_callback(int argc, char* argv[])
 
 extern "C" __declspec(dllexport) void CBMENUENTRY(CBTYPE, PLUG_CB_MENUENTRY* info)
 {
-	switch (info->hEntry)
-	{
-	case MENU_ENABLED:
-	{
-		telogger_enabled = !telogger_enabled;
-		BridgeSettingSetUint(PLUGIN_NAME, "Enabled", telogger_enabled);
-		break;
-	}
-	case MENU_HELP:
-	{
-		char help_text[] = "[ " PLUGIN_NAME " ]\n"
-			"Collect logs when stepping and tracing.\n"
-			"Command:\n"
-			"    TElogger.help\n"
-			"    TElogger.enable\n"
-			"    TElogger.disable\n";
-		MessageBoxA(NULL, help_text, PLUGIN_NAME, MB_OK);
-		break;
-	}
-	case MENU_PROC_ENABLED:
-	{
-		proc_enabled = !proc_enabled;
-		BridgeSettingSetUint(PLUGIN_NAME, "Proc Log Enabled", proc_enabled);
-		break;
-	}
-	break;
-	}
+	menu_callback(info);
 }
 
 
@@ -196,11 +164,7 @@ extern "C" __declspec(dllexport) void CBLOADDLL(CBTYPE, PLUG_CB_LOADDLL * info)
 
 bool logger_plugin_init(PLUG_INITSTRUCT* init_struct)
 {
-	duint setting = telogger_enabled;
-	BridgeSettingGetUint(PLUGIN_NAME, "Enabled", &setting);
-	telogger_enabled = !!setting;
-	BridgeSettingGetUint(PLUGIN_NAME, "Proc Log Enabled", &setting);
-	proc_enabled = !!setting;
+	init_menu();
 
 	_plugin_registercommand(pluginHandle, "TElogger.help", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.enable", command_callback, false);
@@ -262,12 +226,7 @@ bool logger_plugin_stop()
 
 void logger_plugin_setup()
 {
-	_plugin_menuaddentry(hMenu, MENU_ENABLED, "Enabled");
-	_plugin_menuentrysetchecked(pluginHandle, MENU_ENABLED, telogger_enabled);
-	_plugin_menuaddentry(hMenu, MENU_HELP, "Help");
-	_plugin_menuaddentry(hMenu, MENU_PROC_ENABLED, "Proc Log Enabled");
-	_plugin_menuentrysetchecked(pluginHandle, MENU_PROC_ENABLED, proc_enabled);
-
+	setup_menu();
 	instruction_log_plugin_setup();
 	register_log_plugin_setup();
 	stack_log_plugin_setup();

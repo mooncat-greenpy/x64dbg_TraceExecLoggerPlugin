@@ -1,13 +1,12 @@
 #include "log_stack.h"
 
-static bool stack_enabled = true;
 static int stack_log_count = 0x10;
 
 
 json log_stack()
 {
 	json stack_json = json::object();
-	if (!stack_enabled)
+	if (!get_stack_enabled())
 	{
 		return stack_json;
 	}
@@ -68,12 +67,12 @@ bool stack_command_callback(int argc, char* argv[])
 	}
 	else if (strstr(argv[0], "enable"))
 	{
-		stack_enabled = true;
+		set_stack_enabled(true);
 		_plugin_logputs("Stack Log: Enabled");
 	}
 	else if (strstr(argv[0], "disable"))
 	{
-		stack_enabled = false;
+		set_stack_enabled(false);
 		_plugin_logputs("Stack Log: Disabled");
 	}
 	else if (strstr(argv[0], "stacklogcount"))

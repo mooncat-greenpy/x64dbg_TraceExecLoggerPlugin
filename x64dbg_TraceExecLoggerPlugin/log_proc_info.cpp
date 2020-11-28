@@ -1,14 +1,10 @@
 #include "log_instruction.h"
 
-static bool module_enabled = true;
-static bool thread_enabled = true;
-static bool memory_enabled = true;
-
 
 json log_module()
 {
 	json module_json = json::object();
-	if (!module_enabled)
+	if (!get_module_enabled())
 	{
 		return module_json;
 	}
@@ -37,7 +33,7 @@ json log_module()
 json log_thread()
 {
 	json thread_json = json::object();
-	if (!thread_enabled)
+	if (!get_thread_enabled())
 	{
 		return thread_json;
 	}
@@ -215,7 +211,7 @@ json log_thread()
 json log_memory()
 {
 	json memory_json = json::object();
-	if (!memory_enabled)
+	if (!get_memory_enabled())
 	{
 		return memory_json;
 	}
@@ -257,12 +253,12 @@ bool module_command_callback(int argc, char* argv[])
 	}
 	else if (strstr(argv[0], "enable"))
 	{
-		module_enabled = true;
+		set_module_enabled(true);
 		_plugin_logputs("Module Log: Enabled");
 	}
 	else if (strstr(argv[0], "disable"))
 	{
-		module_enabled = false;
+		set_module_enabled(false);
 		_plugin_logputs("Module Log: Disabled");
 	}
 
@@ -285,12 +281,12 @@ bool thread_command_callback(int argc, char* argv[])
 	}
 	else if (strstr(argv[0], "enable"))
 	{
-		thread_enabled = true;
+		set_thread_enabled(true);
 		_plugin_logputs("Thread Log: Enabled");
 	}
 	else if (strstr(argv[0], "disable"))
 	{
-		thread_enabled = false;
+		set_thread_enabled(false);
 		_plugin_logputs("Thread Log: Disabled");
 	}
 
@@ -313,12 +309,12 @@ bool memory_command_callback(int argc, char* argv[])
 	}
 	else if (strstr(argv[0], "enable"))
 	{
-		memory_enabled = true;
+		set_memory_enabled(true);
 		_plugin_logputs("Memory Log: Enabled");
 	}
 	else if (strstr(argv[0], "disable"))
 	{
-		memory_enabled = false;
+		set_memory_enabled(false);
 		_plugin_logputs("Memory Log: Disabled");
 	}
 

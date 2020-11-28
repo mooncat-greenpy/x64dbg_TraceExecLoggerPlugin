@@ -9,13 +9,7 @@
 
 #define MAX_LOG_COUNT 50000
 
-enum
-{
-	MENU_ENABLED,
-	MENU_HELP,
-	MENU_PROC_ENABLED,
-};
-
+void log_proc_info();
 
 bool logger_plugin_init(PLUG_INITSTRUCT* init_struct);
 bool logger_plugin_stop();

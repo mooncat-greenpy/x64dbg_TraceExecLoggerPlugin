@@ -183,6 +183,7 @@
     <ClCompile Include="log_proc_info.cpp" />
     <ClCompile Include="log_register.cpp" />
     <ClCompile Include="log_stack.cpp" />
+    <ClCompile Include="menu.cpp" />
     <ClCompile Include="trace_exec_logger.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="x64dbg_TraceExecLoggerPlugin.cpp" />
@@ -193,6 +194,7 @@
     <ClInclude Include="log_proc_info.h" />
     <ClInclude Include="log_register.h" />
     <ClInclude Include="log_stack.h" />
+    <ClInclude Include="menu.h" />
     <ClInclude Include="pluginsdk\bridgelist.h" />
     <ClInclude Include="pluginsdk\bridgemain.h" />
     <ClInclude Include="pluginsdk\capstone\arm.h" />

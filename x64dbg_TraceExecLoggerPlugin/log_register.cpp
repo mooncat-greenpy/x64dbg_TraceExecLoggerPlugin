@@ -1,12 +1,10 @@
 #include "log_instruction.h"
 
-static bool register_enabled = true;
-
 
 json log_register()
 {
 	json reg_json = json::object();
-	if (!register_enabled)
+	if (!get_register_enabled())
 	{
 		return reg_json;
 	}
@@ -54,12 +52,12 @@ bool register_command_callback(int argc, char* argv[])
 	}
 	else if (strstr(argv[0], "enable"))
 	{
-		register_enabled = true;
+		set_register_enabled(true);
 		_plugin_logputs("Register Log: Enabled");
 	}
 	else if (strstr(argv[0], "disable"))
 	{
-		register_enabled = false;
+		set_register_enabled(false);
 		_plugin_logputs("Register Log: Disabled");
 	}
 

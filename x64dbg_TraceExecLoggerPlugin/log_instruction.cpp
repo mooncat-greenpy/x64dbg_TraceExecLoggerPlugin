@@ -1,6 +1,5 @@
 #include "log_instruction.h"
 
-static bool instruction_enabled = true;
 static int call_arg_log_count = 5;
 
 
@@ -141,7 +140,7 @@ json make_call_json(REGISTERCONTEXT* reg)
 json log_instruction()
 {
 	json inst_json = json::object();
-	if (!instruction_enabled)
+	if (!get_instruction_enabled())
 	{
 		return inst_json;
 	}
@@ -201,12 +200,12 @@ bool instruction_command_callback(int argc, char* argv[])
 	}
 	else if (strstr(argv[0], "enable"))
 	{
-		instruction_enabled = true;
+		set_instruction_enabled(true);
 		_plugin_logputs("Instruction Log: Enabled");
 	}
 	else if (strstr(argv[0], "disable"))
 	{
-		instruction_enabled = false;
+		set_instruction_enabled(false);
 		_plugin_logputs("Instruction Log: Disabled");
 	}
 	else if (strstr(argv[0], "arglogcount"))
