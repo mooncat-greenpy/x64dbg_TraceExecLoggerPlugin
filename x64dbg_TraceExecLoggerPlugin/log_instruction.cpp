@@ -106,7 +106,7 @@ json make_call_json(REGISTERCONTEXT* reg)
 	call_json["arg"][2]["name"] = "r8";
 	call_json["arg"].push_back(make_address_json(reg->r9));
 	call_json["arg"][3]["name"] = "r9";
-	for (duint i = 4; i < call_arg_log_count; i++)
+	for (int i = 4; i < call_arg_log_count; i++)
 	{
 		duint arg_offset = 0x20 + (i - 4) * 8;
 		if (!DbgMemIsValidReadPtr(reg->csp + arg_offset))
@@ -120,7 +120,7 @@ json make_call_json(REGISTERCONTEXT* reg)
 		call_json["arg"][i]["name"] = value_name;
 	}
 #else
-	for (duint i = 0; i < call_arg_log_count; i++)
+	for (int i = 0; i < call_arg_log_count; i++)
 	{
 		duint arg_offset = i * 4;
 		if (!DbgMemIsValidReadPtr(reg->csp + arg_offset))
