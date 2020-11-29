@@ -149,7 +149,7 @@ extern "C" __declspec(dllexport) void CBCREATETHREAD(CBTYPE, PLUG_CB_CREATETHREA
 {
 	_plugin_logprintf("CREATETHREAD ID = %d\n", info->dwThreadId);
 	log_proc_info();
-	char cmd[MAX_PATH] = { 0 };
+	char cmd[DEFAULT_BUF_SIZE] = { 0 };
 	_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerStartThread, ss", info->CreateThread->lpStartAddress);
 	DbgCmdExecDirect(cmd);
 }

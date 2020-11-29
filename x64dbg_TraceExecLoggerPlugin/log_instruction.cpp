@@ -152,11 +152,11 @@ json log_instruction()
 	inst_json["type"] = "instruction";
 	inst_json["address"] = reg.cip;
 
-	char asm_string[MAX_PATH] = { 0 };
+	char asm_string[DEFAULT_BUF_SIZE] = { 0 };
 	GuiGetDisassembly(reg.cip, asm_string);
 	inst_json["asm_str"] = asm_string;
 
-	char label_text[MAX_PATH] = { 0 };
+	char label_text[DEFAULT_BUF_SIZE] = { 0 };
 	make_address_label_string(reg.cip, label_text, sizeof(label_text));
 	inst_json["label"] = label_text;
 

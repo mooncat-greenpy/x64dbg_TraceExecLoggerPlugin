@@ -31,8 +31,8 @@ void make_address_label_string(duint addr, char* text, size_t text_size)
 		return;
 	}
 
-	char module_text[MAX_PATH] = { 0 };
-	char label_text[MAX_PATH] = { 0 };
+	char module_text[MAX_MODULE_SIZE] = { 0 };
+	char label_text[MAX_LABEL_SIZE] = { 0 };
 	bool has_module = DbgGetModuleAt(addr, module_text);
 	bool has_label = DbgGetLabelAt(addr, SEG_DEFAULT, label_text);
 	if (has_module && has_label && strlen(module_text))
@@ -75,13 +75,13 @@ json make_address_json(duint addr)
 	json address_json = json::object();
 	address_json["value"] = addr;
 
-	char label_text[MAX_PATH] = { 0 };
+	char label_text[MAX_LABEL_SIZE] = { 0 };
 	make_address_label_string(addr, label_text, sizeof(label_text));
 	address_json["label"] = label_text;
 
-	char text[MAX_PATH] = { 0 };
-	char string[MAX_PATH] = { 0 };
-	char hex_string[MAX_PATH] = { 0 };
+	char text[DEFAULT_BUF_SIZE] = { 0 };
+	char string[MAX_STRING_SIZE] = { 0 };
+	char hex_string[DEFAULT_BUF_SIZE] = { 0 };
 	bool has_string = DbgGetStringAt(addr, string);
 	bool has_data = false;
 	if (DbgMemIsValidReadPtr(addr))

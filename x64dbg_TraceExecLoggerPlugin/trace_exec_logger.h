@@ -7,6 +7,7 @@
 #include "log_stack.h"
 #include "log_proc_info.h"
 
+#define DEFAULT_BUF_SIZE 0x500
 #define MAX_LOG_COUNT 50000
 
 void log_proc_info();
