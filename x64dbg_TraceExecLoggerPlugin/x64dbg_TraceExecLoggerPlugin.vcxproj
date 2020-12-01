@@ -184,6 +184,7 @@
     <ClCompile Include="log_register.cpp" />
     <ClCompile Include="log_stack.cpp" />
     <ClCompile Include="menu.cpp" />
+    <ClCompile Include="save.cpp" />
     <ClCompile Include="trace_exec_logger.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="x64dbg_TraceExecLoggerPlugin.cpp" />
@@ -260,6 +261,7 @@
     <ClInclude Include="pluginsdk\_scriptapi_pattern.h" />
     <ClInclude Include="pluginsdk\_scriptapi_register.h" />
     <ClInclude Include="pluginsdk\_scriptapi_stack.h" />
+    <ClInclude Include="save.h" />
     <ClInclude Include="trace_exec_logger.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="x64dbg_TraceExecLoggerPlugin.h" />
