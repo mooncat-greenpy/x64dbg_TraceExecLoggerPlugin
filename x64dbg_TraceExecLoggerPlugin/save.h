@@ -11,6 +11,9 @@ typedef struct _THREAD_LOG_STATE
 }THREAD_LOG_STATE;
 
 
+const char* get_file_name();
+void set_file_name(const char* name);
 void create_thread_log(int thread_id, const char* file_name);
 void save_log(int thread_id);
 void add_log(int thread_id, json* log);
+void save_all_thread_log();

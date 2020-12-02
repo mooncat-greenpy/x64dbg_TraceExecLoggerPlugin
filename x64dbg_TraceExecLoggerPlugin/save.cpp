@@ -2,9 +2,24 @@
 
 
 static std::map<int, THREAD_LOG_STATE> log_state;
+static char file_name[MAX_PATH] = { 0 };
 
 
-void create_thread_log(int thread_id, const char* file_name)
+const char* get_file_name()
+{
+    return file_name;
+}
+void set_file_name(const char* name)
+{
+    if (name == NULL)
+    {
+        return;
+    }
+    strncpy_s(file_name, sizeof(file_name), name, _TRUNCATE);
+}
+
+
+void create_thread_log(int thread_id)
 {
     if (log_state.find(thread_id) != log_state.end())
     {
@@ -21,9 +36,9 @@ void create_thread_log(int thread_id, const char* file_name)
 
     SYSTEMTIME system_time = { 0 };
     GetLocalTime(&system_time);
-    if (file_name) {
+    if (strlen(get_file_name())) {
         _snprintf_s(log_state[thread_id].file_name, MAX_PATH, _TRUNCATE, "%s_%d-%d-%d-%d-%d-%d_%x",
-            PathFindFileNameA(file_name),
+            PathFindFileNameA(get_file_name()),
             system_time.wYear, system_time.wMonth, system_time.wDay, system_time.wHour, system_time.wMinute, system_time.wSecond,
             thread_id);
     }
@@ -59,9 +74,14 @@ void save_log(int thread_id)
 
 void add_log(int thread_id, json* log)
 {
-    if (log == NULL || log_state.find(thread_id) == log_state.end())
+    if (log == NULL)
     {
         return;
+    }
+
+    if (log_state.find(thread_id) == log_state.end())
+    {
+        create_thread_log(thread_id);
     }
 
     log_state[thread_id].log.push_back(*log);
@@ -71,5 +91,12 @@ void add_log(int thread_id, json* log)
     {
         save_log(thread_id);
     }
-    _plugin_logprintf("Add Log: thread id = %x, name = %s", thread_id, log_state[thread_id].file_name);
+}
+
+
+void save_all_thread_log()
+{
+    for (auto i : log_state) {
+        save_log(i.first);
+    }
 }

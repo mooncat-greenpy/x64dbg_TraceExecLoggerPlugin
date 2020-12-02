@@ -12,7 +12,7 @@ void log_proc_info()
 	entry["module"] = log_module();
 	entry["thread"] = log_thread();
 	entry["memory"] = log_memory();
-	add_log(0, &entry);
+	add_log(DbgGetThreadId(), &entry);
 }
 
 
@@ -27,7 +27,7 @@ void log_exec()
 	entry["inst"] = log_instruction();
 	entry["reg"] = log_register();
 	entry["stack"] = log_stack();
-	add_log(0, &entry);
+	add_log(DbgGetThreadId(), &entry);
 }
 
 
@@ -112,13 +112,13 @@ extern "C" __declspec(dllexport) void CBDEBUGEVENT(CBTYPE, PLUG_CB_DEBUGEVENT * 
 
 extern "C" __declspec(dllexport) void CBINITDEBUG(CBTYPE, PLUG_CB_INITDEBUG* info)
 {
-	create_thread_log(0, info->szFileName);
+	set_file_name(info->szFileName);
 }
 
 
 extern "C" __declspec(dllexport) void CBSTOPDEBUG(CBTYPE, PLUG_CB_STOPDEBUG* info)
 {
-	save_log(0);
+	save_all_thread_log();
 }
 
 
