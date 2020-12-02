@@ -64,6 +64,7 @@ bool command_callback(int argc, char* argv[])
 			"    TElogger.help\n"
 			"    TElogger.enable\n"
 			"    TElogger.disable\n"
+			"    TElogger.setdir\n"
 			"    TElogger.proc.help\n"
 			"    TElogger.inst.help\n"
 			"    TElogger.reg.help\n"
@@ -78,6 +79,16 @@ bool command_callback(int argc, char* argv[])
 	{
 		set_telogger_enabled(false);
 		_plugin_logputs(PLUGIN_NAME ": Disabled");
+	}
+	else if (strstr(argv[0], "setdir"))
+	{
+		if (argc < 2)
+		{
+			_plugin_logprintf(PLUGIN_NAME ": Setdir failed");
+			return false;
+		}
+		set_log_dir(argv[1]);
+		_plugin_logprintf(PLUGIN_NAME ": Setdir %s");
 	}
 
 	return true;
@@ -112,6 +123,7 @@ extern "C" __declspec(dllexport) void CBDEBUGEVENT(CBTYPE, PLUG_CB_DEBUGEVENT * 
 
 extern "C" __declspec(dllexport) void CBINITDEBUG(CBTYPE, PLUG_CB_INITDEBUG* info)
 {
+	set_log_dir("TElogger");
 	set_file_name(info->szFileName);
 }
 
@@ -158,6 +170,7 @@ bool init_logger_plugin(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.help", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.enable", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.disable", command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.setdir", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.proc.help", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.proc.log", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.proc.enable", command_callback, false);
@@ -177,6 +190,7 @@ bool stop_logger_plugin()
 	_plugin_unregistercommand(pluginHandle, "TElogger.help");
 	_plugin_unregistercommand(pluginHandle, "TElogger.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.disable");
+	_plugin_unregistercommand(pluginHandle, "TElogger.setdir");
 	_plugin_unregistercommand(pluginHandle, "TElogger.proc.help");
 	_plugin_unregistercommand(pluginHandle, "TElogger.proc.log");
 	_plugin_unregistercommand(pluginHandle, "TElogger.proc.enable");
