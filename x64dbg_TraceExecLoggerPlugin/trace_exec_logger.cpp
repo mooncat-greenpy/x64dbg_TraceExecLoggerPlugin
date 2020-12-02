@@ -84,11 +84,12 @@ bool command_callback(int argc, char* argv[])
 	{
 		if (argc < 2)
 		{
-			_plugin_logprintf(PLUGIN_NAME ": Setdir failed");
+			_plugin_logprintf(PLUGIN_NAME ": Setdir failed\n"
+				"    TElogger.setdir dir_name\n");
 			return false;
 		}
 		set_log_dir(argv[1]);
-		_plugin_logprintf(PLUGIN_NAME ": Setdir %s");
+		_plugin_logprintf(PLUGIN_NAME ": Setdir %s\n");
 	}
 
 	return true;
