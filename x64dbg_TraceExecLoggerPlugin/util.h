@@ -5,6 +5,7 @@
 #define HEX_SIZE 0x30
 #define PLUGIN_NAME_LOG_HEADER "[" PLUGIN_NAME "] "
 #define telogger_logprintf(format, ...) _plugin_logprintf(PLUGIN_NAME_LOG_HEADER format, __VA_ARGS__)
+#define telogger_logputs(text) _plugin_logputs(PLUGIN_NAME_LOG_HEADER text)
 
 
 void save_json_file(const char* file_name, SYSTEMTIME* system_time, int number, const char* buffer);

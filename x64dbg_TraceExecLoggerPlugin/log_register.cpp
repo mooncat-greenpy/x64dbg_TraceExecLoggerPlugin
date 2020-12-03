@@ -45,7 +45,8 @@ bool register_command_callback(int argc, char* argv[])
 	}
 	if (strstr(argv[0], "help"))
 	{
-		_plugin_logputs("Command:\n"
+		telogger_logputs("Register Help\n"
+			"Command:\n"
 			"    TElogger.reg.help\n"
 			"    TElogger.reg.enable\n"
 			"    TElogger.reg.disable\n");
@@ -53,12 +54,12 @@ bool register_command_callback(int argc, char* argv[])
 	else if (strstr(argv[0], "enable"))
 	{
 		set_register_enabled(true);
-		_plugin_logputs("Register Log: Enabled");
+		telogger_logputs("Register Log: Enabled");
 	}
 	else if (strstr(argv[0], "disable"))
 	{
 		set_register_enabled(false);
-		_plugin_logputs("Register Log: Disabled");
+		telogger_logputs("Register Log: Disabled");
 	}
 
 	return true;

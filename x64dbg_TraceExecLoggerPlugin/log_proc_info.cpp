@@ -246,7 +246,8 @@ bool module_command_callback(int argc, char* argv[])
 	}
 	if (strstr(argv[0], "help"))
 	{
-		_plugin_logputs("Command:\n"
+		telogger_logputs("Module Help\n"
+			"Command:\n"
 			"    TElogger.proc.module.help\n"
 			"    TElogger.proc.module.enable\n"
 			"    TElogger.proc.module.disable\n");
@@ -254,12 +255,12 @@ bool module_command_callback(int argc, char* argv[])
 	else if (strstr(argv[0], "enable"))
 	{
 		set_module_enabled(true);
-		_plugin_logputs("Module Log: Enabled");
+		telogger_logputs("Module Log: Enabled");
 	}
 	else if (strstr(argv[0], "disable"))
 	{
 		set_module_enabled(false);
-		_plugin_logputs("Module Log: Disabled");
+		telogger_logputs("Module Log: Disabled");
 	}
 
 	return true;
@@ -274,7 +275,8 @@ bool thread_command_callback(int argc, char* argv[])
 	}
 	if (strstr(argv[0], "help"))
 	{
-		_plugin_logputs("Command:\n"
+		telogger_logputs("Thread Help\n"
+			"Command:\n"
 			"    TElogger.proc.thread.help\n"
 			"    TElogger.proc.thread.enable\n"
 			"    TElogger.proc.thread.disable\n");
@@ -282,12 +284,12 @@ bool thread_command_callback(int argc, char* argv[])
 	else if (strstr(argv[0], "enable"))
 	{
 		set_thread_enabled(true);
-		_plugin_logputs("Thread Log: Enabled");
+		telogger_logputs("Thread Log: Enabled");
 	}
 	else if (strstr(argv[0], "disable"))
 	{
 		set_thread_enabled(false);
-		_plugin_logputs("Thread Log: Disabled");
+		telogger_logputs("Thread Log: Disabled");
 	}
 
 	return true;
@@ -302,7 +304,8 @@ bool memory_command_callback(int argc, char* argv[])
 	}
 	if (strstr(argv[0], "help"))
 	{
-		_plugin_logputs("Command:\n"
+		telogger_logputs("Memory Help\n"
+			"Command:\n"
 			"    TElogger.proc.memory.help\n"
 			"    TElogger.proc.memory.enable\n"
 			"    TElogger.proc.memory.disable\n");
@@ -310,12 +313,12 @@ bool memory_command_callback(int argc, char* argv[])
 	else if (strstr(argv[0], "enable"))
 	{
 		set_memory_enabled(true);
-		_plugin_logputs("Memory Log: Enabled");
+		telogger_logputs("Memory Log: Enabled");
 	}
 	else if (strstr(argv[0], "disable"))
 	{
 		set_memory_enabled(false);
-		_plugin_logputs("Memory Log: Disabled");
+		telogger_logputs("Memory Log: Disabled");
 	}
 
 	return true;

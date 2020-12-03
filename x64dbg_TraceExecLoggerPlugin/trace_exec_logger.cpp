@@ -39,7 +39,8 @@ bool command_callback(int argc, char* argv[])
 	}
 	if (strstr(argv[0], "proc.help"))
 	{
-		_plugin_logputs("Command:\n"
+		telogger_logputs("Proc Help\n"
+			"Command:\n"
 			"    TElogger.proc.help\n"
 			"    TElogger.proc.enable\n"
 			"    TElogger.proc.disable\n");
@@ -51,16 +52,17 @@ bool command_callback(int argc, char* argv[])
 	else if (strstr(argv[0], "proc.enable"))
 	{
 		set_proc_enabled(true);
-		_plugin_logputs(PLUGIN_NAME ": Proc Log Enabled");
+		telogger_logputs("Proc Log: Enabled");
 	}
 	else if (strstr(argv[0], "proc.disable"))
 	{
 		set_proc_enabled(false);
-		_plugin_logputs(PLUGIN_NAME ": Proc Log Disabled");
+		telogger_logputs("Proc Log: Disabled");
 	}
 	else if (strstr(argv[0], "help"))
 	{
-		_plugin_logputs("Command:\n"
+		telogger_logputs("Help\n"
+			"Command:\n"
 			"    TElogger.help\n"
 			"    TElogger.enable\n"
 			"    TElogger.disable\n"
@@ -73,12 +75,12 @@ bool command_callback(int argc, char* argv[])
 	else if (strstr(argv[0], "enable"))
 	{
 		set_telogger_enabled(true);
-		_plugin_logputs(PLUGIN_NAME ": Enabled");
+		telogger_logputs("Log: Enabled");
 	}
 	else if (strstr(argv[0], "disable"))
 	{
 		set_telogger_enabled(false);
-		_plugin_logputs(PLUGIN_NAME ": Disabled");
+		telogger_logputs("Log: Disabled");
 	}
 	else if (strstr(argv[0], "setdir"))
 	{
@@ -88,7 +90,7 @@ bool command_callback(int argc, char* argv[])
 			return false;
 		}
 		set_log_dir(argv[1]);
-		telogger_logprintf("Setdir %s\n");
+		telogger_logprintf("Setdir: %s\n");
 	}
 
 	return true;

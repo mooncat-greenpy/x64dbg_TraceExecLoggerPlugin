@@ -192,7 +192,8 @@ bool instruction_command_callback(int argc, char* argv[])
 	}
 	if (strstr(argv[0], "help"))
 	{
-		_plugin_logputs("Command:\n"
+		telogger_logputs("Instruction Help\n"
+			"Command:\n"
 			"    TElogger.inst.help\n"
 			"    TElogger.inst.enable\n"
 			"    TElogger.inst.disable\n"
@@ -201,12 +202,12 @@ bool instruction_command_callback(int argc, char* argv[])
 	else if (strstr(argv[0], "enable"))
 	{
 		set_instruction_enabled(true);
-		_plugin_logputs("Instruction Log: Enabled");
+		telogger_logputs("Instruction Log: Enabled");
 	}
 	else if (strstr(argv[0], "disable"))
 	{
 		set_instruction_enabled(false);
-		_plugin_logputs("Instruction Log: Disabled");
+		telogger_logputs("Instruction Log: Disabled");
 	}
 	else if (strstr(argv[0], "arglogcount"))
 	{

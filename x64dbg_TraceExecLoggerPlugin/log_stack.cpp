@@ -59,7 +59,8 @@ bool stack_command_callback(int argc, char* argv[])
 	}
 	if (strstr(argv[0], "help"))
 	{
-		_plugin_logputs("Command:\n"
+		telogger_logputs("Stack Help\n"
+			"Command:\n"
 			"    TElogger.stack.help\n"
 			"    TElogger.stack.enable\n"
 			"    TElogger.stack.disable\n"
@@ -68,12 +69,12 @@ bool stack_command_callback(int argc, char* argv[])
 	else if (strstr(argv[0], "enable"))
 	{
 		set_stack_enabled(true);
-		_plugin_logputs("Stack Log: Enabled");
+		telogger_logputs("Stack Log: Enabled");
 	}
 	else if (strstr(argv[0], "disable"))
 	{
 		set_stack_enabled(false);
-		_plugin_logputs("Stack Log: Disabled");
+		telogger_logputs("Stack Log: Disabled");
 	}
 	else if (strstr(argv[0], "stacklogcount"))
 	{
