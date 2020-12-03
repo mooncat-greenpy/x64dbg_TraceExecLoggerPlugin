@@ -79,11 +79,11 @@ bool stack_command_callback(int argc, char* argv[])
 	{
 		if (argc < 2)
 		{
-			_plugin_logprintf("Stack Log Count: %d\n", stack_log_count);
+			telogger_logprintf("Stack Log Count: %d\n", stack_log_count);
 			return true;
 		}
 		stack_log_count = atoi(argv[1]);
-		_plugin_logprintf("Stack Log Count: %d\n", stack_log_count);
+		telogger_logprintf("Stack Log Count: %d\n", stack_log_count);
 	}
 
 	return true;

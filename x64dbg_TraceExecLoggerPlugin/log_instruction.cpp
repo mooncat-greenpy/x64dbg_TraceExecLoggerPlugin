@@ -212,11 +212,11 @@ bool instruction_command_callback(int argc, char* argv[])
 	{
 		if (argc < 2)
 		{
-			_plugin_logprintf("Call Argument Log Count: %d\n", call_arg_log_count);
+			telogger_logprintf("Call Argument Log Count: %d\n", call_arg_log_count);
 			return true;
 		}
 		call_arg_log_count = atoi(argv[1]);
-		_plugin_logprintf("Call Argument Log Count: %d\n", call_arg_log_count);
+		telogger_logprintf("Call Argument Log Count: %d\n", call_arg_log_count);
 	}
 
 	return true;

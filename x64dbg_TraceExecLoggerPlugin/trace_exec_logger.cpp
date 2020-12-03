@@ -84,12 +84,11 @@ bool command_callback(int argc, char* argv[])
 	{
 		if (argc < 2)
 		{
-			_plugin_logprintf(PLUGIN_NAME ": Setdir failed\n"
-				"    TElogger.setdir dir_name\n");
+			telogger_logprintf("Setdir failed: TElogger.setdir dir_name\n");
 			return false;
 		}
 		set_log_dir(argv[1]);
-		_plugin_logprintf(PLUGIN_NAME ": Setdir %s\n");
+		telogger_logprintf("Setdir %s\n");
 	}
 
 	return true;
@@ -137,14 +136,14 @@ extern "C" __declspec(dllexport) void CBSTOPDEBUG(CBTYPE, PLUG_CB_STOPDEBUG* inf
 
 extern "C" __declspec(dllexport) void CBCREATEPROCESS(CBTYPE, PLUG_CB_CREATEPROCESS * info)
 {
-	_plugin_logprintf("CREATEPROCESS ID = %d\n", info->fdProcessInfo->dwProcessId);
+	telogger_logprintf("CREATEPROCESS ID = %d\n", info->fdProcessInfo->dwProcessId);
 	log_proc_info();
 }
 
 
 extern "C" __declspec(dllexport) void CBCREATETHREAD(CBTYPE, PLUG_CB_CREATETHREAD * info)
 {
-	_plugin_logprintf("CREATETHREAD ID = %d\n", info->dwThreadId);
+	telogger_logprintf("CREATETHREAD ID = %d\n", info->dwThreadId);
 	log_proc_info();
 	char cmd[DEFAULT_BUF_SIZE] = { 0 };
 	_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerStartThread, ss", info->CreateThread->lpStartAddress);
@@ -154,7 +153,7 @@ extern "C" __declspec(dllexport) void CBCREATETHREAD(CBTYPE, PLUG_CB_CREATETHREA
 
 extern "C" __declspec(dllexport) void CBLOADDLL(CBTYPE, PLUG_CB_LOADDLL * info)
 {
-	_plugin_logprintf("LOADDLL %s\n", info->modname);
+	telogger_logprintf("LOADDLL %s\n", info->modname);
 	log_proc_info();
 }
 
