@@ -8,6 +8,8 @@ typedef struct _THREAD_LOG_STATE
     char file_name[MAX_PATH] = { 0 };
     json log = json::array();
     int count = 0;
+    int process_id = 0;
+    int thread_id = 0;
 }THREAD_LOG_STATE;
 
 

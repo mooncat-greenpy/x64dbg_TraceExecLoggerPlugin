@@ -52,12 +52,15 @@ void create_thread_log(int thread_id)
     }
 
     if (strlen(get_file_name())) {
-        _snprintf_s(log_state[thread_id].file_name, MAX_PATH, _TRUNCATE, "%s_%x", PathFindFileNameA(get_file_name()), thread_id);
+        _snprintf_s(log_state[thread_id].file_name, MAX_PATH, _TRUNCATE, "%s", PathFindFileNameA(get_file_name()));
     }
     else
     {
-        strncpy_s(log_state[thread_id].file_name, MAX_PATH, "x64dbg_tmp", _TRUNCATE);
+        strncpy_s(log_state[thread_id].file_name, MAX_PATH, "x64dbgtmp", _TRUNCATE);
     }
+
+    log_state[thread_id].process_id = DbgGetProcessId();
+    log_state[thread_id].thread_id = thread_id;
 
     telogger_logprintf("Create Log: thread id = %x, name = %s\n", thread_id, log_state[thread_id].file_name);
 }
@@ -67,9 +70,16 @@ void save_log(int thread_id)
 {
     int number = log_state[thread_id].count / MAX_LOG_COUNT;
 
+    json save_info = json::object();
+    save_info["process_id"] = log_state[thread_id].process_id;
+    save_info["thread_id"] = log_state[thread_id].thread_id;
+    save_info["file_name"] = log_state[thread_id].file_name;
+    save_info["count"] = log_state[thread_id].count;
+    save_info["log"] = log_state[thread_id].log;
+
     HANDLE log_file_handle = INVALID_HANDLE_VALUE;
     char log_file_name[MAX_PATH] = { 0 };
-    _snprintf_s(log_file_name, sizeof(log_file_name), _TRUNCATE, "%s\\%s_%d.json", get_log_dir(), log_state[thread_id].file_name, number);
+    _snprintf_s(log_file_name, sizeof(log_file_name), _TRUNCATE, "%s\\%s_0x%x_%d.json", get_log_dir(), log_state[thread_id].file_name, thread_id, number);
     log_file_handle = CreateFileA(log_file_name, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (log_file_handle == INVALID_HANDLE_VALUE)
     {
@@ -78,7 +88,7 @@ void save_log(int thread_id)
     }
 
     DWORD written = 0;
-    WriteFile(log_file_handle, log_state[thread_id].log.dump().c_str(), strlen(log_state[thread_id].log.dump().c_str()), &written, NULL);
+    WriteFile(log_file_handle, save_info.dump().c_str(), strlen(save_info.dump().c_str()), &written, NULL);
 
     CloseHandle(log_file_handle);
     telogger_logprintf("Save Log: thread id = %x, name = %s\n", thread_id, log_state[thread_id].file_name);
