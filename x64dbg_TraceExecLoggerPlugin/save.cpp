@@ -51,13 +51,8 @@ void create_thread_log(int thread_id)
         log_state[thread_id] = thread_log_state;
     }
 
-    SYSTEMTIME system_time = { 0 };
-    GetLocalTime(&system_time);
     if (strlen(get_file_name())) {
-        _snprintf_s(log_state[thread_id].file_name, MAX_PATH, _TRUNCATE, "%s_%d-%d-%d-%d-%d-%d_%x",
-            PathFindFileNameA(get_file_name()),
-            system_time.wYear, system_time.wMonth, system_time.wDay, system_time.wHour, system_time.wMinute, system_time.wSecond,
-            thread_id);
+        _snprintf_s(log_state[thread_id].file_name, MAX_PATH, _TRUNCATE, "%s_%x", PathFindFileNameA(get_file_name()), thread_id);
     }
     else
     {
