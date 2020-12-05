@@ -10,6 +10,7 @@ static bool proc_enabled = true;
 static bool module_enabled = true;
 static bool thread_enabled = true;
 static bool memory_enabled = true;
+static char save_dir[MAX_SETTING_SIZE] = { 0 };
 
 bool get_telogger_enabled()
 {
@@ -91,7 +92,23 @@ void set_memory_enabled(bool value)
 	_plugin_menuentrysetchecked(pluginHandle, MENU_PROC_MEMORY_ENABLED, memory_enabled);
 	BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_MEMORY_ENABLED, memory_enabled);
 }
-
+const char* get_save_dir()
+{
+	return save_dir;
+}
+void set_save_dir(const char* dir_name)
+{
+	if (dir_name == NULL)
+	{
+		return;
+	}
+	if (!CreateDirectoryA(dir_name, NULL) && GetLastError() != ERROR_ALREADY_EXISTS)
+	{
+		return;
+	}
+	strncpy_s(save_dir, sizeof(save_dir), dir_name, _TRUNCATE);
+	BridgeSettingSet(PLUGIN_NAME, MENU_LABEL_SAVE_DIR, save_dir);
+}
 
 void menu_callback(PLUG_CB_MENUENTRY* info)
 {
@@ -163,6 +180,12 @@ void init_menu()
 	thread_enabled = !!setting;
 	BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_MEMORY_ENABLED, &setting);
 	memory_enabled = !!setting;
+
+	BridgeSettingGet(PLUGIN_NAME, MENU_LABEL_SAVE_DIR, save_dir);
+	if (strlen(save_dir) == 0)
+	{
+		set_save_dir("TElogger");
+	}
 }
 
 

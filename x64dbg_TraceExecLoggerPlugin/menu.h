@@ -11,6 +11,7 @@
 #define MENU_LABEL_MODULE_ENABLED "Module Enabled"
 #define MENU_LABEL_THREAD_ENABLED "Thread Enabled"
 #define MENU_LABEL_MEMORY_ENABLED "Memory Enabled"
+#define MENU_LABEL_SAVE_DIR "Save Dir"
 
 enum
 {
@@ -41,6 +42,8 @@ bool get_thread_enabled();
 void set_thread_enabled(bool value);
 bool get_memory_enabled();
 void set_memory_enabled(bool value);
+const char* get_save_dir();
+void set_save_dir(const char* dir_name);
 
 void menu_callback(PLUG_CB_MENUENTRY* info);
 

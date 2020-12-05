@@ -89,7 +89,7 @@ bool command_callback(int argc, char* argv[])
 			telogger_logprintf("Setdir failed: TElogger.setdir dir_name\n");
 			return false;
 		}
-		set_log_dir(argv[1]);
+		set_save_dir(argv[1]);
 		telogger_logprintf("Setdir: %s\n");
 	}
 
@@ -125,7 +125,6 @@ extern "C" __declspec(dllexport) void CBDEBUGEVENT(CBTYPE, PLUG_CB_DEBUGEVENT * 
 
 extern "C" __declspec(dllexport) void CBINITDEBUG(CBTYPE, PLUG_CB_INITDEBUG* info)
 {
-	set_log_dir("TElogger");
 	set_file_name(info->szFileName);
 }
 
