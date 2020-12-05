@@ -18,7 +18,7 @@ void log_proc_info()
 
 void log_exec()
 {
-	if (!get_telogger_enabled())
+	if (!get_telogger_enabled() || !should_log())
 	{
 		return;
 	}
@@ -66,7 +66,7 @@ bool command_callback(int argc, char* argv[])
 			"    TElogger.help\n"
 			"    TElogger.enable\n"
 			"    TElogger.disable\n"
-			"    TElogger.setdir\n"
+			"    TElogger.setdir dirname\n"
 			"    TElogger.proc.help\n"
 			"    TElogger.inst.help\n"
 			"    TElogger.reg.help\n"
@@ -166,6 +166,7 @@ bool init_logger_plugin(PLUG_INITSTRUCT* init_struct)
 	init_register_log(init_struct);
 	init_stack_log(init_struct);
 	init_proc_info_log(init_struct);
+	init_filter_log(init_struct);
 
 	_plugin_registercommand(pluginHandle, "TElogger.help", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.enable", command_callback, false);
@@ -186,6 +187,7 @@ bool stop_logger_plugin()
 	stop_register_log();
 	stop_stack_log();
 	stop_proc_info_log();
+	stop_filter_log();
 
 	_plugin_unregistercommand(pluginHandle, "TElogger.help");
 	_plugin_unregistercommand(pluginHandle, "TElogger.enable");

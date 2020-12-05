@@ -179,6 +179,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="filter.cpp" />
     <ClCompile Include="log_instruction.cpp" />
     <ClCompile Include="log_proc_info.cpp" />
     <ClCompile Include="log_register.cpp" />
@@ -191,6 +192,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\nlohmann\json.hpp" />
+    <ClInclude Include="filter.h" />
     <ClInclude Include="log_instruction.h" />
     <ClInclude Include="log_proc_info.h" />
     <ClInclude Include="log_register.h" />
