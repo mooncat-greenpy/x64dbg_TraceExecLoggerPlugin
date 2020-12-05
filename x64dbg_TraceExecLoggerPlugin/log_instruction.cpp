@@ -115,7 +115,7 @@ json make_call_json(REGISTERCONTEXT* reg)
 		duint tmp_value = 0;
 		DbgMemRead(reg->csp + arg_offset, &tmp_value, sizeof(tmp_value));
 		call_json["arg"].push_back(make_address_json(tmp_value));
-		_snprintf_s(value_name, sizeof(value_name), _TRUNCATE, "csp + 0x%x", (int)arg_offset);
+		_snprintf_s(value_name, sizeof(value_name), _TRUNCATE, "csp + %#x", (int)arg_offset);
 		call_json["arg"][i]["name"] = value_name;
 	}
 #else
@@ -129,7 +129,7 @@ json make_call_json(REGISTERCONTEXT* reg)
 		duint tmp_value = 0;
 		DbgMemRead(reg->csp + arg_offset, &tmp_value, sizeof(tmp_value));
 		call_json["arg"].push_back(make_address_json(tmp_value));
-		_snprintf_s(value_name, sizeof(value_name), _TRUNCATE, "csp + 0x%x", (int)arg_offset);
+		_snprintf_s(value_name, sizeof(value_name), _TRUNCATE, "csp + %#x", (int)arg_offset);
 		call_json["arg"][i]["name"] = value_name;
 	}
 #endif

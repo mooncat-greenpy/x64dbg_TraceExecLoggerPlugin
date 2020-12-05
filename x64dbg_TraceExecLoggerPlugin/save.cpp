@@ -46,7 +46,7 @@ void create_thread_log(int thread_id)
     log_state[thread_id].process_id = DbgGetProcessId();
     log_state[thread_id].thread_id = thread_id;
 
-    telogger_logprintf("Create Log: thread id = %x, name = %s\n", thread_id, log_state[thread_id].file_name);
+    telogger_logprintf("Create Log: thread id = %#x, name = %s\n", thread_id, log_state[thread_id].file_name);
 }
 
 
@@ -63,11 +63,11 @@ void save_log(int thread_id)
 
     HANDLE log_file_handle = INVALID_HANDLE_VALUE;
     char log_file_name[MAX_PATH] = { 0 };
-    _snprintf_s(log_file_name, sizeof(log_file_name), _TRUNCATE, "%s\\%s_0x%x_%d.json", get_save_dir(), log_state[thread_id].file_name, thread_id, number);
+    _snprintf_s(log_file_name, sizeof(log_file_name), _TRUNCATE, "%s\\%s_%#x_%d.json", get_save_dir(), log_state[thread_id].file_name, thread_id, number);
     log_file_handle = CreateFileA(log_file_name, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (log_file_handle == INVALID_HANDLE_VALUE)
     {
-        telogger_logprintf("Save Log: error = %x\n", GetLastError());
+        telogger_logprintf("Save Log: error = %#x\n", GetLastError());
         return;
     }
 
@@ -75,7 +75,7 @@ void save_log(int thread_id)
     WriteFile(log_file_handle, save_info.dump().c_str(), strlen(save_info.dump().c_str()), &written, NULL);
 
     CloseHandle(log_file_handle);
-    telogger_logprintf("Save Log: thread id = %x, name = %s\n", thread_id, log_state[thread_id].file_name);
+    telogger_logprintf("Save Log: thread id = %#x, name = %s\n", thread_id, log_state[thread_id].file_name);
 }
 
 
