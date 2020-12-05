@@ -43,7 +43,8 @@ bool command_callback(int argc, char* argv[])
 			"Command:\n"
 			"    TElogger.proc.help\n"
 			"    TElogger.proc.enable\n"
-			"    TElogger.proc.disable\n");
+			"    TElogger.proc.disable\n"
+			"    TElogger.proc.log\n");
 	}
 	else if (strstr(argv[0], "proc.log"))
 	{
