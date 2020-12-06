@@ -10,9 +10,20 @@ bool should_log()
         return true;
     }
 
-    duint addr = DbgEval("cip", NULL);
+    bool result_eval = false;
+    duint addr = DbgEval("cip", &result_eval);
+    if (result_eval)
+    {
+        telogger_logputs("Failed to get cip");
+        return true;
+    }
+
     char mod_name[MAX_MODULE_SIZE] = { 0 };
-    DbgGetModuleAt(addr, mod_name);
+    if (!DbgGetModuleAt(addr, mod_name))
+    {
+        telogger_logputs("Failed to get module name");
+        return true;
+    }
     char mod_name_lower[MAX_MODULE_SIZE] = { 0 };
     strncpy_s(mod_name_lower, sizeof(mod_name_lower), mod_name, _TRUNCATE);
     _strlwr_s(mod_name_lower, sizeof(mod_name_lower));
