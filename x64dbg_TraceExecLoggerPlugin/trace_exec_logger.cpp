@@ -207,6 +207,8 @@ bool init_logger_plugin(PLUG_INITSTRUCT* init_struct)
 
 bool stop_logger_plugin()
 {
+	stop_menu();
+
 	stop_instruction_log();
 	stop_register_log();
 	stop_stack_log();
@@ -230,9 +232,11 @@ bool stop_logger_plugin()
 void setup_logger_plugin()
 {
 	setup_menu();
+
 	setup_instruction_log();
 	setup_register_log();
 	setup_stack_log();
 	setup_proc_info_log();
+	setup_filter_log();
 	setup_auto_run();
 }

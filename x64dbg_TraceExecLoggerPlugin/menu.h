@@ -52,4 +52,5 @@ void set_auto_run_enabled(bool value);
 void menu_callback(PLUG_CB_MENUENTRY* info);
 
 void init_menu();
+void stop_menu();
 void setup_menu();

@@ -207,6 +207,11 @@ void init_menu()
 }
 
 
+void stop_menu()
+{
+}
+
+
 void setup_menu()
 {
 	_plugin_menuaddentry(hMenu, MENU_HELP, "Help");

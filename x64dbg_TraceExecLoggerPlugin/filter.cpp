@@ -87,3 +87,7 @@ bool stop_filter_log()
     _plugin_unregistercommand(pluginHandle, "TElogger.filt.mod.pass");
     return true;
 }
+
+void setup_filter_log()
+{
+}
