@@ -12,6 +12,7 @@
 #define MENU_LABEL_THREAD_ENABLED "Thread Enabled"
 #define MENU_LABEL_MEMORY_ENABLED "Memory Enabled"
 #define MENU_LABEL_SAVE_DIR "Save Dir"
+#define MENU_LABEL_AUTO_RUN_ENABLED "Auto Run Enabled"
 
 enum
 {
@@ -24,6 +25,7 @@ enum
 	MENU_PROC_MODULE_ENABLED,
 	MENU_PROC_THREAD_ENABLED,
 	MENU_PROC_MEMORY_ENABLED,
+	MENU_AUTO_RUN_ENABLED,
 };
 
 bool get_telogger_enabled();
@@ -44,6 +46,8 @@ bool get_memory_enabled();
 void set_memory_enabled(bool value);
 const char* get_save_dir();
 void set_save_dir(const char* dir_name);
+bool get_auto_run_enabled();
+void set_auto_run_enabled(bool value);
 
 void menu_callback(PLUG_CB_MENUENTRY* info);
 

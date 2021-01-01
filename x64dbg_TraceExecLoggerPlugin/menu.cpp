@@ -11,6 +11,7 @@ static bool module_enabled = true;
 static bool thread_enabled = true;
 static bool memory_enabled = true;
 static char save_dir[MAX_SETTING_SIZE] = { 0 };
+static bool auto_run_enabled = false;
 
 bool get_telogger_enabled()
 {
@@ -109,6 +110,16 @@ void set_save_dir(const char* dir_name)
 	strncpy_s(save_dir, sizeof(save_dir), dir_name, _TRUNCATE);
 	BridgeSettingSet(PLUGIN_NAME, MENU_LABEL_SAVE_DIR, save_dir);
 }
+bool get_auto_run_enabled()
+{
+	return auto_run_enabled;
+}
+void set_auto_run_enabled(bool value)
+{
+	auto_run_enabled = value;
+	_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_RUN_ENABLED, auto_run_enabled);
+	BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_AUTO_RUN_ENABLED, auto_run_enabled);
+}
 
 void menu_callback(PLUG_CB_MENUENTRY* info)
 {
@@ -145,6 +156,10 @@ void menu_callback(PLUG_CB_MENUENTRY* info)
 	case MENU_PROC_MEMORY_ENABLED:
 		memory_enabled = !memory_enabled;
 		BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_MEMORY_ENABLED, memory_enabled);
+		break;
+	case MENU_AUTO_RUN_ENABLED:
+		auto_run_enabled = !auto_run_enabled;
+		BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_AUTO_RUN_ENABLED, auto_run_enabled);
 		break;
 	case MENU_HELP:
 	default:
@@ -186,6 +201,9 @@ void init_menu()
 	{
 		set_save_dir("TElogger");
 	}
+
+	BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_AUTO_RUN_ENABLED, &setting);
+	auto_run_enabled = !!setting;
 }
 
 
@@ -211,4 +229,7 @@ void setup_menu()
 	_plugin_menuentrysetchecked(pluginHandle, MENU_PROC_THREAD_ENABLED, thread_enabled);
 	_plugin_menuaddentry(proc_info_handle, MENU_PROC_MEMORY_ENABLED, MENU_LABEL_MEMORY_ENABLED);
 	_plugin_menuentrysetchecked(pluginHandle, MENU_PROC_MEMORY_ENABLED, memory_enabled);
+
+	_plugin_menuaddentry(hMenu, MENU_AUTO_RUN_ENABLED, MENU_LABEL_AUTO_RUN_ENABLED);
+	_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_RUN_ENABLED, auto_run_enabled);
 }

@@ -116,6 +116,28 @@ extern "C" __declspec(dllexport) void CBSTEPPED(CBTYPE, PLUG_CB_STEPPED* info)
 }
 
 
+extern "C" __declspec(dllexport) void CBBREAKPOINT(CBTYPE, PLUG_CB_BREAKPOINT * info)
+{
+	run_debug();
+}
+
+
+extern "C" __declspec(dllexport) void CBPAUSEDEBUG(CBTYPE, PLUG_CB_PAUSEDEBUG * info)
+{
+	run_debug();
+}
+
+
+extern "C" __declspec(dllexport) void CBSYSTEMBREAKPOINT(CBTYPE, PLUG_CB_SYSTEMBREAKPOINT * info)
+{
+	bool result = false;
+	duint cip = DbgEval("cip", &result);
+	if (result) {
+		skip_system_break_point(cip);
+	}
+}
+
+
 /*** EIP address is sometimes wrong. ***
 extern "C" __declspec(dllexport) void CBDEBUGEVENT(CBTYPE, PLUG_CB_DEBUGEVENT * info)
 {
@@ -168,6 +190,7 @@ bool init_logger_plugin(PLUG_INITSTRUCT* init_struct)
 	init_stack_log(init_struct);
 	init_proc_info_log(init_struct);
 	init_filter_log(init_struct);
+	init_auto_run(init_struct);
 
 	_plugin_registercommand(pluginHandle, "TElogger.help", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.enable", command_callback, false);
@@ -189,6 +212,7 @@ bool stop_logger_plugin()
 	stop_stack_log();
 	stop_proc_info_log();
 	stop_filter_log();
+	stop_auto_run();
 
 	_plugin_unregistercommand(pluginHandle, "TElogger.help");
 	_plugin_unregistercommand(pluginHandle, "TElogger.enable");
@@ -210,4 +234,5 @@ void setup_logger_plugin()
 	setup_register_log();
 	setup_stack_log();
 	setup_proc_info_log();
+	setup_auto_run();
 }
