@@ -76,6 +76,7 @@ void save_log(int thread_id)
 
     CloseHandle(log_file_handle);
     telogger_logprintf("Save Log: thread id = %#x, name = %s\n", thread_id, log_state[thread_id].file_name);
+    log_state.erase(thread_id);
 }
 
 
