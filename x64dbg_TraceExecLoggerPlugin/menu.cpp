@@ -118,7 +118,6 @@ void set_auto_run_enabled(bool value)
 {
 	auto_run_enabled = value;
 	_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_RUN_ENABLED, auto_run_enabled);
-	BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_AUTO_RUN_ENABLED, auto_run_enabled);
 }
 
 void menu_callback(PLUG_CB_MENUENTRY* info)
@@ -159,7 +158,6 @@ void menu_callback(PLUG_CB_MENUENTRY* info)
 		break;
 	case MENU_AUTO_RUN_ENABLED:
 		auto_run_enabled = !auto_run_enabled;
-		BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_AUTO_RUN_ENABLED, auto_run_enabled);
 		break;
 	case MENU_HELP:
 	default:
@@ -201,9 +199,6 @@ void init_menu()
 	{
 		set_save_dir("TElogger");
 	}
-
-	BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_AUTO_RUN_ENABLED, &setting);
-	auto_run_enabled = !!setting;
 }
 
 
