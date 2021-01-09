@@ -52,13 +52,19 @@ void create_thread_log(int thread_id)
 
 void save_log(int thread_id)
 {
-    int number = log_state[thread_id].count / MAX_LOG_COUNT;
+    if (log_state[thread_id].log.size() < 1)
+    {
+        return;
+    }
+
+    int count = log_state[thread_id].count;
+    int number = (count - 1) / MAX_LOG_COUNT;
 
     json save_info = json::object();
     save_info["process_id"] = log_state[thread_id].process_id;
     save_info["thread_id"] = log_state[thread_id].thread_id;
     save_info["file_name"] = log_state[thread_id].file_name;
-    save_info["count"] = log_state[thread_id].count;
+    save_info["count"] = log_state[thread_id].log.size();
     save_info["log"] = log_state[thread_id].log;
 
     HANDLE log_file_handle = INVALID_HANDLE_VALUE;
@@ -76,7 +82,10 @@ void save_log(int thread_id)
 
     CloseHandle(log_file_handle);
     telogger_logprintf("Save Log: thread id = %#x, name = %s\n", thread_id, log_state[thread_id].file_name);
+
     log_state.erase(thread_id);
+    create_thread_log(thread_id);
+    log_state[thread_id].count = count;
 }
 
 
@@ -106,5 +115,12 @@ void save_all_thread_log()
 {
     for (auto i : log_state) {
         save_log(i.first);
+    }
+}
+
+
+void delete_all_log() {
+    for (auto i : log_state) {
+        log_state.erase(i.first);
     }
 }

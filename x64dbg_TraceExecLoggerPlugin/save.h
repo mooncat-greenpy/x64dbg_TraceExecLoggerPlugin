@@ -19,3 +19,4 @@ void create_thread_log(int thread_id);
 void save_log(int thread_id);
 void add_log(int thread_id, json* log);
 void save_all_thread_log();
+void delete_all_log();

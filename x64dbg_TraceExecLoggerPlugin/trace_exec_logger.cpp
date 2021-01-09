@@ -155,6 +155,7 @@ extern "C" __declspec(dllexport) void CBINITDEBUG(CBTYPE, PLUG_CB_INITDEBUG* inf
 extern "C" __declspec(dllexport) void CBSTOPDEBUG(CBTYPE, PLUG_CB_STOPDEBUG* info)
 {
 	save_all_thread_log();
+	delete_all_log();
 }
 
 
