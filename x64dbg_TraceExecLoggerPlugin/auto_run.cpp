@@ -2,6 +2,30 @@
 
 static int current_thread_number = 0;
 static int skip_addr = 0;
+std::vector<duint> auto_run_breakpoints;
+
+
+void add_breakpoint(duint addr)
+{
+	auto_run_breakpoints.push_back(addr);
+	char cmd[DEFAULT_BUF_SIZE] = { 0 };
+	_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerAutoRunBP, ss", (char*)addr);
+	DbgCmdExecDirect(cmd);
+}
+
+
+void remove_breakpoint(duint addr)
+{
+	for (std::vector<duint>::iterator itr = auto_run_breakpoints.begin(); itr != auto_run_breakpoints.end();)
+	{
+		if (*itr != addr)
+		{
+			itr++;
+			continue;
+		}
+		itr == auto_run_breakpoints.erase(itr);
+	}
+}
 
 
 void run_debug()
@@ -37,6 +61,14 @@ void run_debug()
 			break;
 		}
 	}
+
+	if (std::find(auto_run_breakpoints.begin(), auto_run_breakpoints.end(), cip) != auto_run_breakpoints.end())
+	{
+		remove_breakpoint(cip);
+		set_auto_run_enabled(false);
+		return;
+	}
+
 	char cmd[DEFAULT_BUF_SIZE] = { 0 };
 	_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "threadswitch %x", thread_id);
 	DbgCmdExecDirect(cmd);
@@ -63,7 +95,9 @@ bool auto_run_command_callback(int argc, char* argv[])
 			"Command:\n"
 			"    TElogger.auto.help\n"
 			"    TElogger.auto.enable\n"
-			"    TElogger.auto.disable\n");
+			"    TElogger.auto.disable\n"
+			"    TElogger.auto.addbp address\n"
+			"    TElogger.auto.start address\n");
 	}
 	else if (strstr(argv[0], "enable"))
 	{
@@ -75,6 +109,32 @@ bool auto_run_command_callback(int argc, char* argv[])
 		set_auto_run_enabled(false);
 		telogger_logputs("Auto Run Log: Disabled");
 	}
+	else if (strstr(argv[0], "addbp") || strstr(argv[0], "start"))
+	{
+		if (argc < 2)
+		{
+			telogger_logprintf("Failed: %s address", argv[0]);
+			return false;
+		}
+		char* end = NULL;
+		duint value = (duint)_strtoi64(argv[1], &end, 16);
+		if (end == NULL || *end != '\0')
+		{
+			telogger_logprintf("Failed: %s address", argv[0]);
+			return false;
+		}
+
+		add_breakpoint(value);
+		telogger_logprintf("Auto Run Add BP: %x\n", value);
+
+		if (strstr(argv[0], "start"))
+		{
+			set_auto_run_enabled(true);
+			DbgCmdExec("StepInto");
+			telogger_logputs("Start Auto Run");
+		}
+	}
+	return true;
 }
 
 
@@ -83,6 +143,8 @@ bool init_auto_run(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.auto.help", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.enable", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.disable", auto_run_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.auto.addbp", auto_run_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.auto.start", auto_run_command_callback, false);
 	return true;
 }
 
@@ -92,6 +154,8 @@ bool stop_auto_run()
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.help");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.disable");
+	_plugin_unregistercommand(pluginHandle, "TElogger.auto.addbp");
+	_plugin_unregistercommand(pluginHandle, "TElogger.auto.start");
 	return true;
 }
 
