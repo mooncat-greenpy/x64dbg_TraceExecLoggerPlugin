@@ -3,90 +3,6 @@
 static int call_arg_log_count = 5;
 
 
-json make_asm_json(DISASM_INSTR* instr)
-{
-	json asm_json = json::object();
-	if (!instr)
-	{
-		return asm_json;
-	}
-	if (instr->type == instr_normal)
-	{
-		asm_json["type"] = "normal";
-	}
-	else if (instr->type == instr_branch)
-	{
-		asm_json["type"] = "branch";
-	}
-	else if (instr->type == instr_stack)
-	{
-		asm_json["type"] = "stack";
-	}
-	else
-	{
-		asm_json["type"] = "other";
-	}
-	asm_json["instruction"] = instr->instruction;
-	asm_json["size"] = instr->instr_size;
-	asm_json["argcount"] = instr->argcount;
-	asm_json["arg"] = json::array();
-	for (int i = 0; i < instr->argcount; i++)
-	{
-		json arg = json::object();
-		if (instr->arg[i].type == arg_normal)
-		{
-			arg["type"] = "normal";
-		}
-		else if (instr->arg[i].type == arg_memory)
-		{
-			arg["type"] = "memory";
-		}
-		else
-		{
-			arg["type"] = "other";
-		}
-		if (instr->arg[i].segment == SEG_DEFAULT)
-		{
-			arg["segment"] = "default";
-		}
-		else if (instr->arg[i].segment == SEG_CS)
-		{
-			arg["segment"] = "cs";
-		}
-		else if (instr->arg[i].segment == SEG_DS)
-		{
-			arg["segment"] = "ds";
-		}
-		else if (instr->arg[i].segment == SEG_ES)
-		{
-			arg["segment"] = "es";
-		}
-		else if (instr->arg[i].segment == SEG_FS)
-		{
-			arg["segment"] = "fs";
-		}
-		else if (instr->arg[i].segment == SEG_GS)
-		{
-			arg["segment"] = "gs";
-		}
-		else if (instr->arg[i].segment == SEG_SS)
-		{
-			arg["segment"] = "ss";
-		}
-		else
-		{
-			arg["segment"] = "other";
-		}
-		arg["mnemonic"] = instr->arg[i].mnemonic;
-		arg["constant"] = instr->arg[i].constant;
-		arg["value"] = make_address_json(instr->arg[i].value);
-		arg["memvalue"] = make_address_json(instr->arg[i].memvalue);
-		asm_json["arg"].push_back(arg);
-	}
-	return asm_json;
-}
-
-
 json make_call_json(REGISTERCONTEXT* reg)
 {
 	json call_json = json::object();
@@ -137,6 +53,99 @@ json make_call_json(REGISTERCONTEXT* reg)
 }
 
 
+json make_asm_json(REGISTERCONTEXT* reg)
+{
+	json asm_json = json::object();
+	if (!reg)
+	{
+		return asm_json;
+	}
+	DISASM_INSTR instr = { 0 };
+	DbgDisasmAt(reg->cip, &instr);
+	BASIC_INSTRUCTION_INFO basic_info = { 0 };
+	DbgDisasmFastAt(reg->cip, &basic_info);
+	if (basic_info.call)
+	{
+		asm_json["type"] = "call";
+		asm_json["call"] = make_call_json(reg);
+	}
+	else if (instr.type == instr_normal)
+	{
+		asm_json["type"] = "normal";
+	}
+	else if (instr.type == instr_branch)
+	{
+		asm_json["type"] = "branch";
+	}
+	else if (instr.type == instr_stack)
+	{
+		asm_json["type"] = "stack";
+	}
+	else
+	{
+		asm_json["type"] = "other";
+	}
+	asm_json["instruction"] = instr.instruction;
+	asm_json["size"] = instr.instr_size;
+	asm_json["argcount"] = instr.argcount;
+	asm_json["arg"] = json::array();
+	for (int i = 0; i < instr.argcount; i++)
+	{
+		json arg = json::object();
+		if (instr.arg[i].type == arg_normal)
+		{
+			arg["type"] = "normal";
+		}
+		else if (instr.arg[i].type == arg_memory)
+		{
+			arg["type"] = "memory";
+		}
+		else
+		{
+			arg["type"] = "other";
+		}
+		if (instr.arg[i].segment == SEG_DEFAULT)
+		{
+			arg["segment"] = "default";
+		}
+		else if (instr.arg[i].segment == SEG_CS)
+		{
+			arg["segment"] = "cs";
+		}
+		else if (instr.arg[i].segment == SEG_DS)
+		{
+			arg["segment"] = "ds";
+		}
+		else if (instr.arg[i].segment == SEG_ES)
+		{
+			arg["segment"] = "es";
+		}
+		else if (instr.arg[i].segment == SEG_FS)
+		{
+			arg["segment"] = "fs";
+		}
+		else if (instr.arg[i].segment == SEG_GS)
+		{
+			arg["segment"] = "gs";
+		}
+		else if (instr.arg[i].segment == SEG_SS)
+		{
+			arg["segment"] = "ss";
+		}
+		else
+		{
+			arg["segment"] = "other";
+		}
+		arg["mnemonic"] = instr.arg[i].mnemonic;
+		arg["constant"] = instr.arg[i].constant;
+		arg["value"] = make_address_json(instr.arg[i].value);
+		arg["memvalue"] = make_address_json(instr.arg[i].memvalue);
+		asm_json["arg"].push_back(arg);
+	}
+	return asm_json;
+}
+
+
 json log_instruction()
 {
 	json inst_json = json::object();
@@ -160,16 +169,8 @@ json log_instruction()
 	make_address_label_string(reg.cip, label_text, sizeof(label_text));
 	inst_json["label"] = label_text;
 
-	DISASM_INSTR instr = { 0 };
-	DbgDisasmAt(reg.cip, &instr);
-	inst_json["asm"] = make_asm_json(&instr);
+	inst_json["asm"] = make_asm_json(&reg);
 
-	BASIC_INSTRUCTION_INFO basic_info = { 0 };
-	DbgDisasmFastAt(reg.cip, &basic_info);
-	if (basic_info.call)
-	{
-		inst_json["call"] = make_call_json(&reg);
-	}
 	char comment_text[MAX_COMMENT_SIZE] = { 0 };
 	if (DbgGetCommentAt(reg.cip, comment_text))
 	{
