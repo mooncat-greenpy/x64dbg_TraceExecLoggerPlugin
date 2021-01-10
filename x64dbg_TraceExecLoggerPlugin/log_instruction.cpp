@@ -68,6 +68,7 @@ json make_asm_json(REGISTERCONTEXT* reg)
 	{
 		asm_json["type"] = "call";
 		asm_json["call"] = make_call_json(reg);
+		DbgCmdExecDirect("analxrefs");
 	}
 	else if (instr.type == instr_normal)
 	{
@@ -76,6 +77,7 @@ json make_asm_json(REGISTERCONTEXT* reg)
 	else if (instr.type == instr_branch)
 	{
 		asm_json["type"] = "branch";
+		DbgCmdExecDirect("analxrefs");
 	}
 	else if (instr.type == instr_stack)
 	{
@@ -159,15 +161,11 @@ json log_instruction()
 	REGISTERCONTEXT reg = reg_dump.regcontext;
 
 	inst_json["type"] = "instruction";
-	inst_json["address"] = reg.cip;
+	inst_json["address"] = make_address_json(reg.cip);
 
 	char asm_string[DEFAULT_BUF_SIZE] = { 0 };
 	GuiGetDisassembly(reg.cip, asm_string);
 	inst_json["asm_str"] = asm_string;
-
-	char label_text[DEFAULT_BUF_SIZE] = { 0 };
-	make_address_label_string(reg.cip, label_text, sizeof(label_text));
-	inst_json["label"] = label_text;
 
 	inst_json["asm"] = make_asm_json(&reg);
 

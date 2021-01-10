@@ -26,7 +26,7 @@ json log_stack()
 		STACK_COMMENT comment = { 0 };
 		if (!DbgMemIsValidReadPtr(stack_addr))
 		{
-			tmp_json["address"] = stack_addr;
+			tmp_json["address"] = make_address_json(stack_addr);
 			tmp_json["value"] = "";
 			tmp_json["comment"] = "";
 			stack_json["data"].push_back(tmp_json);
@@ -34,7 +34,7 @@ json log_stack()
 		}
 		DbgMemRead(stack_addr, &stack_value, sizeof(stack_value));
 
-		tmp_json["address"] = stack_addr;
+		tmp_json["address"] = make_address_json(stack_addr);
 		tmp_json["value"] = make_address_json(stack_value);
 		if (DbgStackCommentGet(stack_addr, &comment))
 		{

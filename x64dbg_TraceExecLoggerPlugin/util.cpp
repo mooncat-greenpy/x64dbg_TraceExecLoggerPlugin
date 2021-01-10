@@ -105,5 +105,37 @@ json make_address_json(duint addr)
 	}
 	address_json["data"] = text;
 
+	address_json["xref"] = json::array();
+	XREF_INFO xref_info = { 0 };
+	if (DbgXrefGet(addr, &xref_info))
+	{
+		for (int i = 0; i < xref_info.refcount; i++)
+		{
+			json xref_json = json::object();
+
+			xref_json["address"] = json::object();
+			xref_json["address"]["value"] = xref_info.references[i].addr;
+			ZeroMemory(label_text, sizeof(label_text));
+			make_address_label_string(xref_info.references[i].addr, label_text, sizeof(label_text));
+			xref_json["address"]["label"] = label_text;
+
+			switch (xref_info.references[i].type)
+			{
+			case XREF_DATA:
+				xref_json["type"] = "data";
+				break;
+			case XREF_JMP:
+				xref_json["type"] = "jmp";
+				break;
+			case XREF_CALL:
+				xref_json["type"] = "call";
+				break;
+			default:
+				xref_json["type"] = "none";
+			}
+			address_json["xref"].push_back(xref_json);
+		}
+	}
+
 	return address_json;
 }
