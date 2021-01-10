@@ -3,6 +3,7 @@
 static int current_thread_number = 0;
 static int skip_addr = 0;
 std::vector<duint> auto_run_breakpoints;
+static bool stepover_enabled = false;
 
 
 void add_breakpoint(duint addr)
@@ -66,13 +67,19 @@ void run_debug()
 	{
 		remove_breakpoint(cip);
 		set_auto_run_enabled(false);
+		stepover_enabled = false;
 		return;
 	}
 
 	char cmd[DEFAULT_BUF_SIZE] = { 0 };
 	_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "threadswitch %x", thread_id);
 	DbgCmdExecDirect(cmd);
-	DbgCmdExec("TraceIntoConditional 0, 50");
+	if (stepover_enabled) {
+		DbgCmdExec("TraceOverConditional 0, 50");
+	}
+	else {
+		DbgCmdExec("TraceIntoConditional 0, 50");
+	}
 	telogger_logprintf("Auto Run: ThreadID = %x, Address = %p\n", thread_id, cip);
 }
 
@@ -127,12 +134,20 @@ bool auto_run_command_callback(int argc, char* argv[])
 		add_breakpoint(value);
 		telogger_logprintf("Add Auto Run BP: %p\n", (char*)value);
 
-		if (strstr(argv[0], "start"))
+		if (strstr(argv[0], "starti"))
 		{
 			set_auto_run_enabled(true);
 			DbgCmdExec("StepInto");
 			telogger_logputs("Start Auto Run");
 		}
+		else if (strstr(argv[0], "starto"))
+		{
+			set_auto_run_enabled(true);
+			stepover_enabled = true;
+			DbgCmdExec("StepOver");
+			telogger_logputs("Start Auto Run");
+		}
+
 	}
 	else if (strstr(argv[0], "call"))
 	{
@@ -169,7 +184,8 @@ bool init_auto_run(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.auto.enable", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.disable", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.addbp", auto_run_command_callback, false);
-	_plugin_registercommand(pluginHandle, "TElogger.auto.start", auto_run_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.auto.starti", auto_run_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.auto.starto", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.call", auto_run_command_callback, false);
 	return true;
 }
@@ -181,7 +197,8 @@ bool stop_auto_run()
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.disable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.addbp");
-	_plugin_unregistercommand(pluginHandle, "TElogger.auto.start");
+	_plugin_unregistercommand(pluginHandle, "TElogger.auto.starti");
+	_plugin_unregistercommand(pluginHandle, "TElogger.auto.starto");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.call");
 	return true;
 }
