@@ -9,6 +9,7 @@ void log_proc_info()
 	}
 
 	json entry = json::object();
+	entry["type"] = "proc log";
 	entry["module"] = log_module();
 	entry["thread"] = log_thread();
 	entry["memory"] = log_memory();
@@ -24,6 +25,7 @@ void log_exec()
 	}
 
 	json entry = json::object();
+	entry["type"] = "log";
 	entry["inst"] = log_instruction();
 	entry["reg"] = log_register();
 	entry["stack"] = log_stack();

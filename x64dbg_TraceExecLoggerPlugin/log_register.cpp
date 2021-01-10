@@ -33,6 +33,19 @@ json log_register()
 	reg_json["r14"] = make_address_json(reg.r14);
 	reg_json["r15"] = make_address_json(reg.r15);
 #endif
+
+	FLAGS flags = reg_dump.flags;
+	json flags_json = json::object();
+	flags_json["zf"] = flags.z;
+	flags_json["of"] = flags.o;
+	flags_json["cf"] = flags.c;
+	flags_json["pf"] = flags.p;
+	flags_json["sf"] = flags.s;
+	flags_json["tf"] = flags.t;
+	flags_json["af"] = flags.a;
+	flags_json["df"] = flags.d;
+	flags_json["if"] = flags.i;
+	reg_json["flags"] = flags_json;
 	return reg_json;
 }
 
