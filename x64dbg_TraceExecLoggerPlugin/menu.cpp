@@ -157,7 +157,7 @@ void menu_callback(PLUG_CB_MENUENTRY* info)
 		BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_MEMORY_ENABLED, memory_enabled);
 		break;
 	case MENU_AUTO_RUN_ENABLED:
-		auto_run_enabled = !auto_run_enabled;
+		_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_RUN_ENABLED, auto_run_enabled);
 		break;
 	case MENU_HELP:
 	default:

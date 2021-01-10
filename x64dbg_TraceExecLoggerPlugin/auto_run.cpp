@@ -125,7 +125,7 @@ bool auto_run_command_callback(int argc, char* argv[])
 		}
 
 		add_breakpoint(value);
-		telogger_logprintf("Auto Run Add BP: %x\n", value);
+		telogger_logprintf("Add Auto Run BP: %p\n", (char*)value);
 
 		if (strstr(argv[0], "start"))
 		{
@@ -133,6 +133,31 @@ bool auto_run_command_callback(int argc, char* argv[])
 			DbgCmdExec("StepInto");
 			telogger_logputs("Start Auto Run");
 		}
+	}
+	else if (strstr(argv[0], "call"))
+	{
+		duint cip = 0;
+		bool result_eval = false;
+		cip = DbgEval("cip", &result_eval);
+		if (!result_eval)
+		{
+			telogger_logputs("Failed: Get cip");
+		}
+		BASIC_INSTRUCTION_INFO basic_info = { 0 };
+		DbgDisasmFastAt(cip, &basic_info);
+		if (!basic_info.call)
+		{
+			telogger_logputs("Failed: Not call");
+			return false;
+		}
+
+		duint next_cip = cip + basic_info.size;
+		add_breakpoint(next_cip);
+		telogger_logprintf("Add Auto Run BP: %p\n", (char*)next_cip);
+
+		set_auto_run_enabled(true);
+		DbgCmdExec("StepInto");
+		telogger_logputs("Start Auto Run");
 	}
 	return true;
 }
@@ -145,6 +170,7 @@ bool init_auto_run(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.auto.disable", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.addbp", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.start", auto_run_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.auto.call", auto_run_command_callback, false);
 	return true;
 }
 
@@ -156,6 +182,7 @@ bool stop_auto_run()
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.disable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.addbp");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.start");
+	_plugin_unregistercommand(pluginHandle, "TElogger.auto.call");
 	return true;
 }
 
