@@ -52,24 +52,25 @@ void create_thread_log(int thread_id)
 
 void save_log(int thread_id)
 {
-    if (log_state[thread_id].log.size() < 1)
+    THREAD_LOG_STATE thread_log = log_state[thread_id];
+    if (thread_log.log.size() < 1)
     {
         return;
     }
 
-    int count = log_state[thread_id].count;
+    int count = thread_log.count;
     int number = (count - 1) / MAX_LOG_COUNT;
 
     json save_info = json::object();
-    save_info["process_id"] = log_state[thread_id].process_id;
-    save_info["thread_id"] = log_state[thread_id].thread_id;
-    save_info["file_name"] = log_state[thread_id].file_name;
-    save_info["count"] = log_state[thread_id].log.size();
-    save_info["log"] = log_state[thread_id].log;
+    save_info["process_id"] = thread_log.process_id;
+    save_info["thread_id"] = thread_log.thread_id;
+    save_info["file_name"] = thread_log.file_name;
+    save_info["count"] = thread_log.log.size();
+    save_info["log"] = thread_log.log;
 
     HANDLE log_file_handle = INVALID_HANDLE_VALUE;
     char log_file_name[MAX_PATH] = { 0 };
-    _snprintf_s(log_file_name, sizeof(log_file_name), _TRUNCATE, "%s\\%s_%#x_%d.json", get_save_dir(), log_state[thread_id].file_name, thread_id, number);
+    _snprintf_s(log_file_name, sizeof(log_file_name), _TRUNCATE, "%s\\%s_%#x_%#x_%d.json", get_save_dir(), thread_log.file_name, thread_log.process_id, thread_log.thread_id, number);
     log_file_handle = CreateFileA(log_file_name, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (log_file_handle == INVALID_HANDLE_VALUE)
     {
@@ -81,7 +82,7 @@ void save_log(int thread_id)
     WriteFile(log_file_handle, save_info.dump().c_str(), strlen(save_info.dump().c_str()), &written, NULL);
 
     CloseHandle(log_file_handle);
-    telogger_logprintf("Save Log: thread id = %#x, name = %s\n", thread_id, log_state[thread_id].file_name);
+    telogger_logprintf("Save Log: thread id = %#x, name = %s\n", thread_id, thread_log.file_name);
 
     log_state.erase(thread_id);
     create_thread_log(thread_id);
