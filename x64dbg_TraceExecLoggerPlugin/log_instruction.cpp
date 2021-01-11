@@ -77,7 +77,6 @@ json make_asm_json(REGISTERCONTEXT* reg)
 	else if (instr.type == instr_branch)
 	{
 		asm_json["type"] = "branch";
-		DbgCmdExecDirect("analxrefs");
 	}
 	else if (instr.type == instr_stack)
 	{

@@ -10,6 +10,7 @@ static bool proc_enabled = true;
 static bool module_enabled = true;
 static bool thread_enabled = true;
 static bool memory_enabled = true;
+static bool handle_enabled = true;
 static char save_dir[MAX_SETTING_SIZE] = { 0 };
 static bool auto_run_enabled = false;
 
@@ -93,6 +94,16 @@ void set_memory_enabled(bool value)
 	_plugin_menuentrysetchecked(pluginHandle, MENU_PROC_MEMORY_ENABLED, memory_enabled);
 	BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_MEMORY_ENABLED, memory_enabled);
 }
+bool get_handle_enabled()
+{
+	return handle_enabled;
+}
+void set_handle_enabled(bool value)
+{
+	handle_enabled = value;
+	_plugin_menuentrysetchecked(pluginHandle, MENU_PROC_HANDLE_ENABLED, handle_enabled);
+	BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_HANDLE_ENABLED, handle_enabled);
+}
 const char* get_save_dir()
 {
 	return save_dir;
@@ -119,6 +130,7 @@ void set_auto_run_enabled(bool value)
 	auto_run_enabled = value;
 	_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_RUN_ENABLED, auto_run_enabled);
 }
+
 
 void menu_callback(PLUG_CB_MENUENTRY* info)
 {
@@ -155,6 +167,10 @@ void menu_callback(PLUG_CB_MENUENTRY* info)
 	case MENU_PROC_MEMORY_ENABLED:
 		memory_enabled = !memory_enabled;
 		BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_MEMORY_ENABLED, memory_enabled);
+		break;
+	case MENU_PROC_HANDLE_ENABLED:
+		handle_enabled = !handle_enabled;
+		BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_HANDLE_ENABLED, handle_enabled);
 		break;
 	case MENU_AUTO_RUN_ENABLED:
 		_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_RUN_ENABLED, auto_run_enabled);
@@ -193,6 +209,8 @@ void init_menu()
 	thread_enabled = !!setting;
 	BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_MEMORY_ENABLED, &setting);
 	memory_enabled = !!setting;
+	BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_HANDLE_ENABLED, &setting);
+	handle_enabled = !!setting;
 
 	BridgeSettingGet(PLUGIN_NAME, MENU_LABEL_SAVE_DIR, save_dir);
 	if (strlen(save_dir) == 0)
@@ -229,6 +247,8 @@ void setup_menu()
 	_plugin_menuentrysetchecked(pluginHandle, MENU_PROC_THREAD_ENABLED, thread_enabled);
 	_plugin_menuaddentry(proc_info_handle, MENU_PROC_MEMORY_ENABLED, MENU_LABEL_MEMORY_ENABLED);
 	_plugin_menuentrysetchecked(pluginHandle, MENU_PROC_MEMORY_ENABLED, memory_enabled);
+	_plugin_menuaddentry(proc_info_handle, MENU_PROC_HANDLE_ENABLED, MENU_LABEL_HANDLE_ENABLED);
+	_plugin_menuentrysetchecked(pluginHandle, MENU_PROC_HANDLE_ENABLED, handle_enabled);
 
 	_plugin_menuaddentry(hMenu, MENU_AUTO_RUN_ENABLED, MENU_LABEL_AUTO_RUN_ENABLED);
 	_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_RUN_ENABLED, auto_run_enabled);

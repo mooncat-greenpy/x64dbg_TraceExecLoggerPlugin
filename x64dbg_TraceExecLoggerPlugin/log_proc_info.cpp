@@ -238,6 +238,38 @@ json log_memory()
 }
 
 
+json log_handle()
+{
+	json handle_json = json::object();
+	BridgeList<HANDLEINFO> handles;
+	if (!get_handle_enabled() || !DbgFunctions()->EnumHandles(&handles))
+	{
+		return handle_json;
+	}
+
+	int count = handles.Count();
+	handle_json["type"] = "handle";
+	handle_json["count"] = count;
+	handle_json["list"] = json::array();
+
+	for (int i = 0; i < count; i++)
+	{
+		HANDLEINFO handle = handles[i];
+		char handle_name[MAX_STRING_SIZE] = { 0 };
+		char type_name[MAX_STRING_SIZE] = { 0 };
+		DbgFunctions()->GetHandleName(handle.Handle, handle_name, sizeof(handle_name), type_name, sizeof(type_name));
+		json handle_entry = json::object();
+		handle_entry["value"] = handle.Handle;
+		handle_entry["name"] = handle_name;
+		handle_entry["type"] = type_name;
+		handle_entry["granted_access"] = handle.GrantedAccess;
+		handle_json["list"].push_back(handle_entry);
+	}
+
+	return handle_json;
+}
+
+
 bool module_command_callback(int argc, char* argv[])
 {
 	if (argc < 1)
@@ -325,6 +357,35 @@ bool memory_command_callback(int argc, char* argv[])
 }
 
 
+bool handle_command_callback(int argc, char* argv[])
+{
+	if (argc < 1)
+	{
+		return false;
+	}
+	if (strstr(argv[0], "help"))
+	{
+		telogger_logputs("Handle Help\n"
+			"Command:\n"
+			"    TElogger.proc.handle.help\n"
+			"    TElogger.proc.handle.enable\n"
+			"    TElogger.proc.handle.disable\n");
+	}
+	else if (strstr(argv[0], "enable"))
+	{
+		set_handle_enabled(true);
+		telogger_logputs("Handle Log: Enabled");
+	}
+	else if (strstr(argv[0], "disable"))
+	{
+		set_handle_enabled(false);
+		telogger_logputs("Handle Log: Disabled");
+	}
+
+	return true;
+}
+
+
 bool init_proc_info_log(PLUG_INITSTRUCT* init_struct)
 {
 	_plugin_registercommand(pluginHandle, "TElogger.proc.module.help", module_command_callback, false);
@@ -336,6 +397,9 @@ bool init_proc_info_log(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.proc.memory.help", memory_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.proc.memory.enable", memory_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.proc.memory.disable", memory_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.proc.handle.help", handle_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.proc.handle.enable", handle_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.proc.handle.disable", handle_command_callback, false);
 	return true;
 }
 

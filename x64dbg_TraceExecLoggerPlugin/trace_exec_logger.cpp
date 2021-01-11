@@ -13,6 +13,8 @@ void log_proc_info()
 	entry["module"] = log_module();
 	entry["thread"] = log_thread();
 	entry["memory"] = log_memory();
+	entry["handle"] = log_handle();
+
 	add_log(DbgGetThreadId(), &entry);
 }
 
