@@ -46,6 +46,14 @@ json log_register()
 	flags_json["df"] = flags.d;
 	flags_json["if"] = flags.i;
 	reg_json["flags"] = flags_json;
+
+	reg_json["error"] = json::object();
+	reg_json["error"]["name"]=reg_dump.lastError.name;
+	reg_json["error"]["value"] = reg_dump.lastError.code;
+	reg_json["status"] = json::object();
+	reg_json["status"]["name"]=reg_dump.lastStatus.name;
+	reg_json["status"]["value"] = reg_dump.lastStatus.code;
+
 	return reg_json;
 }
 
