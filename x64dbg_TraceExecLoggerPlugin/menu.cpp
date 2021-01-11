@@ -11,6 +11,7 @@ static bool module_enabled = true;
 static bool thread_enabled = true;
 static bool memory_enabled = true;
 static bool handle_enabled = true;
+static bool network_enabled = true;
 static char save_dir[MAX_SETTING_SIZE] = { 0 };
 static bool auto_run_enabled = false;
 
@@ -104,6 +105,16 @@ void set_handle_enabled(bool value)
 	_plugin_menuentrysetchecked(pluginHandle, MENU_PROC_HANDLE_ENABLED, handle_enabled);
 	BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_HANDLE_ENABLED, handle_enabled);
 }
+bool get_network_enabled()
+{
+	return network_enabled;
+}
+void set_network_enabled(bool value)
+{
+	network_enabled = value;
+	_plugin_menuentrysetchecked(pluginHandle, MENU_PROC_NETWORK_ENABLED, network_enabled);
+	BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_NETWORK_ENABLED, network_enabled);
+}
 const char* get_save_dir()
 {
 	return save_dir;
@@ -172,6 +183,10 @@ void menu_callback(PLUG_CB_MENUENTRY* info)
 		handle_enabled = !handle_enabled;
 		BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_HANDLE_ENABLED, handle_enabled);
 		break;
+	case MENU_PROC_NETWORK_ENABLED:
+		network_enabled = !network_enabled;
+		BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_NETWORK_ENABLED, network_enabled);
+		break;
 	case MENU_AUTO_RUN_ENABLED:
 		_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_RUN_ENABLED, auto_run_enabled);
 		break;
@@ -211,6 +226,8 @@ void init_menu()
 	memory_enabled = !!setting;
 	BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_HANDLE_ENABLED, &setting);
 	handle_enabled = !!setting;
+	BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_NETWORK_ENABLED, &setting);
+	network_enabled = !!setting;
 
 	BridgeSettingGet(PLUGIN_NAME, MENU_LABEL_SAVE_DIR, save_dir);
 	if (strlen(save_dir) == 0)
@@ -249,6 +266,8 @@ void setup_menu()
 	_plugin_menuentrysetchecked(pluginHandle, MENU_PROC_MEMORY_ENABLED, memory_enabled);
 	_plugin_menuaddentry(proc_info_handle, MENU_PROC_HANDLE_ENABLED, MENU_LABEL_HANDLE_ENABLED);
 	_plugin_menuentrysetchecked(pluginHandle, MENU_PROC_HANDLE_ENABLED, handle_enabled);
+	_plugin_menuaddentry(proc_info_handle, MENU_PROC_NETWORK_ENABLED, MENU_LABEL_NETWORK_ENABLED);
+	_plugin_menuentrysetchecked(pluginHandle, MENU_PROC_NETWORK_ENABLED, network_enabled);
 
 	_plugin_menuaddentry(hMenu, MENU_AUTO_RUN_ENABLED, MENU_LABEL_AUTO_RUN_ENABLED);
 	_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_RUN_ENABLED, auto_run_enabled);

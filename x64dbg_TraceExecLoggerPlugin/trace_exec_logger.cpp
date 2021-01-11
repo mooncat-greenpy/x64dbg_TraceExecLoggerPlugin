@@ -14,6 +14,7 @@ void log_proc_info()
 	entry["thread"] = log_thread();
 	entry["memory"] = log_memory();
 	entry["handle"] = log_handle();
+	entry["network"] = log_network();
 
 	add_log(DbgGetThreadId(), &entry);
 }

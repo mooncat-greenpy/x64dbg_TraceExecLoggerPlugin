@@ -270,6 +270,40 @@ json log_handle()
 }
 
 
+json log_network()
+{
+	json network_json = json::object();
+	BridgeList<TCPCONNECTIONINFO> connections;
+	if (!get_network_enabled() || !DbgFunctions()->EnumTcpConnections(&connections))
+	{
+		return network_json;
+	}
+
+	int count = connections.Count();
+	network_json["type"] = "network";
+	network_json["count"] = count;
+	network_json["list"] = json::array();
+
+	for (int i = 0; i < count; i++)
+	{
+		TCPCONNECTIONINFO connection = connections[i];
+		json network_entry = json::object();
+		network_entry["remote"] = json::object();
+		network_entry["remote"]["address"] = connection.RemoteAddress;
+		network_entry["remote"]["port"] = connection.RemotePort;
+		network_entry["local"] = json::object();
+		network_entry["local"]["address"] = connection.LocalAddress;
+		network_entry["local"]["port"] = connection.LocalPort;
+		network_entry["state"] = json::object();
+		network_entry["state"]["text"] = connection.StateText;
+		network_entry["state"]["value"] = connection.State;
+		network_json.push_back(network_entry);
+	}
+
+	return network_json;
+}
+
+
 bool module_command_callback(int argc, char* argv[])
 {
 	if (argc < 1)
@@ -386,6 +420,35 @@ bool handle_command_callback(int argc, char* argv[])
 }
 
 
+bool network_command_callback(int argc, char* argv[])
+{
+	if (argc < 1)
+	{
+		return false;
+	}
+	if (strstr(argv[0], "help"))
+	{
+		telogger_logputs("Network Help\n"
+			"Command:\n"
+			"    TElogger.proc.network.help\n"
+			"    TElogger.proc.network.enable\n"
+			"    TElogger.proc.network.disable\n");
+	}
+	else if (strstr(argv[0], "enable"))
+	{
+		set_network_enabled(true);
+		telogger_logputs("Network Log: Enabled");
+	}
+	else if (strstr(argv[0], "disable"))
+	{
+		set_network_enabled(false);
+		telogger_logputs("Network Log: Disabled");
+	}
+
+	return true;
+}
+
+
 bool init_proc_info_log(PLUG_INITSTRUCT* init_struct)
 {
 	_plugin_registercommand(pluginHandle, "TElogger.proc.module.help", module_command_callback, false);
@@ -400,6 +463,9 @@ bool init_proc_info_log(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.proc.handle.help", handle_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.proc.handle.enable", handle_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.proc.handle.disable", handle_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.proc.network.help", network_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.proc.network.enable", network_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.proc.network.disable", network_command_callback, false);
 	return true;
 }
 
@@ -415,6 +481,12 @@ bool stop_proc_info_log()
 	_plugin_unregistercommand(pluginHandle, "TElogger.proc.memory.help");
 	_plugin_unregistercommand(pluginHandle, "TElogger.proc.memory.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.proc.memory.disable");
+	_plugin_unregistercommand(pluginHandle, "TElogger.proc.handle.help");
+	_plugin_unregistercommand(pluginHandle, "TElogger.proc.handle.enable");
+	_plugin_unregistercommand(pluginHandle, "TElogger.proc.handle.disable");
+	_plugin_unregistercommand(pluginHandle, "TElogger.proc.network.help");
+	_plugin_unregistercommand(pluginHandle, "TElogger.proc.network.enable");
+	_plugin_unregistercommand(pluginHandle, "TElogger.proc.network.disable");
 	return true;
 }
 
