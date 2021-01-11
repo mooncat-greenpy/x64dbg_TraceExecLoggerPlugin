@@ -43,6 +43,12 @@ void create_thread_log(int thread_id)
         strncpy_s(log_state[thread_id].file_name, MAX_PATH, "x64dbgtmp", _TRUNCATE);
     }
 
+    size_t cmd_line_size = MAX_STRING_SIZE;
+    if (!DbgFunctions()->GetCmdline(log_state[thread_id].cmd_line, &cmd_line_size))
+    {
+        strncpy_s(log_state[thread_id].cmd_line, MAX_STRING_SIZE, "error", _TRUNCATE);
+    }
+
     log_state[thread_id].process_id = DbgGetProcessId();
     log_state[thread_id].thread_id = thread_id;
 
@@ -65,6 +71,7 @@ void save_log(int thread_id)
     save_info["process_id"] = thread_log.process_id;
     save_info["thread_id"] = thread_log.thread_id;
     save_info["file_name"] = thread_log.file_name;
+    save_info["cmd_line"] = thread_log.cmd_line;
     save_info["count"] = thread_log.log.size();
     save_info["log"] = thread_log.log;
 

@@ -6,6 +6,7 @@
 typedef struct _THREAD_LOG_STATE
 {
     char file_name[MAX_PATH] = { 0 };
+    char cmd_line[MAX_STRING_SIZE] = { 0 };
     json log = json::array();
     int count = 0;
     int process_id = 0;
