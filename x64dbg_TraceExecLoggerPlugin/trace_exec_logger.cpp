@@ -4,9 +4,9 @@
 static duint skip_breakpoints_log_addr = 0;
 
 
-void log_proc_info()
+void log_proc_info(const char* msg)
 {
-	if (!get_proc_enabled())
+	if (msg == NULL || !get_proc_enabled())
 	{
 		return;
 	}
@@ -18,14 +18,15 @@ void log_proc_info()
 	entry["memory"] = log_memory();
 	entry["handle"] = log_handle();
 	entry["network"] = log_network();
+	entry["message"] = msg;
 
 	add_log(DbgGetThreadId(), &entry);
 }
 
 
-void log_exec()
+void log_exec(const char* msg)
 {
-	if (!get_telogger_enabled() || !should_log())
+	if (msg == NULL || !get_telogger_enabled() || !should_log())
 	{
 		return;
 	}
@@ -35,6 +36,7 @@ void log_exec()
 	entry["inst"] = log_instruction();
 	entry["reg"] = log_register();
 	entry["stack"] = log_stack();
+	entry["message"] = msg;
 	add_log(DbgGetThreadId(), &entry);
 }
 
@@ -56,7 +58,7 @@ bool command_callback(int argc, char* argv[])
 	}
 	else if (strstr(argv[0], "proc.log"))
 	{
-		log_proc_info();
+		log_proc_info("Command Log");
 	}
 	else if (strstr(argv[0], "proc.enable"))
 	{
@@ -114,14 +116,14 @@ extern "C" __declspec(dllexport) void CBMENUENTRY(CBTYPE, PLUG_CB_MENUENTRY* inf
 
 extern "C" __declspec(dllexport) void CBTRACEEXECUTE(CBTYPE, PLUG_CB_TRACEEXECUTE* info)
 {
-	log_exec();
+	log_exec("Trace Execute Log");
 	skip_breakpoints_log_addr = info->cip;
 }
 
 
 extern "C" __declspec(dllexport) void CBSTEPPED(CBTYPE, PLUG_CB_STEPPED* info)
 {
-	log_exec();
+	log_exec("Stepped Log");
 	bool result = false;
 	duint cip = DbgEval("cip", &result);
 	if (result)
@@ -135,7 +137,7 @@ extern "C" __declspec(dllexport) void CBBREAKPOINT(CBTYPE, PLUG_CB_BREAKPOINT * 
 {
 	if (skip_breakpoints_log_addr == 0 || skip_breakpoints_log_addr != info->breakpoint->addr)
 	{
-		log_exec();
+		log_exec("Breakpoint Log");
 	}
 	run_debug();
 	skip_breakpoints_log_addr = 0;
@@ -188,7 +190,7 @@ extern "C" __declspec(dllexport) void CBCREATEPROCESS(CBTYPE, PLUG_CB_CREATEPROC
 extern "C" __declspec(dllexport) void CBCREATETHREAD(CBTYPE, PLUG_CB_CREATETHREAD * info)
 {
 	telogger_logprintf("CREATETHREAD ID = %d\n", info->dwThreadId);
-	log_proc_info();
+	log_proc_info("Create Thread Log");
 	char cmd[DEFAULT_BUF_SIZE] = { 0 };
 	_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerStartThread, ss", info->CreateThread->lpStartAddress);
 	DbgCmdExecDirect(cmd);
@@ -198,7 +200,7 @@ extern "C" __declspec(dllexport) void CBCREATETHREAD(CBTYPE, PLUG_CB_CREATETHREA
 extern "C" __declspec(dllexport) void CBLOADDLL(CBTYPE, PLUG_CB_LOADDLL * info)
 {
 	telogger_logprintf("LOADDLL %s\n", info->modname);
-	log_proc_info();
+	log_proc_info("Load Dll Log");
 }
 
 

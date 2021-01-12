@@ -13,7 +13,7 @@
 #define DEFAULT_BUF_SIZE 0x500
 #define MAX_LOG_COUNT 50000
 
-void log_proc_info();
+void log_proc_info(const char* msg);
 
 bool init_logger_plugin(PLUG_INITSTRUCT* init_struct);
 bool stop_logger_plugin();
