@@ -1,6 +1,9 @@
 #include "trace_exec_logger.h"
 
 
+static duint skip_breakpoints_log_addr = 0;
+
+
 void log_proc_info()
 {
 	if (!get_proc_enabled())
@@ -112,18 +115,30 @@ extern "C" __declspec(dllexport) void CBMENUENTRY(CBTYPE, PLUG_CB_MENUENTRY* inf
 extern "C" __declspec(dllexport) void CBTRACEEXECUTE(CBTYPE, PLUG_CB_TRACEEXECUTE* info)
 {
 	log_exec();
+	skip_breakpoints_log_addr = info->cip;
 }
 
 
 extern "C" __declspec(dllexport) void CBSTEPPED(CBTYPE, PLUG_CB_STEPPED* info)
 {
 	log_exec();
+	bool result = false;
+	duint cip = DbgEval("cip", &result);
+	if (result)
+	{
+		skip_breakpoints_log_addr = cip;
+	}
 }
 
 
 extern "C" __declspec(dllexport) void CBBREAKPOINT(CBTYPE, PLUG_CB_BREAKPOINT * info)
 {
+	if (skip_breakpoints_log_addr == 0 || skip_breakpoints_log_addr != info->breakpoint->addr)
+	{
+		log_exec();
+	}
 	run_debug();
+	skip_breakpoints_log_addr = 0;
 }
 
 
