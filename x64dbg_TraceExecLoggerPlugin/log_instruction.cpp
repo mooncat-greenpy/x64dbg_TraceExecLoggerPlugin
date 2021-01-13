@@ -68,8 +68,6 @@ json make_asm_json(REGISTERCONTEXT* reg)
 	{
 		asm_json["type"] = "call";
 		asm_json["call"] = make_call_json(reg);
-		// TODO: relocation
-		DbgCmdExecDirect("analxrefs");
 	}
 	else if (instr.type == instr_normal)
 	{
