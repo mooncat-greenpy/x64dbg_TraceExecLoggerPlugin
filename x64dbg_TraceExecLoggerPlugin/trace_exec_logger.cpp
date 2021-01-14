@@ -38,13 +38,14 @@ void log_exec(const char* msg)
 
 	json entry = json::object();
 	entry["type"] = "log";
-	// 629 micro seconds
+	// 491 micro seconds
 	entry["inst"] = log_instruction();
-	// 441 micro seconds
+	// 364 micro seconds
 	entry["reg"] = log_register();
-	// 1931 micro seconds
+	// 1476 micro seconds
 	entry["stack"] = log_stack();
 	entry["message"] = msg;
+
 	add_log(DbgGetThreadId(), &entry);
 }
 

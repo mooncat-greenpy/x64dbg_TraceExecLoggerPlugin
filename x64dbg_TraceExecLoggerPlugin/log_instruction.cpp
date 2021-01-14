@@ -3,11 +3,13 @@
 static int call_arg_log_count = 5;
 
 
-json make_call_json(REGISTERCONTEXT* reg)
+json make_call_json()
 {
 	json call_json = json::object();
-	if (!reg)
-	{
+
+	bool result = false;
+	duint csp = DbgEval("csp", &result);
+	if (!result) {
 		return call_json;
 	}
 	char value_name[20] = { 0 };
@@ -38,12 +40,12 @@ json make_call_json(REGISTERCONTEXT* reg)
 	for (int i = 0; i < call_arg_log_count; i++)
 	{
 		duint arg_offset = i * 4;
-		if (!DbgMemIsValidReadPtr(reg->csp + arg_offset))
+		if (!DbgMemIsValidReadPtr(csp + arg_offset))
 		{
 			continue;
 		}
 		duint tmp_value = 0;
-		DbgMemRead(reg->csp + arg_offset, &tmp_value, sizeof(tmp_value));
+		DbgMemRead(csp + arg_offset, &tmp_value, sizeof(tmp_value));
 		call_json["arg"].push_back(make_address_json(tmp_value));
 		_snprintf_s(value_name, sizeof(value_name), _TRUNCATE, "csp + %#x", (int)arg_offset);
 		call_json["arg"][i]["name"] = value_name;
@@ -53,29 +55,24 @@ json make_call_json(REGISTERCONTEXT* reg)
 }
 
 
-json make_asm_json(REGISTERCONTEXT* reg)
+json make_asm_json(duint cip)
 {
 	json asm_json = json::object();
-	if (!reg)
-	{
-		return asm_json;
-	}
+
 	DISASM_INSTR instr = { 0 };
-	DbgDisasmAt(reg->cip, &instr);
-	BASIC_INSTRUCTION_INFO basic_info = { 0 };
-	DbgDisasmFastAt(reg->cip, &basic_info);
-	if (basic_info.call)
-	{
-		asm_json["type"] = "call";
-		asm_json["call"] = make_call_json(reg);
-	}
-	else if (instr.type == instr_normal)
+	DbgDisasmAt(cip, &instr);
+	if (instr.type == instr_normal)
 	{
 		asm_json["type"] = "normal";
 	}
 	else if (instr.type == instr_branch)
 	{
 		asm_json["type"] = "branch";
+		if (strncmp(instr.instruction, "call", strlen("call")) == 0)
+		{
+			asm_json["type"] = "call";
+			asm_json["call"] = make_call_json();
+		}
 	}
 	else if (instr.type == instr_stack)
 	{
@@ -154,21 +151,23 @@ json log_instruction()
 		return inst_json;
 	}
 
-	REGDUMP reg_dump;
-	DbgGetRegDumpEx(&reg_dump, sizeof(reg_dump));
-	REGISTERCONTEXT reg = reg_dump.regcontext;
+	bool result = false;
+	duint cip = DbgEval("cip", &result);
+	if (!result) {
+		return inst_json;
+	}
 
 	inst_json["type"] = "instruction";
-	inst_json["address"] = make_address_json(reg.cip);
+	inst_json["address"] = make_address_json(cip);
 
 	char asm_string[DEFAULT_BUF_SIZE] = { 0 };
-	GuiGetDisassembly(reg.cip, asm_string);
+	GuiGetDisassembly(cip, asm_string);
 	inst_json["asm_str"] = asm_string;
 
-	inst_json["asm"] = make_asm_json(&reg);
+	inst_json["asm"] = make_asm_json(cip);
 
 	char comment_text[MAX_COMMENT_SIZE] = { 0 };
-	if (DbgGetCommentAt(reg.cip, comment_text))
+	if (DbgGetCommentAt(cip, comment_text))
 	{
 		inst_json["comment"] = comment_text;
 	}

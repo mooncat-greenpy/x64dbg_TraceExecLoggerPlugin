@@ -14,15 +14,19 @@ json log_stack()
 	stack_json["type"] = "stack";
 	stack_json["data"] = json::array();
 
-	REGDUMP reg_dump;
-	DbgGetRegDumpEx(&reg_dump, sizeof(reg_dump));
-	duint csp = reg_dump.regcontext.csp;
+	bool result = false;
+	duint csp = DbgEval("csp", &result);
+	if (!result) {
+		return stack_json;
+	}
+
+	duint* stack_value = stack_value = new duint[stack_log_count];
+	DbgMemRead(csp, stack_value, stack_log_count * sizeof(duint));
 
 	for (int i = 0; i < stack_log_count; i++)
 	{
 		json tmp_json = json::object();
 		duint stack_addr = csp + i * sizeof(duint);
-		duint stack_value = 0;
 		STACK_COMMENT comment = { 0 };
 		if (!DbgMemIsValidReadPtr(stack_addr))
 		{
@@ -32,10 +36,10 @@ json log_stack()
 			stack_json["data"].push_back(tmp_json);
 			continue;
 		}
-		DbgMemRead(stack_addr, &stack_value, sizeof(stack_value));
 
 		tmp_json["address"] = make_address_json(stack_addr);
-		tmp_json["value"] = make_address_json(stack_value);
+		tmp_json["value"] = make_address_json(stack_value[i]);
+
 		if (DbgStackCommentGet(stack_addr, &comment))
 		{
 			tmp_json["comment"] = comment.comment;
@@ -46,6 +50,7 @@ json log_stack()
 		}
 		stack_json["data"].push_back(tmp_json);
 	}
+	delete[] stack_value;
 
 	return stack_json;
 }
