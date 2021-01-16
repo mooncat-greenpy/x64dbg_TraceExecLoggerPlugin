@@ -21,8 +21,8 @@ char hex_database[][4] = {
 };
 
 
-std::unordered_map<duint, json> address_json_cache;
-std::list<duint> address_json_fifo;
+static std::unordered_map<duint, json> address_json_cache;
+static std::list<duint> address_json_fifo;
 
 
 void save_json_file(const char* file_name, SYSTEMTIME* system_time, int number, const char* buffer)
@@ -94,8 +94,9 @@ void make_hex_string(char* data, size_t data_size, char* text, size_t text_size)
 
 json make_address_json(duint addr)
 {
-	json cache_data = get_cache_data(address_json_cache, addr);
-	if (cache_data != NULL)
+	bool cache_result = false;
+	json cache_data = get_cache_data(address_json_cache, addr, &cache_result);
+	if (cache_result)
 	{
 		return cache_data;
 	}

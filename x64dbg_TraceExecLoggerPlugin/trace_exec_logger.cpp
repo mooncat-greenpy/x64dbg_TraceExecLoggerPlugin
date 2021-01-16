@@ -13,15 +13,10 @@ void log_proc_info(const char* msg)
 
 	json entry = json::object();
 	entry["type"] = "proc log";
-	// 306 micro seconds
 	entry["module"] = log_module();
-	// 484 micro seconds
 	entry["thread"] = log_thread();
-	// 4366 micro seconds
 	entry["memory"] = log_memory();
-	// 57192 micro seconds
 	entry["handle"] = log_handle();
-	// 374 micro seconds
 	entry["network"] = log_network();
 	entry["message"] = msg;
 
@@ -38,11 +33,11 @@ void log_exec(const char* msg)
 
 	json entry = json::object();
 	entry["type"] = "log";
-	// 491 micro seconds
+	// 363 micro seconds
 	entry["inst"] = log_instruction();
-	// 364 micro seconds
+	// 150 micro seconds
 	entry["reg"] = log_register();
-	// 1476 micro seconds
+	// 164 micro seconds
 	entry["stack"] = log_stack();
 	entry["message"] = msg;
 
