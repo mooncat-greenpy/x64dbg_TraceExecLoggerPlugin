@@ -47,3 +47,26 @@ void set_cache_string(std::map<std::pair<duint, duint>, std::string>& cache, std
 		fifo.pop_front();
 	}
 }
+
+
+std::string get_cache_string(std::unordered_map<duint, std::string>& cache, duint key, bool* result)
+{
+	if (cache.count(key) == 0) {
+		*result = false;
+		return std::string();
+	}
+	*result = true;
+	return cache[key];
+}
+
+
+void set_cache_string(std::unordered_map<duint, std::string>& cache, std::list<duint>& fifo, duint key, std::string data)
+{
+	cache[key] = data;
+	fifo.push_back(key);
+	if (cache.size() > 100)
+	{
+		cache.erase(*fifo.begin());
+		fifo.pop_front();
+	}
+}

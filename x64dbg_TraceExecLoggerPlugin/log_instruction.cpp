@@ -1,6 +1,10 @@
 #include "log_instruction.h"
 
 static int call_arg_log_count = 5;
+static std::unordered_map<duint, std::string> gui_asm_string_cache;
+static std::list<duint> gui_asm_string_fifo;
+static std::unordered_map<duint, std::string> comment_string_cache;
+static std::list<duint> comment_string_fifo;
 
 
 json make_call_json()
@@ -161,19 +165,39 @@ json log_instruction()
 	inst_json["address"] = make_address_json(cip);
 
 	char asm_string[DEFAULT_BUF_SIZE] = { 0 };
-	GuiGetDisassembly(cip, asm_string);
-	inst_json["asm_str"] = asm_string;
+	bool cache_result = false;
+	std::string gui_asm_cached = get_cache_string(gui_asm_string_cache, cip, &cache_result);
+	if (cache_result)
+	{
+		inst_json["asm_str"] = gui_asm_cached.c_str();
+	}
+	else
+	{
+		GuiGetDisassembly(cip, asm_string);
+		inst_json["asm_str"] = asm_string;
+		set_cache_string(gui_asm_string_cache, gui_asm_string_fifo, cip, std::string(asm_string));
+	}
 
 	inst_json["asm"] = make_asm_json(cip);
 
 	char comment_text[MAX_COMMENT_SIZE] = { 0 };
-	if (DbgGetCommentAt(cip, comment_text))
+	cache_result = false;
+	std::string comment_cached = get_cache_string(comment_string_cache, cip, &cache_result);
+	if (cache_result)
 	{
-		inst_json["comment"] = comment_text;
+		inst_json["comment"] = comment_cached.c_str();
 	}
 	else
 	{
-		inst_json["comment"] = "";
+		if (DbgGetCommentAt(cip, comment_text))
+		{
+			inst_json["comment"] = comment_text;
+		}
+		else
+		{
+			inst_json["comment"] = "";
+		}
+		set_cache_string(comment_string_cache, comment_string_fifo, cip, std::string(inst_json["comment"]));
 	}
 
 	return inst_json;

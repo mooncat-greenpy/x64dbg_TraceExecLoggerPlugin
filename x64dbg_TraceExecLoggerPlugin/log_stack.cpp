@@ -1,8 +1,8 @@
 #include "log_stack.h"
 
 static int stack_log_count = 0x10;
-static std::map<std::pair<duint, duint>, std::string> stack_comment_json_cache;
-static std::list<std::pair<duint, duint>> stack_comment_json_fifo;
+static std::map<std::pair<duint, duint>, std::string> stack_comment_string_cache;
+static std::list<std::pair<duint, duint>> stack_comment_string_fifo;
 
 
 json log_stack()
@@ -43,7 +43,7 @@ json log_stack()
 		tmp_json["value"] = make_address_json(stack_value[i]);
 
 		bool cache_result = false;
-		std::string stack_comment_cached = get_cache_string(stack_comment_json_cache, stack_addr, stack_value[i], &cache_result);
+		std::string stack_comment_cached = get_cache_string(stack_comment_string_cache, stack_addr, stack_value[i], &cache_result);
 		if (cache_result)
 		{
 			tmp_json["comment"] = stack_comment_cached.c_str();
@@ -58,8 +58,9 @@ json log_stack()
 			{
 				tmp_json["comment"] = "";
 			}
-			set_cache_string(stack_comment_json_cache, stack_comment_json_fifo, stack_addr, stack_value[i], std::string(tmp_json["comment"]));
+			set_cache_string(stack_comment_string_cache, stack_comment_string_fifo, stack_addr, stack_value[i], std::string(tmp_json["comment"]));
 		}
+		stack_json["data"].push_back(tmp_json);
 	}
 	delete[] stack_value;
 

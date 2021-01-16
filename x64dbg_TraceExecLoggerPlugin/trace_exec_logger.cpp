@@ -3,6 +3,7 @@
 
 static duint skip_breakpoints_log_addr = 0;
 
+#include <chrono>
 
 void log_proc_info(const char* msg)
 {
@@ -33,11 +34,11 @@ void log_exec(const char* msg)
 
 	json entry = json::object();
 	entry["type"] = "log";
-	// 363 micro seconds
+	// 262 micro seconds
 	entry["inst"] = log_instruction();
-	// 150 micro seconds
+	// 147 micro seconds
 	entry["reg"] = log_register();
-	// 164 micro seconds
+	// 194 micro seconds
 	entry["stack"] = log_stack();
 	entry["message"] = msg;
 
