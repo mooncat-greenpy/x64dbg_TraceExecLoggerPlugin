@@ -11,6 +11,7 @@
 #include "pluginsdk/bridgemain.h"
 #include "pluginsdk/_scriptapi_module.h"
 #include "../include/nlohmann/json.hpp"
+#include "cache.h"
 #include "util.h"
 #include "menu.h"
 
