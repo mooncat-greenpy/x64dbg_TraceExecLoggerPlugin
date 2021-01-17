@@ -43,7 +43,7 @@ json log_stack()
 		tmp_json["value"] = make_address_json(stack_value[i]);
 
 		bool cache_result = false;
-		std::string stack_comment_cached = get_cache_string(stack_comment_string_cache, stack_addr, stack_value[i], &cache_result);
+		std::string stack_comment_cached = get_stack_comment_string_cache_data(std::make_pair(stack_addr, stack_value[i]), &cache_result);
 		if (cache_result)
 		{
 			tmp_json["comment"] = stack_comment_cached.c_str();
@@ -58,7 +58,7 @@ json log_stack()
 			{
 				tmp_json["comment"] = "";
 			}
-			set_cache_string(stack_comment_string_cache, stack_comment_string_fifo, stack_addr, stack_value[i], std::string(tmp_json["comment"]));
+			set_stack_comment_string_cache_data(std::make_pair(stack_addr, stack_value[i]), std::string(tmp_json["comment"]));
 		}
 		stack_json["data"].push_back(tmp_json);
 	}

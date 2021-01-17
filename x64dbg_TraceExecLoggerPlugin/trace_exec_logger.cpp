@@ -3,7 +3,6 @@
 
 static duint skip_breakpoints_log_addr = 0;
 
-#include <chrono>
 
 void log_proc_info(const char* msg)
 {
@@ -34,11 +33,11 @@ void log_exec(const char* msg)
 
 	json entry = json::object();
 	entry["type"] = "log";
-	// 262 micro seconds
+	// 278 micro seconds
 	entry["inst"] = log_instruction();
-	// 147 micro seconds
+	// 154 micro seconds
 	entry["reg"] = log_register();
-	// 194 micro seconds
+	// 210 micro seconds
 	entry["stack"] = log_stack();
 	entry["message"] = msg;
 
@@ -176,6 +175,7 @@ extern "C" __declspec(dllexport) void CBDEBUGEVENT(CBTYPE, PLUG_CB_DEBUGEVENT * 
 extern "C" __declspec(dllexport) void CBINITDEBUG(CBTYPE, PLUG_CB_INITDEBUG* info)
 {
 	set_file_name(info->szFileName);
+	clear_cache();
 }
 
 

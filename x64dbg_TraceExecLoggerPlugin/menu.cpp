@@ -14,6 +14,7 @@ static bool handle_enabled = true;
 static bool network_enabled = true;
 static char save_dir[MAX_SETTING_SIZE] = { 0 };
 static bool auto_run_enabled = false;
+static bool cache_enabled = true;
 
 bool get_telogger_enabled()
 {
@@ -141,6 +142,15 @@ void set_auto_run_enabled(bool value)
 	auto_run_enabled = value;
 	_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_RUN_ENABLED, auto_run_enabled);
 }
+bool get_cache_enabled()
+{
+	return cache_enabled;
+}
+void set_cache_enabled(bool value)
+{
+	cache_enabled = value;
+	_plugin_menuentrysetchecked(pluginHandle, MENU_CACHE_ENABLED, cache_enabled);
+}
 
 
 void menu_callback(PLUG_CB_MENUENTRY* info)
@@ -190,6 +200,10 @@ void menu_callback(PLUG_CB_MENUENTRY* info)
 	case MENU_AUTO_RUN_ENABLED:
 		_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_RUN_ENABLED, auto_run_enabled);
 		break;
+	case MENU_CACHE_ENABLED:
+		cache_enabled = !cache_enabled;
+		BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_CACHE_ENABLED, cache_enabled);
+		break;
 	case MENU_HELP:
 	default:
 		char help_text[] = "[ " PLUGIN_NAME " ]\n"
@@ -228,6 +242,8 @@ void init_menu()
 	handle_enabled = !!setting;
 	BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_NETWORK_ENABLED, &setting);
 	network_enabled = !!setting;
+	BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_CACHE_ENABLED, &setting);
+	cache_enabled = !!setting;
 
 	BridgeSettingGet(PLUGIN_NAME, MENU_LABEL_SAVE_DIR, save_dir);
 	if (strlen(save_dir) == 0)
@@ -271,4 +287,6 @@ void setup_menu()
 
 	_plugin_menuaddentry(hMenu, MENU_AUTO_RUN_ENABLED, MENU_LABEL_AUTO_RUN_ENABLED);
 	_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_RUN_ENABLED, auto_run_enabled);
+	_plugin_menuaddentry(hMenu, MENU_CACHE_ENABLED, MENU_LABEL_CACHE_ENABLED);
+	_plugin_menuentrysetchecked(pluginHandle, MENU_CACHE_ENABLED, cache_enabled);
 }

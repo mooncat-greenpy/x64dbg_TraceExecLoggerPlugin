@@ -95,7 +95,7 @@ void make_hex_string(char* data, size_t data_size, char* text, size_t text_size)
 json make_address_json(duint addr)
 {
 	bool cache_result = false;
-	json cache_data = get_cache_data(address_json_cache, addr, &cache_result);
+	json cache_data = get_address_json_cache_data(addr, &cache_result);
 	if (cache_result)
 	{
 		return cache_data;
@@ -166,7 +166,7 @@ json make_address_json(duint addr)
 		}
 	}
 
-	set_cache_data(address_json_cache, address_json_fifo, addr, address_json);
+	set_address_json_cache_data(addr, address_json);
 
 	return address_json;
 }
