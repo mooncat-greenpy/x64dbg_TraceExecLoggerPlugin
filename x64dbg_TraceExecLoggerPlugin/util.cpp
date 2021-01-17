@@ -138,7 +138,7 @@ json make_address_json(duint addr)
 	XREF_INFO xref_info = { 0 };
 	if (DbgXrefGet(addr, &xref_info))
 	{
-		for (int i = 0; i < xref_info.refcount; i++)
+		for (duint i = 0; i < xref_info.refcount; i++)
 		{
 			json xref_json = json::object();
 

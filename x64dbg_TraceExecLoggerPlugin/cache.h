@@ -37,7 +37,7 @@ T3 get_cache_data_internal(T1& cache, T2 key, bool* result)
 
 
 template <typename T1, typename T2, typename T3>
-void set_cache_data_internal(T1& cache, std::list<T2>& fifo, T2 key, T3 data, int size)
+void set_cache_data_internal(T1& cache, std::list<T2>& fifo, T2 key, T3 data, size_t size)
 {
 	if (!get_cache_enabled())
 	{

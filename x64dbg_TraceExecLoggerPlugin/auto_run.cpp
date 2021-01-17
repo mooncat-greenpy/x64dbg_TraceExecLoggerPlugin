@@ -24,7 +24,7 @@ void remove_breakpoint(duint addr)
 			itr++;
 			continue;
 		}
-		itr == auto_run_breakpoints.erase(itr);
+		itr = auto_run_breakpoints.erase(itr);
 	}
 }
 

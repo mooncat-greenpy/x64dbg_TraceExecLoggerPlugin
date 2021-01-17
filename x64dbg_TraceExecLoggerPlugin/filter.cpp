@@ -70,6 +70,8 @@ bool filter_command_callback(int argc, char* argv[])
         }
         add_pass_module(argv[1]);
     }
+
+    return true;
 }
 
 
