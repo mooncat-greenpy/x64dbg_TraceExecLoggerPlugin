@@ -33,15 +33,17 @@ void log_exec(const char* msg)
 
 	json entry = json::object();
 	entry["type"] = "log";
-	// 278 micro seconds
+	// 299 micro seconds
 	entry["inst"] = log_instruction();
-	// 154 micro seconds
+	// 166 micro seconds
 	entry["reg"] = log_register();
-	// 210 micro seconds
+	// 254 micro seconds
 	entry["stack"] = log_stack();
 	entry["message"] = msg;
 
 	add_log(DbgGetThreadId(), &entry);
+
+	flush_changed_memory();
 }
 
 

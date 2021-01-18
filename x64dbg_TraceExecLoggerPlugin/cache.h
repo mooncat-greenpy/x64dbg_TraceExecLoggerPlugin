@@ -17,6 +17,9 @@ void set_gui_asm_string_cache_data(duint key, std::string data);
 json get_comment_string_cache_data(duint key, bool* result);
 void set_comment_string_cache_data(duint key, std::string data);
 
+void add_changed_memory(duint addr);
+void flush_changed_memory();
+
 void clear_cache();
 
 void init_cache();

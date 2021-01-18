@@ -98,10 +98,12 @@ json make_address_json(duint addr)
 	json cache_data = get_address_json_cache_data(addr, &cache_result);
 	if (cache_result)
 	{
+		cache_data["cache"] = true;
 		return cache_data;
 	}
 
 	json address_json = json::object();
+	address_json["cache"] = false;
 	address_json["value"] = addr;
 
 	char label_text[MAX_LABEL_SIZE] = { 0 };
@@ -113,6 +115,7 @@ json make_address_json(duint addr)
 	char hex_string[DEFAULT_BUF_SIZE] = { 0 };
 	bool has_string = DbgGetStringAt(addr, string);
 	bool has_data = false;
+	bool address_json_cache_enabled = true;
 	if (DbgMemIsValidReadPtr(addr))
 	{
 		char data[HEX_SIZE] = { 0 };
@@ -131,6 +134,7 @@ json make_address_json(duint addr)
 	else
 	{
 		_snprintf_s(text, sizeof(text), _TRUNCATE, "");
+		address_json_cache_enabled = false;
 	}
 	address_json["data"] = text;
 
@@ -166,7 +170,10 @@ json make_address_json(duint addr)
 		}
 	}
 
-	set_address_json_cache_data(addr, address_json);
+	if (address_json_cache_enabled)
+	{
+		set_address_json_cache_data(addr, address_json);
+	}
 
 	return address_json;
 }

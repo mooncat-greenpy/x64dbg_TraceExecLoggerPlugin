@@ -9,6 +9,8 @@ static std::list<duint> gui_asm_string_fifo;
 static std::unordered_map<duint, std::string> comment_string_cache;
 static std::list<duint> comment_string_fifo;
 
+static std::list<duint> changed_list;
+
 
 json get_address_json_cache_data(duint key, bool* result)
 {
@@ -44,6 +46,24 @@ json get_comment_string_cache_data(duint key, bool* result)
 void set_comment_string_cache_data(duint key, std::string data)
 {
 	set_cache_data_internal<std::unordered_map<duint, std::string>, duint, std::string>(comment_string_cache, comment_string_fifo, key, data, 100);
+}
+
+
+void add_changed_memory(duint addr)
+{
+	changed_list.push_back(addr);
+}
+
+
+void flush_changed_memory()
+{
+	for (duint i : changed_list)
+	{
+		address_json_cache.erase(i);
+		gui_asm_string_cache.erase(i);
+		comment_string_cache.erase(i);
+	}
+	changed_list.clear();
 }
 
 

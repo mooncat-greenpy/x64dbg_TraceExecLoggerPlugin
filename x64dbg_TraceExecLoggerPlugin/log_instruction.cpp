@@ -76,6 +76,11 @@ json make_asm_json(duint cip)
 		{
 			asm_json["type"] = "call";
 			asm_json["call"] = make_call_json();
+			bool result = false;
+			duint csp = DbgEval("csp", &result);
+			if (result) {
+				add_changed_memory(csp - sizeof(duint));
+			}
 		}
 	}
 	else if (instr.type == instr_stack)
@@ -86,6 +91,24 @@ json make_asm_json(duint cip)
 	{
 		asm_json["type"] = "other";
 	}
+
+	if (strncmp(instr.instruction, "push", strlen("push")) == 0)
+	{
+		bool result = false;
+		duint csp = DbgEval("csp", &result);
+		if (result) {
+			add_changed_memory(csp - sizeof(duint));
+		}
+	}
+	if (strstr(instr.instruction, "movs") != NULL || strstr(instr.instruction, "stos") != NULL)
+	{
+		bool result = false;
+		duint cdi = DbgEval("cdi", &result);
+		if (result) {
+			add_changed_memory(cdi);
+		}
+	}
+
 	asm_json["instruction"] = instr.instruction;
 	asm_json["size"] = instr.instr_size;
 	asm_json["argcount"] = instr.argcount;
@@ -100,6 +123,10 @@ json make_asm_json(duint cip)
 		else if (instr.arg[i].type == arg_memory)
 		{
 			arg["type"] = "memory";
+			if (i == 0)
+			{
+				add_changed_memory(instr.arg[i].value);
+			}
 		}
 		else
 		{
@@ -169,10 +196,12 @@ json log_instruction()
 	std::string gui_asm_cached = get_gui_asm_string_cache_data(cip, &cache_result);
 	if (cache_result)
 	{
+		inst_json["asm_str_cache"] = true;
 		inst_json["asm_str"] = gui_asm_cached.c_str();
 	}
 	else
 	{
+		inst_json["asm_str_cache"] = false;
 		GuiGetDisassembly(cip, asm_string);
 		inst_json["asm_str"] = asm_string;
 		set_gui_asm_string_cache_data(cip, std::string(asm_string));
@@ -185,10 +214,12 @@ json log_instruction()
 	std::string comment_cached = get_comment_string_cache_data(cip, &cache_result);
 	if (cache_result)
 	{
+		inst_json["comment_cache"] = true;
 		inst_json["comment"] = comment_cached.c_str();
 	}
 	else
 	{
+		inst_json["comment_cache"] = false;
 		if (DbgGetCommentAt(cip, comment_text))
 		{
 			inst_json["comment"] = comment_text;

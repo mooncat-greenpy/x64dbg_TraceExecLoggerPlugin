@@ -46,10 +46,12 @@ json log_stack()
 		std::string stack_comment_cached = get_stack_comment_string_cache_data(std::make_pair(stack_addr, stack_value[i]), &cache_result);
 		if (cache_result)
 		{
+			tmp_json["comment_cache"] = true;
 			tmp_json["comment"] = stack_comment_cached.c_str();
 		}
 		else
 		{
+			tmp_json["comment_cache"] = false;
 			if (DbgStackCommentGet(stack_addr, &comment))
 			{
 				tmp_json["comment"] = comment.comment;
