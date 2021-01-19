@@ -3,18 +3,10 @@
 std::vector<std::string> pass_mod;
 
 
-bool should_log()
+bool should_log(duint addr)
 {
     if (pass_mod.size() == 0)
     {
-        return true;
-    }
-
-    bool result_eval = false;
-    duint addr = DbgEval("cip", &result_eval);
-    if (result_eval)
-    {
-        telogger_logputs("Failed to get cip");
         return true;
     }
 

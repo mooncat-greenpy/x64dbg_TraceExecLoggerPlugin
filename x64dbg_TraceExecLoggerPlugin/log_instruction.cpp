@@ -7,35 +7,30 @@ static std::unordered_map<duint, std::string> comment_string_cache;
 static std::list<duint> comment_string_fifo;
 
 
-json make_call_json()
+json make_call_json(REGDUMP* reg_dump)
 {
 	json call_json = json::object();
 
-	bool result = false;
-	duint csp = DbgEval("csp", &result);
-	if (!result) {
-		return call_json;
-	}
 	char value_name[20] = { 0 };
 	call_json["arg"] = json::array();
 #ifdef _WIN64
-	call_json["arg"].push_back(make_address_json(reg->ccx));
+	call_json["arg"].push_back(make_address_json(reg_dump->regcontext.ccx));
 	call_json["arg"][0]["name"] = "ccx";
-	call_json["arg"].push_back(make_address_json(reg->cdx));
+	call_json["arg"].push_back(make_address_json(reg_dump->regcontext.cdx));
 	call_json["arg"][1]["name"] = "cdx";
-	call_json["arg"].push_back(make_address_json(reg->r8));
+	call_json["arg"].push_back(make_address_json(reg_dump->regcontext.r8));
 	call_json["arg"][2]["name"] = "r8";
-	call_json["arg"].push_back(make_address_json(reg->r9));
+	call_json["arg"].push_back(make_address_json(reg_dump->regcontext.r9));
 	call_json["arg"][3]["name"] = "r9";
 	for (int i = 4; i < call_arg_log_count; i++)
 	{
 		duint arg_offset = 0x20 + (i - 4) * 8;
-		if (!DbgMemIsValidReadPtr(reg->csp + arg_offset))
+		if (!DbgMemIsValidReadPtr(reg_dump->regcontext.csp + arg_offset))
 		{
 			continue;
 		}
 		duint tmp_value = 0;
-		DbgMemRead(reg->csp + arg_offset, &tmp_value, sizeof(tmp_value));
+		DbgMemRead(reg_dump->regcontext.csp + arg_offset, &tmp_value, sizeof(tmp_value));
 		call_json["arg"].push_back(make_address_json(tmp_value));
 		_snprintf_s(value_name, sizeof(value_name), _TRUNCATE, "csp + %#x", (int)arg_offset);
 		call_json["arg"][i]["name"] = value_name;
@@ -44,12 +39,12 @@ json make_call_json()
 	for (int i = 0; i < call_arg_log_count; i++)
 	{
 		duint arg_offset = i * 4;
-		if (!DbgMemIsValidReadPtr(csp + arg_offset))
+		if (!DbgMemIsValidReadPtr(reg_dump->regcontext.csp + arg_offset))
 		{
 			continue;
 		}
 		duint tmp_value = 0;
-		DbgMemRead(csp + arg_offset, &tmp_value, sizeof(tmp_value));
+		DbgMemRead(reg_dump->regcontext.csp + arg_offset, &tmp_value, sizeof(tmp_value));
 		call_json["arg"].push_back(make_address_json(tmp_value));
 		_snprintf_s(value_name, sizeof(value_name), _TRUNCATE, "csp + %#x", (int)arg_offset);
 		call_json["arg"][i]["name"] = value_name;
@@ -59,12 +54,12 @@ json make_call_json()
 }
 
 
-json make_asm_json(duint cip)
+json make_asm_json(REGDUMP* reg_dump)
 {
 	json asm_json = json::object();
 
 	DISASM_INSTR instr = { 0 };
-	DbgDisasmAt(cip, &instr);
+	DbgDisasmAt(reg_dump->regcontext.cip, &instr);
 	if (instr.type == instr_normal)
 	{
 		asm_json["type"] = "normal";
@@ -75,12 +70,8 @@ json make_asm_json(duint cip)
 		if (strncmp(instr.instruction, "call", strlen("call")) == 0)
 		{
 			asm_json["type"] = "call";
-			asm_json["call"] = make_call_json();
-			bool result = false;
-			duint csp = DbgEval("csp", &result);
-			if (result) {
-				add_changed_memory(csp - sizeof(duint));
-			}
+			asm_json["call"] = make_call_json(reg_dump);
+			add_changed_memory(reg_dump->regcontext.csp - sizeof(duint));
 		}
 	}
 	else if (instr.type == instr_stack)
@@ -94,19 +85,11 @@ json make_asm_json(duint cip)
 
 	if (strncmp(instr.instruction, "push", strlen("push")) == 0)
 	{
-		bool result = false;
-		duint csp = DbgEval("csp", &result);
-		if (result) {
-			add_changed_memory(csp - sizeof(duint));
-		}
+		add_changed_memory(reg_dump->regcontext.csp - sizeof(duint));
 	}
 	if (strstr(instr.instruction, "movs") != NULL || strstr(instr.instruction, "stos") != NULL)
 	{
-		bool result = false;
-		duint cdi = DbgEval("cdi", &result);
-		if (result) {
-			add_changed_memory(cdi);
-		}
+		add_changed_memory(reg_dump->regcontext.cdi);
 	}
 
 	asm_json["instruction"] = instr.instruction;
@@ -174,7 +157,7 @@ json make_asm_json(duint cip)
 }
 
 
-json log_instruction()
+json log_instruction(REGDUMP* reg_dump)
 {
 	json inst_json = json::object();
 	if (!get_instruction_enabled())
@@ -182,18 +165,12 @@ json log_instruction()
 		return inst_json;
 	}
 
-	bool result = false;
-	duint cip = DbgEval("cip", &result);
-	if (!result) {
-		return inst_json;
-	}
-
 	inst_json["type"] = "instruction";
-	inst_json["address"] = make_address_json(cip);
+	inst_json["address"] = make_address_json(reg_dump->regcontext.cip);
 
 	char asm_string[DEFAULT_BUF_SIZE] = { 0 };
 	bool cache_result = false;
-	std::string gui_asm_cached = get_gui_asm_string_cache_data(cip, &cache_result);
+	std::string gui_asm_cached = get_gui_asm_string_cache_data(reg_dump->regcontext.cip, &cache_result);
 	if (cache_result)
 	{
 		inst_json["asm_str_cache"] = true;
@@ -202,16 +179,16 @@ json log_instruction()
 	else
 	{
 		inst_json["asm_str_cache"] = false;
-		GuiGetDisassembly(cip, asm_string);
+		GuiGetDisassembly(reg_dump->regcontext.cip, asm_string);
 		inst_json["asm_str"] = asm_string;
-		set_gui_asm_string_cache_data(cip, std::string(asm_string));
+		set_gui_asm_string_cache_data(reg_dump->regcontext.cip, std::string(asm_string));
 	}
 
-	inst_json["asm"] = make_asm_json(cip);
+	inst_json["asm"] = make_asm_json(reg_dump);
 
 	char comment_text[MAX_COMMENT_SIZE] = { 0 };
 	cache_result = false;
-	std::string comment_cached = get_comment_string_cache_data(cip, &cache_result);
+	std::string comment_cached = get_comment_string_cache_data(reg_dump->regcontext.cip, &cache_result);
 	if (cache_result)
 	{
 		inst_json["comment_cache"] = true;
@@ -220,7 +197,7 @@ json log_instruction()
 	else
 	{
 		inst_json["comment_cache"] = false;
-		if (DbgGetCommentAt(cip, comment_text))
+		if (DbgGetCommentAt(reg_dump->regcontext.cip, comment_text))
 		{
 			inst_json["comment"] = comment_text;
 		}
@@ -228,7 +205,7 @@ json log_instruction()
 		{
 			inst_json["comment"] = "";
 		}
-		set_comment_string_cache_data(cip, std::string(inst_json["comment"]));
+		set_comment_string_cache_data(reg_dump->regcontext.cip, std::string(inst_json["comment"]));
 	}
 
 	return inst_json;

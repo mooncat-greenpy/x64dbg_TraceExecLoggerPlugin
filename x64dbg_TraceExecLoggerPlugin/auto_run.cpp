@@ -1,7 +1,7 @@
 #include "auto_run.h"
 
 static int current_thread_number = 0;
-static int skip_addr = 0;
+static duint skip_addr = 0;
 std::vector<duint> auto_run_breakpoints;
 static bool stepover_enabled = false;
 

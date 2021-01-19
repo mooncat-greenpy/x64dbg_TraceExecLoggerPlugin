@@ -24,21 +24,25 @@ void log_proc_info(const char* msg)
 }
 
 
-void log_exec(const char* msg)
+void log_exec(const char* msg, duint cip)
 {
-	if (msg == NULL || !get_telogger_enabled() || !should_log())
+	// 353 micro seconds
+	if (msg == NULL || !get_telogger_enabled() || !should_log(cip))
 	{
 		return;
 	}
 
 	json entry = json::object();
 	entry["type"] = "log";
-	// 299 micro seconds
-	entry["inst"] = log_instruction();
-	// 166 micro seconds
-	entry["reg"] = log_register();
-	// 254 micro seconds
-	entry["stack"] = log_stack();
+
+	REGDUMP reg_dump;
+	DbgGetRegDumpEx(&reg_dump, sizeof(reg_dump));
+
+	entry["inst"] = log_instruction(&reg_dump);
+	// 34 micro seconds
+	entry["reg"] = log_register(&reg_dump);
+	// 175 micro seconds
+	entry["stack"] = log_stack(&reg_dump);
 	entry["message"] = msg;
 
 	add_log(DbgGetThreadId(), &entry);
@@ -122,16 +126,16 @@ extern "C" __declspec(dllexport) void CBMENUENTRY(CBTYPE, PLUG_CB_MENUENTRY* inf
 
 extern "C" __declspec(dllexport) void CBTRACEEXECUTE(CBTYPE, PLUG_CB_TRACEEXECUTE* info)
 {
-	log_exec("Trace Execute Log");
+	log_exec("Trace Execute Log", info->cip);
 	skip_breakpoints_log_addr = info->cip;
 }
 
 
 extern "C" __declspec(dllexport) void CBSTEPPED(CBTYPE, PLUG_CB_STEPPED* info)
 {
-	log_exec("Stepped Log");
 	bool result = false;
 	duint cip = DbgEval("cip", &result);
+	log_exec("Stepped Log", cip);
 	if (result)
 	{
 		skip_breakpoints_log_addr = cip;
@@ -143,7 +147,7 @@ extern "C" __declspec(dllexport) void CBBREAKPOINT(CBTYPE, PLUG_CB_BREAKPOINT * 
 {
 	if (skip_breakpoints_log_addr == 0 || skip_breakpoints_log_addr != info->breakpoint->addr)
 	{
-		log_exec("Breakpoint Log");
+		log_exec("Breakpoint Log", info->breakpoint->addr);
 	}
 	run_debug();
 	skip_breakpoints_log_addr = 0;

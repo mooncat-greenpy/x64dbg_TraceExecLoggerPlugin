@@ -1,7 +1,7 @@
 #include "log_instruction.h"
 
 
-json log_register()
+json log_register(REGDUMP* reg_dump)
 {
 	json reg_json = json::object();
 	if (!get_register_enabled())
@@ -11,9 +11,7 @@ json log_register()
 
 	reg_json["type"] = "register";
 
-	REGDUMP reg_dump;
-	DbgGetRegDumpEx(&reg_dump, sizeof(reg_dump));
-	REGISTERCONTEXT reg = reg_dump.regcontext;
+	REGISTERCONTEXT reg = reg_dump->regcontext;
 
 	reg_json["cax"] = make_address_json(reg.cax);
 	reg_json["cbx"] = make_address_json(reg.cbx);
@@ -34,7 +32,7 @@ json log_register()
 	reg_json["r15"] = make_address_json(reg.r15);
 #endif
 
-	FLAGS flags = reg_dump.flags;
+	FLAGS flags = reg_dump->flags;
 	json flags_json = json::object();
 	flags_json["zf"] = flags.z;
 	flags_json["of"] = flags.o;
@@ -48,11 +46,11 @@ json log_register()
 	reg_json["flags"] = flags_json;
 
 	reg_json["error"] = json::object();
-	reg_json["error"]["name"]=reg_dump.lastError.name;
-	reg_json["error"]["value"] = reg_dump.lastError.code;
+	reg_json["error"]["name"] = reg_dump->lastError.name;
+	reg_json["error"]["value"] = reg_dump->lastError.code;
 	reg_json["status"] = json::object();
-	reg_json["status"]["name"]=reg_dump.lastStatus.name;
-	reg_json["status"]["value"] = reg_dump.lastStatus.code;
+	reg_json["status"]["name"] = reg_dump->lastStatus.name;
+	reg_json["status"]["value"] = reg_dump->lastStatus.code;
 
 	return reg_json;
 }
