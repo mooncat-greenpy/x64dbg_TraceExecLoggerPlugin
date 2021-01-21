@@ -2,7 +2,6 @@
 
 
 static std::map<int, THREAD_LOG_STATE> log_state;
-static char log_dir_name[MAX_PATH] = { 0 };
 static char file_name[MAX_PATH] = { 0 };
 
 
@@ -58,6 +57,12 @@ void create_thread_log(int thread_id)
 
 void save_log(int thread_id)
 {
+    const char* dir_name = get_save_dir();
+    if (!CreateDirectoryA(dir_name, NULL) && GetLastError() != ERROR_ALREADY_EXISTS)
+    {
+        return;
+    }
+
     THREAD_LOG_STATE thread_log = log_state[thread_id];
     if (thread_log.log.size() < 1)
     {
@@ -77,7 +82,7 @@ void save_log(int thread_id)
 
     HANDLE log_file_handle = INVALID_HANDLE_VALUE;
     char log_file_name[MAX_PATH] = { 0 };
-    _snprintf_s(log_file_name, sizeof(log_file_name), _TRUNCATE, "%s\\%s_%#x_%#x_%d.json", get_save_dir(), thread_log.file_name, thread_log.process_id, thread_log.thread_id, number);
+    _snprintf_s(log_file_name, sizeof(log_file_name), _TRUNCATE, "%s\\%s_%#x_%#x_%d.json", dir_name, thread_log.file_name, thread_log.process_id, thread_log.thread_id, number);
     log_file_handle = CreateFileA(log_file_name, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (log_file_handle == INVALID_HANDLE_VALUE)
     {

@@ -126,10 +126,6 @@ void set_save_dir(const char* dir_name)
 	{
 		return;
 	}
-	if (!CreateDirectoryA(dir_name, NULL) && GetLastError() != ERROR_ALREADY_EXISTS)
-	{
-		return;
-	}
 	strncpy_s(save_dir, sizeof(save_dir), dir_name, _TRUNCATE);
 	BridgeSettingSet(PLUGIN_NAME, MENU_LABEL_SAVE_DIR, save_dir);
 }
