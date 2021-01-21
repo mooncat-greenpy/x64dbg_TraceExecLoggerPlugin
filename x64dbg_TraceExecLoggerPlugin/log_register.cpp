@@ -64,11 +64,11 @@ bool register_command_callback(int argc, char* argv[])
 	}
 	if (strstr(argv[0], "help"))
 	{
-		telogger_logputs("Register Help\n"
+		telogger_logputs("Register Log: Help\n"
 			"Command:\n"
 			"    TElogger.reg.help\n"
 			"    TElogger.reg.enable\n"
-			"    TElogger.reg.disable\n");
+			"    TElogger.reg.disable");
 	}
 	else if (strstr(argv[0], "enable"))
 	{

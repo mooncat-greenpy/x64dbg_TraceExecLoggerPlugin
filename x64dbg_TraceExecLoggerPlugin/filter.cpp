@@ -13,7 +13,7 @@ bool should_log(duint addr)
     char mod_name[MAX_MODULE_SIZE] = { 0 };
     if (!DbgGetModuleAt(addr, mod_name))
     {
-        telogger_logputs("Failed to get module name");
+        telogger_logputs("Log Filter: Failed to get module name");
         return true;
     }
     char mod_name_lower[MAX_MODULE_SIZE] = { 0 };
@@ -48,17 +48,23 @@ bool filter_command_callback(int argc, char* argv[])
     }
     if (strstr(argv[0], "help"))
     {
-        telogger_logputs("Filter Help\n"
+        telogger_logputs("Log Filter: Help\n"
             "Command:\n"
             "    TElogger.filt.help\n"
-            "    TElogger.filt.mod.pass dllname\n");
+            "    TElogger.filt.mod.pass dllname");
     }
     else if (strstr(argv[0], "mod.pass"))
     {
         if (argc < 2)
         {
-            telogger_logprintf("Failed: TElogger.filt.mod.pass dllname\n");
-            return false;
+            telogger_logputs("Log Filter: Pass module list");
+            logputs("{");
+            for (auto i : pass_mod)
+            {
+                logprintf("    %s,\n", i.c_str());
+            }
+            logputs("}");
+            return true;
         }
         add_pass_module(argv[1]);
     }

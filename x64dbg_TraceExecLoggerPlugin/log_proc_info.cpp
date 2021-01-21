@@ -304,6 +304,46 @@ json log_network()
 }
 
 
+bool proc_command_callback(int argc, char* argv[])
+{
+	if (argc < 1)
+	{
+		return false;
+	}
+	if (strstr(argv[0], "help"))
+	{
+		telogger_logputs("Proc Log: Help\n"
+			"Command:\n"
+			"    TElogger.proc.help\n"
+			"    TElogger.proc.log\n"
+			"    TElogger.proc.enable\n"
+			"    TElogger.proc.disable\n"
+			"    TElogger.proc.module.help\n"
+			"    TElogger.proc.thread.help\n"
+			"    TElogger.proc.memory.help\n"
+			"    TElogger.proc.handle.help\n"
+			"    TElogger.proc.network.help");
+	}
+	else if (strstr(argv[0], "log"))
+	{
+		log_proc_info("Command Log");
+		telogger_logputs("Proc Log: Log");
+	}
+	else if (strstr(argv[0], "enable"))
+	{
+		set_proc_enabled(true);
+		telogger_logputs("Proc Log: Enabled");
+	}
+	else if (strstr(argv[0], "disable"))
+	{
+		set_proc_enabled(false);
+		telogger_logputs("Proc Log: Disabled");
+	}
+
+	return true;
+}
+
+
 bool module_command_callback(int argc, char* argv[])
 {
 	if (argc < 1)
@@ -312,11 +352,11 @@ bool module_command_callback(int argc, char* argv[])
 	}
 	if (strstr(argv[0], "help"))
 	{
-		telogger_logputs("Module Help\n"
+		telogger_logputs("Module Log: Help\n"
 			"Command:\n"
 			"    TElogger.proc.module.help\n"
 			"    TElogger.proc.module.enable\n"
-			"    TElogger.proc.module.disable\n");
+			"    TElogger.proc.module.disable");
 	}
 	else if (strstr(argv[0], "enable"))
 	{
@@ -341,11 +381,11 @@ bool thread_command_callback(int argc, char* argv[])
 	}
 	if (strstr(argv[0], "help"))
 	{
-		telogger_logputs("Thread Help\n"
+		telogger_logputs("Thread Log: Help\n"
 			"Command:\n"
 			"    TElogger.proc.thread.help\n"
 			"    TElogger.proc.thread.enable\n"
-			"    TElogger.proc.thread.disable\n");
+			"    TElogger.proc.thread.disable");
 	}
 	else if (strstr(argv[0], "enable"))
 	{
@@ -370,11 +410,11 @@ bool memory_command_callback(int argc, char* argv[])
 	}
 	if (strstr(argv[0], "help"))
 	{
-		telogger_logputs("Memory Help\n"
+		telogger_logputs("Memory Log: Help\n"
 			"Command:\n"
 			"    TElogger.proc.memory.help\n"
 			"    TElogger.proc.memory.enable\n"
-			"    TElogger.proc.memory.disable\n");
+			"    TElogger.proc.memory.disable");
 	}
 	else if (strstr(argv[0], "enable"))
 	{
@@ -399,11 +439,11 @@ bool handle_command_callback(int argc, char* argv[])
 	}
 	if (strstr(argv[0], "help"))
 	{
-		telogger_logputs("Handle Help\n"
+		telogger_logputs("Handle Log: Help\n"
 			"Command:\n"
 			"    TElogger.proc.handle.help\n"
 			"    TElogger.proc.handle.enable\n"
-			"    TElogger.proc.handle.disable\n");
+			"    TElogger.proc.handle.disable");
 	}
 	else if (strstr(argv[0], "enable"))
 	{
@@ -428,11 +468,11 @@ bool network_command_callback(int argc, char* argv[])
 	}
 	if (strstr(argv[0], "help"))
 	{
-		telogger_logputs("Network Help\n"
+		telogger_logputs("Network Log: Help\n"
 			"Command:\n"
 			"    TElogger.proc.network.help\n"
 			"    TElogger.proc.network.enable\n"
-			"    TElogger.proc.network.disable\n");
+			"    TElogger.proc.network.disable");
 	}
 	else if (strstr(argv[0], "enable"))
 	{
@@ -451,6 +491,10 @@ bool network_command_callback(int argc, char* argv[])
 
 bool init_proc_info_log(PLUG_INITSTRUCT* init_struct)
 {
+	_plugin_registercommand(pluginHandle, "TElogger.proc.help", proc_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.proc.log", proc_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.proc.enable", proc_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.proc.disable", proc_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.proc.module.help", module_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.proc.module.enable", module_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.proc.module.disable", module_command_callback, false);
@@ -472,6 +516,10 @@ bool init_proc_info_log(PLUG_INITSTRUCT* init_struct)
 
 bool stop_proc_info_log()
 {
+	_plugin_unregistercommand(pluginHandle, "TElogger.proc.help");
+	_plugin_unregistercommand(pluginHandle, "TElogger.proc.log");
+	_plugin_unregistercommand(pluginHandle, "TElogger.proc.enable");
+	_plugin_unregistercommand(pluginHandle, "TElogger.proc.disable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.proc.module.help");
 	_plugin_unregistercommand(pluginHandle, "TElogger.proc.module.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.proc.module.disable");

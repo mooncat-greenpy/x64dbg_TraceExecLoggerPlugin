@@ -80,7 +80,7 @@ void run_debug()
 	else {
 		DbgCmdExec("TraceIntoConditional 0, 50");
 	}
-	telogger_logprintf("Auto Run: ThreadID = %x, Address = %p\n", thread_id, cip);
+	telogger_logprintf("Auto Run: Thread ID = %x, Address = %p\n", thread_id, cip);
 }
 
 
@@ -98,13 +98,14 @@ bool auto_run_command_callback(int argc, char* argv[])
 	}
 	if (strstr(argv[0], "help"))
 	{
-		telogger_logputs("Auto Run Help\n"
+		telogger_logputs("Auto Run Log: Help\n"
 			"Command:\n"
 			"    TElogger.auto.help\n"
 			"    TElogger.auto.enable\n"
 			"    TElogger.auto.disable\n"
 			"    TElogger.auto.addbp address\n"
-			"    TElogger.auto.start address\n");
+			"    TElogger.auto.starti address\n"
+			"    TElogger.auto.starto address");
 	}
 	else if (strstr(argv[0], "enable"))
 	{
@@ -120,34 +121,37 @@ bool auto_run_command_callback(int argc, char* argv[])
 	{
 		if (argc < 2)
 		{
-			telogger_logprintf("Failed: %s address", argv[0]);
+			telogger_logprintf("Auto Run Log: Failed\n"
+				"Command:\n"
+				"    %s address", argv[0]);
 			return false;
 		}
 		char* end = NULL;
 		duint value = (duint)_strtoi64(argv[1], &end, 16);
 		if (end == NULL || *end != '\0')
 		{
-			telogger_logprintf("Failed: %s address", argv[0]);
+			telogger_logprintf("Auto Run Log: Failed\n"
+				"Command:\n"
+				"    %s address", argv[0]);
 			return false;
 		}
 
 		add_breakpoint(value);
-		telogger_logprintf("Add Auto Run BP: %p\n", (char*)value);
+		telogger_logprintf("Auto Run Log: BP %p\n", (char*)value);
 
 		if (strstr(argv[0], "starti"))
 		{
 			set_auto_run_enabled(true);
 			DbgCmdExec("StepInto");
-			telogger_logputs("Start Auto Run");
+			telogger_logputs("Auto Run Log: Start StepInto");
 		}
 		else if (strstr(argv[0], "starto"))
 		{
 			set_auto_run_enabled(true);
 			stepover_enabled = true;
 			DbgCmdExec("StepOver");
-			telogger_logputs("Start Auto Run");
+			telogger_logputs("Auto Run Log: Start StepOver");
 		}
-
 	}
 	else if (strstr(argv[0], "call"))
 	{
@@ -156,23 +160,24 @@ bool auto_run_command_callback(int argc, char* argv[])
 		cip = DbgEval("cip", &result_eval);
 		if (!result_eval)
 		{
-			telogger_logputs("Failed: Get cip");
+			telogger_logputs("Auto Run Log: Failed to get cip");
+			return false;
 		}
 		BASIC_INSTRUCTION_INFO basic_info = { 0 };
 		DbgDisasmFastAt(cip, &basic_info);
 		if (!basic_info.call)
 		{
-			telogger_logputs("Failed: Not call");
+			telogger_logputs("Auto Run Log: Not call");
 			return false;
 		}
 
 		duint next_cip = cip + basic_info.size;
 		add_breakpoint(next_cip);
-		telogger_logprintf("Add Auto Run BP: %p\n", (char*)next_cip);
+		telogger_logprintf("Auto Run Log: BP %p\n", (char*)next_cip);
 
 		set_auto_run_enabled(true);
 		DbgCmdExec("StepInto");
-		telogger_logputs("Start Auto Run");
+		telogger_logputs("Auto Run Log: Start");
 	}
 	return true;
 }

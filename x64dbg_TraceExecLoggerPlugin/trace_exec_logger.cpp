@@ -57,41 +57,21 @@ bool command_callback(int argc, char* argv[])
 	{
 		return false;
 	}
-	if (strstr(argv[0], "proc.help"))
+
+	if (strstr(argv[0], "help"))
 	{
-		telogger_logputs("Proc Help\n"
-			"Command:\n"
-			"    TElogger.proc.help\n"
-			"    TElogger.proc.enable\n"
-			"    TElogger.proc.disable\n"
-			"    TElogger.proc.log\n");
-	}
-	else if (strstr(argv[0], "proc.log"))
-	{
-		log_proc_info("Command Log");
-	}
-	else if (strstr(argv[0], "proc.enable"))
-	{
-		set_proc_enabled(true);
-		telogger_logputs("Proc Log: Enabled");
-	}
-	else if (strstr(argv[0], "proc.disable"))
-	{
-		set_proc_enabled(false);
-		telogger_logputs("Proc Log: Disabled");
-	}
-	else if (strstr(argv[0], "help"))
-	{
-		telogger_logputs("Help\n"
+		telogger_logputs("Log: Help\n"
 			"Command:\n"
 			"    TElogger.help\n"
 			"    TElogger.enable\n"
 			"    TElogger.disable\n"
 			"    TElogger.setdir dirname\n"
-			"    TElogger.proc.help\n"
 			"    TElogger.inst.help\n"
 			"    TElogger.reg.help\n"
-			"    TElogger.stack.help\n");
+			"    TElogger.stack.help\n"
+			"    TElogger.proc.help\n"
+			"    TElogger.filt.help\n"
+			"    TElogger.auto.help");
 	}
 	else if (strstr(argv[0], "enable"))
 	{
@@ -107,11 +87,13 @@ bool command_callback(int argc, char* argv[])
 	{
 		if (argc < 2)
 		{
-			telogger_logprintf("Setdir failed: TElogger.setdir dir_name\n");
+			telogger_logputs("Log: Failed to set dir\n"
+				"Command:\n"
+				"    TElogger.setdir dirname");
 			return false;
 		}
 		set_save_dir(argv[1]);
-		telogger_logprintf("Setdir: %s\n");
+		telogger_logputs("Log: Setdir %s");
 	}
 
 	return true;
@@ -230,10 +212,6 @@ bool init_logger_plugin(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.enable", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.disable", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.setdir", command_callback, false);
-	_plugin_registercommand(pluginHandle, "TElogger.proc.help", command_callback, false);
-	_plugin_registercommand(pluginHandle, "TElogger.proc.log", command_callback, false);
-	_plugin_registercommand(pluginHandle, "TElogger.proc.enable", command_callback, false);
-	_plugin_registercommand(pluginHandle, "TElogger.proc.disable", command_callback, false);
 
 	return true;
 }
@@ -254,10 +232,6 @@ bool stop_logger_plugin()
 	_plugin_unregistercommand(pluginHandle, "TElogger.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.disable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.setdir");
-	_plugin_unregistercommand(pluginHandle, "TElogger.proc.help");
-	_plugin_unregistercommand(pluginHandle, "TElogger.proc.log");
-	_plugin_unregistercommand(pluginHandle, "TElogger.proc.enable");
-	_plugin_unregistercommand(pluginHandle, "TElogger.proc.disable");
 
 	return true;
 }

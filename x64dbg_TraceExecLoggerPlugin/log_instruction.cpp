@@ -220,12 +220,12 @@ bool instruction_command_callback(int argc, char* argv[])
 	}
 	if (strstr(argv[0], "help"))
 	{
-		telogger_logputs("Instruction Help\n"
+		telogger_logputs("Instruction Log: Help\n"
 			"Command:\n"
 			"    TElogger.inst.help\n"
 			"    TElogger.inst.enable\n"
 			"    TElogger.inst.disable\n"
-			"    TElogger.inst.arglogcount [num]\n");
+			"    TElogger.inst.arglogcount [num]");
 	}
 	else if (strstr(argv[0], "enable"))
 	{
@@ -241,11 +241,11 @@ bool instruction_command_callback(int argc, char* argv[])
 	{
 		if (argc < 2)
 		{
-			telogger_logprintf("Call Argument Log Count: %d\n", call_arg_log_count);
+			telogger_logprintf("Instruction Log: Number of arguments %d\n", call_arg_log_count);
 			return true;
 		}
 		call_arg_log_count = atoi(argv[1]);
-		telogger_logprintf("Call Argument Log Count: %d\n", call_arg_log_count);
+		telogger_logprintf("Instruction Log: Number of arguments %d\n", call_arg_log_count);
 	}
 
 	return true;

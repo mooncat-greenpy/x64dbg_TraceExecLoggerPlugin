@@ -52,7 +52,7 @@ void create_thread_log(int thread_id)
     log_state[thread_id].process_id = DbgGetProcessId();
     log_state[thread_id].thread_id = thread_id;
 
-    telogger_logprintf("Create Log: thread id = %#x, name = %s\n", thread_id, log_state[thread_id].file_name);
+    telogger_logprintf("Create Log: Thread ID = %#x, Name = %s\n", thread_id, log_state[thread_id].file_name);
 }
 
 
@@ -81,7 +81,7 @@ void save_log(int thread_id)
     log_file_handle = CreateFileA(log_file_name, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (log_file_handle == INVALID_HANDLE_VALUE)
     {
-        telogger_logprintf("Save Log: error = %#x\n", GetLastError());
+        telogger_logprintf("Save Log: Error = %#x\n", GetLastError());
         return;
     }
 
@@ -89,7 +89,7 @@ void save_log(int thread_id)
     WriteFile(log_file_handle, save_info.dump().c_str(), strlen(save_info.dump().c_str()), &written, NULL);
 
     CloseHandle(log_file_handle);
-    telogger_logprintf("Save Log: thread id = %#x, name = %s\n", thread_id, thread_log.file_name);
+    telogger_logprintf("Save Log: Thread ID = %#x, Name = %s\n", thread_id, thread_log.file_name);
 
     log_state.erase(thread_id);
     create_thread_log(thread_id);
@@ -121,14 +121,16 @@ void add_log(int thread_id, json* log)
 
 void save_all_thread_log()
 {
-    for (auto i : log_state) {
+    for (auto i : log_state)
+    {
         save_log(i.first);
     }
 }
 
 
 void delete_all_log() {
-    for (auto i : log_state) {
+    for (auto i : log_state)
+    {
         log_state.erase(i.first);
     }
 }
