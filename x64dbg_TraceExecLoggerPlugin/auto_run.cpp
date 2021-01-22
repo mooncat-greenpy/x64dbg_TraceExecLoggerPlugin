@@ -1,6 +1,5 @@
 #include "auto_run.h"
 
-static int current_thread_number = 0;
 static duint skip_addr = 0;
 std::vector<duint> auto_run_breakpoints;
 static bool stepover_enabled = false;
@@ -45,24 +44,6 @@ void run_debug()
 		return;
 	}
 
-	THREADLIST thread_list = { 0 };
-	DbgGetThreadList(&thread_list);
-	int thread_id = 0;
-	for (int i = 0; i < thread_list.count; i++)
-	{
-		if (thread_id == 0 && thread_list.list[i].WaitReason != _Suspended)
-		{
-			thread_id = thread_list.list[i].BasicInfo.ThreadId;
-		}
-
-		if (i > current_thread_number && thread_list.list[i].WaitReason != _Suspended)
-		{
-			thread_id = thread_list.list[i].BasicInfo.ThreadId;
-			current_thread_number = i;
-			break;
-		}
-	}
-
 	if (std::find(auto_run_breakpoints.begin(), auto_run_breakpoints.end(), cip) != auto_run_breakpoints.end())
 	{
 		remove_breakpoint(cip);
@@ -71,16 +52,13 @@ void run_debug()
 		return;
 	}
 
-	char cmd[DEFAULT_BUF_SIZE] = { 0 };
-	_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "threadswitch %x", thread_id);
-	DbgCmdExecDirect(cmd);
 	if (stepover_enabled) {
 		DbgCmdExec("TraceOverConditional 0, 50");
 	}
 	else {
 		DbgCmdExec("TraceIntoConditional 0, 50");
 	}
-	telogger_logprintf("Auto Run: Thread ID = %x, Address = %p\n", thread_id, cip);
+	telogger_logprintf("Auto Run: Thread ID = %x, Address = %p\n", DbgGetThreadId(), cip);
 }
 
 
