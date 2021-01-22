@@ -1,6 +1,5 @@
 #include "menu.h"
 
-static int proc_info_handle = 0;
 
 static bool telogger_enabled = true;
 static bool instruction_enabled = true;
@@ -14,7 +13,7 @@ static bool handle_enabled = true;
 static bool network_enabled = true;
 static char save_dir[MAX_SETTING_SIZE] = { 0 };
 static bool auto_run_enabled = false;
-static bool cache_enabled = true;
+static bool cache_enabled = false;
 
 bool get_telogger_enabled()
 {
@@ -269,7 +268,7 @@ void setup_menu()
 	_plugin_menuaddentry(hMenu, MENU_PROC_ENABLED, MENU_LABEL_PROC_LOG_ENABLED);
 	_plugin_menuentrysetchecked(pluginHandle, MENU_PROC_ENABLED, proc_enabled);
 
-	proc_info_handle = _plugin_menuadd(hMenu, "Proc Info");
+	int proc_info_handle = _plugin_menuadd(hMenu, "Proc Info");
 	_plugin_menuaddentry(proc_info_handle, MENU_PROC_MODULE_ENABLED, MENU_LABEL_MODULE_ENABLED);
 	_plugin_menuentrysetchecked(pluginHandle, MENU_PROC_MODULE_ENABLED, module_enabled);
 	_plugin_menuaddentry(proc_info_handle, MENU_PROC_THREAD_ENABLED, MENU_LABEL_THREAD_ENABLED);
