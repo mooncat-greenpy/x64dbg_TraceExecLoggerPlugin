@@ -40,6 +40,25 @@ void add_pass_module(const char* mod_name)
 }
 
 
+bool remove_pass_module(const char* mod_name)
+{
+    if (mod_name == NULL)
+    {
+        return false;
+    }
+    char mod_name_lower[MAX_MODULE_SIZE] = { 0 };
+    strncpy_s(mod_name_lower, sizeof(mod_name_lower), mod_name, _TRUNCATE);
+    _strlwr_s(mod_name_lower, sizeof(mod_name_lower));
+    std::vector<std::string>::iterator itr = std::find(pass_mod.begin(), pass_mod.end(), mod_name_lower);
+    if (itr == pass_mod.end())
+    {
+        return false;
+    }
+    pass_mod.erase(itr);
+    return true;
+}
+
+
 bool filter_command_callback(int argc, char* argv[])
 {
     if (argc < 1)
@@ -66,7 +85,10 @@ bool filter_command_callback(int argc, char* argv[])
             logputs("}");
             return true;
         }
-        add_pass_module(argv[1]);
+        if (!remove_pass_module(argv[1]))
+        {
+            add_pass_module(argv[1]);
+        }
     }
 
     return true;
