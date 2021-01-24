@@ -21,13 +21,9 @@ char hex_database[][4] = {
 };
 
 
-static std::unordered_map<duint, json> address_json_cache;
-static std::list<duint> address_json_fifo;
-
-
 void save_json_file(const char* file_name, SYSTEMTIME* system_time, int number, const char* buffer)
 {
-	if (!file_name || !buffer)
+	if (!file_name || !system_time || !buffer)
 	{
 		return;
 	}
@@ -111,23 +107,22 @@ json make_address_json(duint addr)
 	address_json["label"] = label_text;
 
 	char text[DEFAULT_BUF_SIZE] = { 0 };
-	char string[MAX_STRING_SIZE] = { 0 };
+	char string_text[MAX_STRING_SIZE] = { 0 };
 	char hex_string[DEFAULT_BUF_SIZE] = { 0 };
-	bool has_string = DbgGetStringAt(addr, string);
-	bool has_data = false;
+	bool has_string = DbgGetStringAt(addr, string_text);
+	bool has_hex = false;
 	bool address_json_cache_enabled = true;
 	if (DbgMemIsValidReadPtr(addr))
 	{
 		char data[HEX_SIZE] = { 0 };
-		DbgMemRead(addr, data, sizeof(data));
+		has_hex = DbgMemRead(addr, data, sizeof(data));
 		make_hex_string(data, sizeof(data), hex_string, sizeof(hex_string));
-		has_data = true;
 	}
 	if (has_string)
 	{
-		_snprintf_s(text, sizeof(text), _TRUNCATE, "%s", string);
+		_snprintf_s(text, sizeof(text), _TRUNCATE, "%s", string_text);
 	}
-	else if (has_data)
+	else if (has_hex)
 	{
 		_snprintf_s(text, sizeof(text), _TRUNCATE, "%s", hex_string);
 	}
@@ -148,7 +143,7 @@ json make_address_json(duint addr)
 
 			xref_json["address"] = json::object();
 			xref_json["address"]["value"] = xref_info.references[i].addr;
-			ZeroMemory(label_text, sizeof(label_text));
+			label_text[0] = '\0';
 			make_address_label_string(xref_info.references[i].addr, label_text, sizeof(label_text));
 			xref_json["address"]["label"] = label_text;
 

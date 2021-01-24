@@ -1,8 +1,6 @@
 #include "log_stack.h"
 
 static int stack_log_count = 0x10;
-static std::map<std::pair<duint, duint>, std::string> stack_comment_string_cache;
-static std::list<std::pair<duint, duint>> stack_comment_string_fifo;
 
 
 json log_stack(REGDUMP* reg_dump)
@@ -17,21 +15,17 @@ json log_stack(REGDUMP* reg_dump)
 	stack_json["data"] = json::array();
 
 	duint* stack_value = stack_value = new duint[stack_log_count];
-	DbgMemRead(reg_dump->regcontext.csp, stack_value, stack_log_count * sizeof(duint));
+	if (!DbgMemRead(reg_dump->regcontext.csp, stack_value, stack_log_count * sizeof(duint)))
+	{
+		telogger_logputs("Stack Log: Failed to read stack memory");
+		return stack_json;
+	}
 
 	for (int i = 0; i < stack_log_count; i++)
 	{
 		json tmp_json = json::object();
 		duint stack_addr = reg_dump->regcontext.csp + i * sizeof(duint);
 		STACK_COMMENT comment = { 0 };
-		if (!DbgMemIsValidReadPtr(stack_addr))
-		{
-			tmp_json["address"] = make_address_json(stack_addr);
-			tmp_json["value"] = "";
-			tmp_json["comment"] = "";
-			stack_json["data"].push_back(tmp_json);
-			continue;
-		}
 
 		tmp_json["address"] = make_address_json(stack_addr);
 		tmp_json["value"] = make_address_json(stack_value[i]);

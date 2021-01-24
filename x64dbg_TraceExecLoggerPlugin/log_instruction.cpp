@@ -1,10 +1,6 @@
 #include "log_instruction.h"
 
 static int call_arg_log_count = 5;
-static std::unordered_map<duint, std::string> gui_asm_string_cache;
-static std::list<duint> gui_asm_string_fifo;
-static std::unordered_map<duint, std::string> comment_string_cache;
-static std::list<duint> comment_string_fifo;
 
 
 json make_call_json(REGDUMP* reg_dump)
@@ -30,7 +26,10 @@ json make_call_json(REGDUMP* reg_dump)
 			continue;
 		}
 		duint tmp_value = 0;
-		DbgMemRead(reg_dump->regcontext.csp + arg_offset, &tmp_value, sizeof(tmp_value));
+		if (!DbgMemRead(reg_dump->regcontext.csp + arg_offset, &tmp_value, sizeof(tmp_value)))
+		{
+			continue;
+		}
 		call_json["arg"].push_back(make_address_json(tmp_value));
 		_snprintf_s(value_name, sizeof(value_name), _TRUNCATE, "csp + %#x", (int)arg_offset);
 		call_json["arg"][i]["name"] = value_name;
@@ -44,7 +43,10 @@ json make_call_json(REGDUMP* reg_dump)
 			continue;
 		}
 		duint tmp_value = 0;
-		DbgMemRead(reg_dump->regcontext.csp + arg_offset, &tmp_value, sizeof(tmp_value));
+		if (!DbgMemRead(reg_dump->regcontext.csp + arg_offset, &tmp_value, sizeof(tmp_value)))
+		{
+			continue;
+		}
 		call_json["arg"].push_back(make_address_json(tmp_value));
 		_snprintf_s(value_name, sizeof(value_name), _TRUNCATE, "csp + %#x", (int)arg_offset);
 		call_json["arg"][i]["name"] = value_name;
@@ -168,7 +170,7 @@ json log_instruction(REGDUMP* reg_dump)
 	inst_json["type"] = "instruction";
 	inst_json["address"] = make_address_json(reg_dump->regcontext.cip);
 
-	char asm_string[DEFAULT_BUF_SIZE] = { 0 };
+	char asm_string[GUI_MAX_DISASSEMBLY_SIZE] = { 0 };
 	bool cache_result = false;
 	std::string gui_asm_cached = get_gui_asm_string_cache_data(reg_dump->regcontext.cip, &cache_result);
 	if (cache_result)
@@ -179,7 +181,10 @@ json log_instruction(REGDUMP* reg_dump)
 	else
 	{
 		inst_json["asm_str_cache"] = false;
-		GuiGetDisassembly(reg_dump->regcontext.cip, asm_string);
+		if (!GuiGetDisassembly(reg_dump->regcontext.cip, asm_string))
+		{
+			strncpy_s(asm_string, sizeof(asm_string), "error", _TRUNCATE);
+		}
 		inst_json["asm_str"] = asm_string;
 		set_gui_asm_string_cache_data(reg_dump->regcontext.cip, std::string(asm_string));
 	}

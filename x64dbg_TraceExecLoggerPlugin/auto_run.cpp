@@ -37,7 +37,12 @@ void run_debug()
 	duint cip = 0;
 	bool result_eval = false;
 	cip = DbgEval("cip", &result_eval);
-	if (result_eval && cip == skip_addr)
+	if (!result_eval)
+	{
+		telogger_logputs("Auto Run: Failed to get cip");
+		return;
+	}
+	if (cip == skip_addr)
 	{
 		skip_addr = 0;
 		DbgCmdExec("run");
@@ -120,6 +125,7 @@ bool auto_run_command_callback(int argc, char* argv[])
 		if (strstr(argv[0], "starti"))
 		{
 			set_auto_run_enabled(true);
+			stepover_enabled = false;
 			DbgCmdExec("StepInto");
 			telogger_logputs("Auto Run Log: Start StepInto");
 		}
@@ -154,8 +160,9 @@ bool auto_run_command_callback(int argc, char* argv[])
 		telogger_logprintf("Auto Run Log: BP %p\n", (char*)next_cip);
 
 		set_auto_run_enabled(true);
+		stepover_enabled = false;
 		DbgCmdExec("StepInto");
-		telogger_logputs("Auto Run Log: Start");
+		telogger_logputs("Auto Run Log: Start call");
 	}
 	return true;
 }

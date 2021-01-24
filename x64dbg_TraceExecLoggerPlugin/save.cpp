@@ -60,6 +60,7 @@ void save_log(int thread_id)
     const char* dir_name = get_save_dir();
     if (!CreateDirectoryA(dir_name, NULL) && GetLastError() != ERROR_ALREADY_EXISTS)
     {
+        telogger_logputs("Save Log: Failed to create save dir");
         return;
     }
 

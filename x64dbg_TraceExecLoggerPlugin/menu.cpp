@@ -193,6 +193,11 @@ void menu_callback(PLUG_CB_MENUENTRY* info)
 		BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_NETWORK_ENABLED, network_enabled);
 		break;
 	case MENU_AUTO_RUN_ENABLED:
+		if (!auto_run_enabled)
+		{
+			telogger_logputs("Disable only");
+		}
+		auto_run_enabled = false;
 		_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_RUN_ENABLED, auto_run_enabled);
 		break;
 	case MENU_CACHE_ENABLED:
@@ -216,32 +221,52 @@ void menu_callback(PLUG_CB_MENUENTRY* info)
 void init_menu()
 {
 	duint setting = telogger_enabled;
-	BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_LOG_ENABLED, &setting);
-	telogger_enabled = !!setting;
-	BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_INSTRUCTION_ENABLED, &setting);
-	instruction_enabled = !!setting;
-	BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_REGISTER_ENABLED, &setting);
-	register_enabled = !!setting;
-	BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_STACK_ENABLED, &setting);
-	stack_enabled = !!setting;
+	if (BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_LOG_ENABLED, &setting))
+	{
+		telogger_enabled = !!setting;
+	}
+	if (BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_INSTRUCTION_ENABLED, &setting))
+	{
+		instruction_enabled = !!setting;
+	}
+	if (BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_REGISTER_ENABLED, &setting))
+	{
+		register_enabled = !!setting;
+	}
+	if (BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_STACK_ENABLED, &setting))
+	{
+		stack_enabled = !!setting;
+	}
+	if (BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_PROC_LOG_ENABLED, &setting))
+	{
+		proc_enabled = !!setting;
+	}
+	if (BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_MODULE_ENABLED, &setting))
+	{
+		module_enabled = !!setting;
+	}
+	if (BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_THREAD_ENABLED, &setting))
+	{
+		thread_enabled = !!setting;
+	}
+	if (BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_MEMORY_ENABLED, &setting))
+	{
+		memory_enabled = !!setting;
+	}
+	if (BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_HANDLE_ENABLED, &setting))
+	{
+		handle_enabled = !!setting;
+	}
+	if (BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_NETWORK_ENABLED, &setting))
+	{
+		network_enabled = !!setting;
+	}
+	if (BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_CACHE_ENABLED, &setting))
+	{
+		cache_enabled = !!setting;
+	}
 
-	BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_PROC_LOG_ENABLED, &setting);
-	proc_enabled = !!setting;
-	BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_MODULE_ENABLED, &setting);
-	module_enabled = !!setting;
-	BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_THREAD_ENABLED, &setting);
-	thread_enabled = !!setting;
-	BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_MEMORY_ENABLED, &setting);
-	memory_enabled = !!setting;
-	BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_HANDLE_ENABLED, &setting);
-	handle_enabled = !!setting;
-	BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_NETWORK_ENABLED, &setting);
-	network_enabled = !!setting;
-	BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_CACHE_ENABLED, &setting);
-	cache_enabled = !!setting;
-
-	BridgeSettingGet(PLUGIN_NAME, MENU_LABEL_SAVE_DIR, save_dir);
-	if (strlen(save_dir) == 0)
+	if (!BridgeSettingGet(PLUGIN_NAME, MENU_LABEL_SAVE_DIR, save_dir) || strlen(save_dir) == 0)
 	{
 		set_save_dir("TElogger");
 	}

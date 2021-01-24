@@ -9,9 +9,13 @@ json log_module()
 		return module_json;
 	}
 
-	BridgeList<Script::Module::ModuleInfo> module_list;
-	Script::Module::GetList(&module_list);
 	module_json["type"] = "module";
+	BridgeList<Script::Module::ModuleInfo> module_list;
+	if (!Script::Module::GetList(&module_list))
+	{
+		telogger_logputs("Module Log: Failed to get module list");
+		return module_json;
+	}
 	module_json["count"] = module_list.Count();
 	module_json["list"] = json::array();
 	for (int i = 0; i < module_list.Count(); i++)
@@ -217,8 +221,12 @@ json log_memory()
 	}
 
 	MEMMAP memory_map = { 0 };
-	DbgMemMap(&memory_map);
 	memory_json["type"] = "memory";
+	if (!DbgMemMap(&memory_map))
+	{
+		telogger_logputs("Memory Log: Failed to get memory map");
+		return memory_json;
+	}
 	memory_json["count"] = memory_map.count;
 	memory_json["list"] = json::array();
 	for (int i = 0; i < memory_map.count; i++)
@@ -257,7 +265,11 @@ json log_handle()
 		HANDLEINFO handle = handles[i];
 		char handle_name[MAX_STRING_SIZE] = { 0 };
 		char type_name[MAX_STRING_SIZE] = { 0 };
-		DbgFunctions()->GetHandleName(handle.Handle, handle_name, sizeof(handle_name), type_name, sizeof(type_name));
+		if (!DbgFunctions()->GetHandleName(handle.Handle, handle_name, sizeof(handle_name), type_name, sizeof(type_name)))
+		{
+			strncpy_s(handle_name, sizeof(handle_name), "error", _TRUNCATE);
+			strncpy_s(type_name, sizeof(type_name), "error", _TRUNCATE);
+		}
 		json handle_entry = json::object();
 		handle_entry["value"] = handle.Handle;
 		handle_entry["name"] = handle_name;

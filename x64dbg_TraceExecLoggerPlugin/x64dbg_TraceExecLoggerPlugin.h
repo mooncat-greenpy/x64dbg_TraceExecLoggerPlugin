@@ -19,7 +19,7 @@
 
 
 #define PLUGIN_NAME "TraceExecLogger"
-#define PLUGIN_VERSION 1
+#define PLUGIN_VERSION 0
 
 #ifndef DLL_EXPORT
 #define DLL_EXPORT __declspec(dllexport)

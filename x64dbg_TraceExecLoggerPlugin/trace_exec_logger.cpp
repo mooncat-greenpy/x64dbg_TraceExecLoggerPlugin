@@ -36,7 +36,11 @@ void log_exec(const char* msg, duint cip)
 	entry["type"] = "log";
 
 	REGDUMP reg_dump;
-	DbgGetRegDumpEx(&reg_dump, sizeof(reg_dump));
+	if (!DbgGetRegDumpEx(&reg_dump, sizeof(reg_dump)))
+	{
+		add_log(DbgGetThreadId(), &entry);
+		return;
+	}
 
 	entry["inst"] = log_instruction(&reg_dump);
 	// 34 micro seconds
@@ -93,7 +97,7 @@ bool command_callback(int argc, char* argv[])
 			return false;
 		}
 		set_save_dir(argv[1]);
-		telogger_logputs("Log: Setdir %s");
+		telogger_logputs("Log: Setdir");
 	}
 
 	return true;
@@ -125,7 +129,7 @@ extern "C" __declspec(dllexport) void CBSTEPPED(CBTYPE, PLUG_CB_STEPPED* info)
 }
 
 
-extern "C" __declspec(dllexport) void CBBREAKPOINT(CBTYPE, PLUG_CB_BREAKPOINT * info)
+extern "C" __declspec(dllexport) void CBBREAKPOINT(CBTYPE, PLUG_CB_BREAKPOINT* info)
 {
 	if (skip_breakpoints_log_addr == 0 || skip_breakpoints_log_addr != info->breakpoint->addr)
 	{
@@ -136,13 +140,13 @@ extern "C" __declspec(dllexport) void CBBREAKPOINT(CBTYPE, PLUG_CB_BREAKPOINT * 
 }
 
 
-extern "C" __declspec(dllexport) void CBPAUSEDEBUG(CBTYPE, PLUG_CB_PAUSEDEBUG * info)
+extern "C" __declspec(dllexport) void CBPAUSEDEBUG(CBTYPE, PLUG_CB_PAUSEDEBUG* info)
 {
 	run_debug();
 }
 
 
-extern "C" __declspec(dllexport) void CBSYSTEMBREAKPOINT(CBTYPE, PLUG_CB_SYSTEMBREAKPOINT * info)
+extern "C" __declspec(dllexport) void CBSYSTEMBREAKPOINT(CBTYPE, PLUG_CB_SYSTEMBREAKPOINT* info)
 {
 	bool result = false;
 	duint cip = DbgEval("cip", &result);
@@ -150,14 +154,6 @@ extern "C" __declspec(dllexport) void CBSYSTEMBREAKPOINT(CBTYPE, PLUG_CB_SYSTEMB
 		skip_system_break_point(cip);
 	}
 }
-
-
-/*** EIP address is sometimes wrong. ***
-extern "C" __declspec(dllexport) void CBDEBUGEVENT(CBTYPE, PLUG_CB_DEBUGEVENT * info)
-{
-	log_exec();
-}
-*/
 
 
 extern "C" __declspec(dllexport) void CBINITDEBUG(CBTYPE, PLUG_CB_INITDEBUG* info)
@@ -174,13 +170,13 @@ extern "C" __declspec(dllexport) void CBSTOPDEBUG(CBTYPE, PLUG_CB_STOPDEBUG* inf
 }
 
 
-extern "C" __declspec(dllexport) void CBCREATEPROCESS(CBTYPE, PLUG_CB_CREATEPROCESS * info)
+extern "C" __declspec(dllexport) void CBCREATEPROCESS(CBTYPE, PLUG_CB_CREATEPROCESS* info)
 {
 	telogger_logprintf("CREATEPROCESS ID = %d\n", info->fdProcessInfo->dwProcessId);
 }
 
 
-extern "C" __declspec(dllexport) void CBCREATETHREAD(CBTYPE, PLUG_CB_CREATETHREAD * info)
+extern "C" __declspec(dllexport) void CBCREATETHREAD(CBTYPE, PLUG_CB_CREATETHREAD* info)
 {
 	telogger_logprintf("CREATETHREAD ID = %d\n", info->dwThreadId);
 	log_proc_info("Create Thread Log");
@@ -190,7 +186,7 @@ extern "C" __declspec(dllexport) void CBCREATETHREAD(CBTYPE, PLUG_CB_CREATETHREA
 }
 
 
-extern "C" __declspec(dllexport) void CBLOADDLL(CBTYPE, PLUG_CB_LOADDLL * info)
+extern "C" __declspec(dllexport) void CBLOADDLL(CBTYPE, PLUG_CB_LOADDLL* info)
 {
 	telogger_logprintf("LOADDLL %s\n", info->modname);
 	log_proc_info("Load Dll Log");
