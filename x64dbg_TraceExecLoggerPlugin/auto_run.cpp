@@ -9,7 +9,7 @@ void add_breakpoint(duint addr)
 {
 	auto_run_breakpoints.push_back(addr);
 	char cmd[DEFAULT_BUF_SIZE] = { 0 };
-	_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerAutoRunBP, ss", (char*)addr);
+	_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerAutoRunBP_%p, ss", (char*)addr, (char*)addr);
 	DbgCmdExecDirect(cmd);
 }
 
@@ -24,6 +24,25 @@ void remove_breakpoint(duint addr)
 			continue;
 		}
 		itr = auto_run_breakpoints.erase(itr);
+	}
+}
+
+
+void remove_all_breakpoint()
+{
+	BPMAP bp_map = { 0 };
+	DbgGetBpList(bp_normal, &bp_map);
+	if (bp_map.bp == NULL)
+	{
+		return;
+	}
+	for (int i = 0; i < bp_map.count; i++)
+	{
+		if (strstr(bp_map.bp[i].name, "TEloggerAutoRunBP") == NULL)
+		{
+			continue;
+		}
+		Script::Debug::DeleteBreakpoint(bp_map.bp[i].addr);
 	}
 }
 
@@ -137,6 +156,11 @@ bool auto_run_command_callback(int argc, char* argv[])
 			telogger_logputs("Auto Run Log: Start StepOver");
 		}
 	}
+	else if (strstr(argv[0], "rmbp"))
+	{
+		remove_all_breakpoint();
+		telogger_logputs("Auto Run Log: Remove all breakpoints");
+	}
 	else if (strstr(argv[0], "call"))
 	{
 		duint cip = 0;
@@ -174,6 +198,7 @@ bool init_auto_run(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.auto.enable", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.disable", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.addbp", auto_run_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.auto.rmbp", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.starti", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.starto", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.call", auto_run_command_callback, false);
@@ -187,6 +212,7 @@ bool stop_auto_run()
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.disable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.addbp");
+	_plugin_unregistercommand(pluginHandle, "TElogger.auto.rmbp");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.starti");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.starto");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.call");

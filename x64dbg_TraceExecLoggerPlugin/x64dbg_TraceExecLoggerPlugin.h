@@ -10,6 +10,7 @@
 #include "pluginsdk\_plugins.h"
 #include "pluginsdk/bridgemain.h"
 #include "pluginsdk/_scriptapi_module.h"
+#include "pluginsdk/_scriptapi_debug.h"
 #include "../include/nlohmann/json.hpp"
 #include "cache.h"
 #include "util.h"
