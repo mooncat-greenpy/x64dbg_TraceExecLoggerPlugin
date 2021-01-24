@@ -21,23 +21,11 @@ json make_call_json(REGDUMP* reg_dump)
 	for (int i = 4; i < call_arg_log_count; i++)
 	{
 		duint arg_offset = 0x20 + (i - 4) * 8;
-		if (!DbgMemIsValidReadPtr(reg_dump->regcontext.csp + arg_offset))
-		{
-			continue;
-		}
-		duint tmp_value = 0;
-		if (!DbgMemRead(reg_dump->regcontext.csp + arg_offset, &tmp_value, sizeof(tmp_value)))
-		{
-			continue;
-		}
-		call_json["arg"].push_back(make_address_json(tmp_value));
-		_snprintf_s(value_name, sizeof(value_name), _TRUNCATE, "csp + %#x", (int)arg_offset);
-		call_json["arg"][i]["name"] = value_name;
-	}
 #else
 	for (int i = 0; i < call_arg_log_count; i++)
 	{
 		duint arg_offset = i * 4;
+#endif
 		if (!DbgMemIsValidReadPtr(reg_dump->regcontext.csp + arg_offset))
 		{
 			continue;
@@ -51,7 +39,7 @@ json make_call_json(REGDUMP* reg_dump)
 		_snprintf_s(value_name, sizeof(value_name), _TRUNCATE, "csp + %#x", (int)arg_offset);
 		call_json["arg"][i]["name"] = value_name;
 	}
-#endif
+
 	return call_json;
 }
 
