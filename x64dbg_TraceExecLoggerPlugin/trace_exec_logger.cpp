@@ -158,6 +158,7 @@ extern "C" __declspec(dllexport) void CBSYSTEMBREAKPOINT(CBTYPE, PLUG_CB_SYSTEMB
 
 extern "C" __declspec(dllexport) void CBINITDEBUG(CBTYPE, PLUG_CB_INITDEBUG* info)
 {
+	set_auto_run_enabled(false);
 	set_file_name(info->szFileName);
 	clear_cache();
 }

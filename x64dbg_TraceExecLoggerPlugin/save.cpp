@@ -24,15 +24,12 @@ void create_thread_log(int thread_id)
     if (log_state.find(thread_id) != log_state.end())
     {
         log_state[thread_id].log.clear();
-        log_state[thread_id].count = 0;
-        return;
+        log_state.erase(thread_id);
     }
-    else
-    {
-        THREAD_LOG_STATE thread_log_state = { 0 };
-        thread_log_state.log = json::array();
-        log_state[thread_id] = thread_log_state;
-    }
+
+    THREAD_LOG_STATE thread_log_state = { 0 };
+    thread_log_state.log = json::array();
+    log_state[thread_id] = thread_log_state;
 
     if (strlen(get_file_name())) {
         _snprintf_s(log_state[thread_id].file_name, MAX_PATH, _TRUNCATE, "%s", PathFindFileNameA(get_file_name()));
@@ -64,26 +61,26 @@ void save_log(int thread_id)
         return;
     }
 
-    THREAD_LOG_STATE thread_log = log_state[thread_id];
-    if (thread_log.log.size() < 1)
+    THREAD_LOG_STATE* thread_log = &log_state[thread_id];
+    if (thread_log->log.size() < 1)
     {
         return;
     }
 
-    int count = thread_log.count;
+    int count = thread_log->count;
     int number = (count - 1) / MAX_LOG_COUNT;
 
     json save_info = json::object();
-    save_info["process_id"] = thread_log.process_id;
-    save_info["thread_id"] = thread_log.thread_id;
-    save_info["file_name"] = thread_log.file_name;
-    save_info["cmd_line"] = thread_log.cmd_line;
-    save_info["count"] = thread_log.log.size();
-    save_info["log"] = thread_log.log;
+    save_info["process_id"] = thread_log->process_id;
+    save_info["thread_id"] = thread_log->thread_id;
+    save_info["file_name"] = thread_log->file_name;
+    save_info["cmd_line"] = thread_log->cmd_line;
+    save_info["count"] = thread_log->log.size();
+    save_info["log"] = thread_log->log;
 
     HANDLE log_file_handle = INVALID_HANDLE_VALUE;
     char log_file_name[MAX_PATH] = { 0 };
-    _snprintf_s(log_file_name, sizeof(log_file_name), _TRUNCATE, "%s\\%s_%#x_%#x_%d.json", dir_name, thread_log.file_name, thread_log.process_id, thread_log.thread_id, number);
+    _snprintf_s(log_file_name, sizeof(log_file_name), _TRUNCATE, "%s\\%s_%#x_%#x_%d.json", dir_name, thread_log->file_name, thread_log->process_id, thread_log->thread_id, number);
     log_file_handle = CreateFileA(log_file_name, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (log_file_handle == INVALID_HANDLE_VALUE)
     {
@@ -95,9 +92,8 @@ void save_log(int thread_id)
     WriteFile(log_file_handle, save_info.dump().c_str(), strlen(save_info.dump().c_str()), &written, NULL);
 
     CloseHandle(log_file_handle);
-    telogger_logprintf("Save Log: Thread ID = %#x, Name = %s\n", thread_id, thread_log.file_name);
+    telogger_logprintf("Save Log: Thread ID = %#x, Name = %s\n", thread_id, thread_log->file_name);
 
-    log_state.erase(thread_id);
     create_thread_log(thread_id);
     log_state[thread_id].count = count;
 }

@@ -82,7 +82,6 @@ void run_debug()
 	else {
 		DbgCmdExec("TraceIntoConditional 0, 50");
 	}
-	telogger_logprintf("Auto Run: Thread ID = %x, Address = %p\n", DbgGetThreadId(), cip);
 }
 
 
