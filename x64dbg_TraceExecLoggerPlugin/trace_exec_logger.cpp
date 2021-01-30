@@ -99,6 +99,11 @@ bool command_callback(int argc, char* argv[])
 		set_save_dir(argv[1]);
 		telogger_logputs("Log: Setdir");
 	}
+	else if (strstr(argv[0], "save"))
+	{
+		save_all_thread_log();
+		telogger_logputs("Log: Save");
+	}
 
 	return true;
 }
@@ -203,12 +208,14 @@ bool init_logger_plugin(PLUG_INITSTRUCT* init_struct)
 	init_stack_log(init_struct);
 	init_proc_info_log(init_struct);
 	init_filter_log(init_struct);
+	init_save(init_struct);
 	init_auto_run(init_struct);
 
 	_plugin_registercommand(pluginHandle, "TElogger.help", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.enable", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.disable", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.setdir", command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.save", command_callback, false);
 
 	return true;
 }
@@ -223,12 +230,14 @@ bool stop_logger_plugin()
 	stop_stack_log();
 	stop_proc_info_log();
 	stop_filter_log();
+	stop_save();
 	stop_auto_run();
 
 	_plugin_unregistercommand(pluginHandle, "TElogger.help");
 	_plugin_unregistercommand(pluginHandle, "TElogger.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.disable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.setdir");
+	_plugin_unregistercommand(pluginHandle, "TElogger.save");
 
 	return true;
 }
@@ -243,5 +252,6 @@ void setup_logger_plugin()
 	setup_stack_log();
 	setup_proc_info_log();
 	setup_filter_log();
+	setup_save();
 	setup_auto_run();
 }

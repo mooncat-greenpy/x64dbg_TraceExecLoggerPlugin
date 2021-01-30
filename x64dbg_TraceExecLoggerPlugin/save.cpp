@@ -3,6 +3,7 @@
 
 static std::map<int, THREAD_LOG_STATE> log_state;
 static char file_name[MAX_PATH] = { 0 };
+static CRITICAL_SECTION save_critical = { 0 };
 
 
 const char* get_file_name()
@@ -68,7 +69,7 @@ void save_log(int thread_id)
     }
 
     int count = thread_log->count;
-    int number = (count - 1) / MAX_LOG_COUNT;
+    int save_count = thread_log->save_count;
 
     json save_info = json::object();
     save_info["process_id"] = thread_log->process_id;
@@ -80,7 +81,7 @@ void save_log(int thread_id)
 
     HANDLE log_file_handle = INVALID_HANDLE_VALUE;
     char log_file_name[MAX_PATH] = { 0 };
-    _snprintf_s(log_file_name, sizeof(log_file_name), _TRUNCATE, "%s\\%s_%#x_%#x_%d.json", dir_name, thread_log->file_name, thread_log->process_id, thread_log->thread_id, number);
+    _snprintf_s(log_file_name, sizeof(log_file_name), _TRUNCATE, "%s\\%s_%#x_%#x_%d.json", dir_name, thread_log->file_name, thread_log->process_id, thread_log->thread_id, save_count);
     log_file_handle = CreateFileA(log_file_name, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (log_file_handle == INVALID_HANDLE_VALUE)
     {
@@ -92,10 +93,11 @@ void save_log(int thread_id)
     WriteFile(log_file_handle, save_info.dump().c_str(), strlen(save_info.dump().c_str()), &written, NULL);
 
     CloseHandle(log_file_handle);
-    telogger_logprintf("Save Log: Thread ID = %#x, Name = %s\n", thread_id, thread_log->file_name);
+    telogger_logprintf("Save Log: Thread ID = %#x, Name = %s\n", thread_id, log_file_name);
 
     create_thread_log(thread_id);
     log_state[thread_id].count = count;
+    log_state[thread_id].save_count = save_count + 1;
 }
 
 
@@ -106,6 +108,7 @@ void add_log(int thread_id, json* log)
         return;
     }
 
+    EnterCriticalSection(&save_critical);
     if (log_state.find(thread_id) == log_state.end())
     {
         create_thread_log(thread_id);
@@ -118,21 +121,48 @@ void add_log(int thread_id, json* log)
     {
         save_log(thread_id);
     }
+    LeaveCriticalSection(&save_critical);
 }
 
 
 void save_all_thread_log()
 {
+    EnterCriticalSection(&save_critical);
     for (auto i : log_state)
     {
         save_log(i.first);
     }
+    LeaveCriticalSection(&save_critical);
 }
 
 
-void delete_all_log() {
+void delete_all_log()
+{
+    EnterCriticalSection(&save_critical);
     for (auto i : log_state)
     {
         log_state.erase(i.first);
     }
+    LeaveCriticalSection(&save_critical);
+}
+
+
+bool init_save(PLUG_INITSTRUCT* init_struct)
+{
+    InitializeCriticalSection(&save_critical);
+
+    return true;
+}
+
+
+bool stop_save()
+{
+    DeleteCriticalSection(&save_critical);
+
+    return true;
+}
+
+
+void setup_save()
+{
 }
