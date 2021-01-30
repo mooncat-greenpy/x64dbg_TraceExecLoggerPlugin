@@ -186,9 +186,12 @@ extern "C" __declspec(dllexport) void CBCREATETHREAD(CBTYPE, PLUG_CB_CREATETHREA
 {
 	telogger_logprintf("CREATETHREAD ID = %d\n", info->dwThreadId);
 	log_proc_info("Create Thread Log");
-	char cmd[DEFAULT_BUF_SIZE] = { 0 };
-	_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerStartThread, ss", info->CreateThread->lpStartAddress);
-	DbgCmdExecDirect(cmd);
+	if (get_telogger_enabled() || get_proc_enabled())
+	{
+		char cmd[DEFAULT_BUF_SIZE] = { 0 };
+		_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerStartThread, ss", info->CreateThread->lpStartAddress);
+		DbgCmdExecDirect(cmd);
+	}
 }
 
 
