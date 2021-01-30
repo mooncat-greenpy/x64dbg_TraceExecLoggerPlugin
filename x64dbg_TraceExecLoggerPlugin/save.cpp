@@ -128,9 +128,14 @@ void add_log(int thread_id, json* log)
 void save_all_thread_log()
 {
     EnterCriticalSection(&save_critical);
-    for (auto i : log_state)
+    std::vector<int> thread_id_list;
+    for (auto &i : log_state)
     {
-        save_log(i.first);
+        thread_id_list.push_back(i.first);
+    }
+    for (auto& i : thread_id_list)
+    {
+        save_log(i);
     }
     LeaveCriticalSection(&save_critical);
 }
@@ -139,10 +144,7 @@ void save_all_thread_log()
 void delete_all_log()
 {
     EnterCriticalSection(&save_critical);
-    for (auto i : log_state)
-    {
-        log_state.erase(i.first);
-    }
+    log_state.clear();
     LeaveCriticalSection(&save_critical);
 }
 
