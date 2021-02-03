@@ -49,6 +49,7 @@ void log_exec(const char* msg, duint cip)
 	entry["stack"] = log_stack(&reg_dump);
 	entry["message"] = msg;
 
+	// 667 micro seconds
 	add_log(DbgGetThreadId(), &entry);
 
 	flush_changed_memory();
