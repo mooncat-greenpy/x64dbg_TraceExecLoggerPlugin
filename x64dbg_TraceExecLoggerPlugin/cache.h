@@ -8,13 +8,13 @@ T3 get_cache_data_internal(T1& cache, T2 key, bool* result);
 template <typename T1, typename T2, typename T3>
 void set_cache_data_internal(T1& cache, std::list<T2>& fifo, T2 key, T3 data, size_t size);
 
-json get_address_json_cache_data(duint key, bool* result);
-void set_address_json_cache_data(duint key, json data);
-json get_stack_comment_string_cache_data(std::pair<duint, duint> key, bool* result);
+LOG_ADDRESS get_address_json_cache_data(duint key, bool* result);
+void set_address_json_cache_data(duint key, LOG_ADDRESS data);
+std::string get_stack_comment_string_cache_data(std::pair<duint, duint> key, bool* result);
 void set_stack_comment_string_cache_data(std::pair<duint, duint> key, std::string data);
-json get_gui_asm_string_cache_data(duint key, bool* result);
+std::string get_gui_asm_string_cache_data(duint key, bool* result);
 void set_gui_asm_string_cache_data(duint key, std::string data);
-json get_comment_string_cache_data(duint key, bool* result);
+std::string get_comment_string_cache_data(duint key, bool* result);
 void set_comment_string_cache_data(duint key, std::string data);
 
 void add_changed_memory(duint addr);

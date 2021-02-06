@@ -3,11 +3,11 @@
 #include "x64dbg_TraceExecLoggerPlugin.h"
 
 
-json log_thread();
-json log_memory();
-json log_module();
-json log_handle();
-json log_network();
+LOG_THREAD log_thread();
+LOG_MEMORY log_memory();
+LOG_MODULE log_module();
+LOG_HANDLE log_handle();
+LOG_NETWORK log_network();
 
 bool init_proc_info_log(PLUG_INITSTRUCT* init_struct);
 bool stop_proc_info_log();

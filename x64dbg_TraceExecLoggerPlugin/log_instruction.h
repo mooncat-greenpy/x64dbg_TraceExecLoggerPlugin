@@ -3,7 +3,7 @@
 #include "x64dbg_TraceExecLoggerPlugin.h"
 
 
-json log_instruction(REGDUMP* reg_dump);
+LOG_INSTRUCTION log_instruction(REGDUMP* reg_dump);
 
 bool init_instruction_log(PLUG_INITSTRUCT* init_struct);
 bool stop_instruction_log();

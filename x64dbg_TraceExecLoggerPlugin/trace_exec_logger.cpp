@@ -11,14 +11,17 @@ void log_proc_info(const char* msg)
 		return;
 	}
 
-	json entry = json::object();
-	entry["type"] = "proc log";
-	entry["module"] = log_module();
-	entry["thread"] = log_thread();
-	entry["memory"] = log_memory();
-	entry["handle"] = log_handle();
-	entry["network"] = log_network();
-	entry["message"] = msg;
+	LOG_CONTAINER entry = { 0 };
+	entry.is_proc_log = true;
+	entry.proc = PROC_LOG();
+
+	entry.proc.type = "proc log";
+	entry.proc.module = log_module();
+	entry.proc.thread = log_thread();
+	entry.proc.memory = log_memory();
+	entry.proc.handle = log_handle();
+	entry.proc.network = log_network();
+	entry.proc.message = msg;
 
 	add_log(DbgGetThreadId(), &entry);
 }
@@ -26,14 +29,15 @@ void log_proc_info(const char* msg)
 
 void log_exec(const char* msg, duint cip)
 {
-	// 353 micro seconds
+	// 492 micro seconds
 	if (msg == NULL || !get_telogger_enabled() || !should_log(cip))
 	{
 		return;
 	}
 
-	json entry = json::object();
-	entry["type"] = "log";
+	LOG_CONTAINER entry = { false, LOG() };
+
+	entry.exec.type = "log";
 
 	REGDUMP reg_dump;
 	if (!DbgGetRegDumpEx(&reg_dump, sizeof(reg_dump)))
@@ -42,14 +46,14 @@ void log_exec(const char* msg, duint cip)
 		return;
 	}
 
-	entry["inst"] = log_instruction(&reg_dump);
-	// 34 micro seconds
-	entry["reg"] = log_register(&reg_dump);
-	// 175 micro seconds
-	entry["stack"] = log_stack(&reg_dump);
-	entry["message"] = msg;
+	entry.exec.inst = log_instruction(&reg_dump);
+	// 28 micro seconds
+	entry.exec.reg = log_register(&reg_dump);
+	// 73 micro seconds
+	entry.exec.stack = log_stack(&reg_dump);
+	entry.exec.message = msg;
 
-	// 667 micro seconds
+	// 480 micro seconds
 	add_log(DbgGetThreadId(), &entry);
 
 	flush_changed_memory();

@@ -182,6 +182,7 @@
     <ClCompile Include="auto_run.cpp" />
     <ClCompile Include="cache.cpp" />
     <ClCompile Include="filter.cpp" />
+    <ClCompile Include="json.cpp" />
     <ClCompile Include="log_instruction.cpp" />
     <ClCompile Include="log_proc_info.cpp" />
     <ClCompile Include="log_register.cpp" />
@@ -193,10 +194,10 @@
     <ClCompile Include="x64dbg_TraceExecLoggerPlugin.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\nlohmann\json.hpp" />
     <ClInclude Include="auto_run.h" />
     <ClInclude Include="cache.h" />
     <ClInclude Include="filter.h" />
+    <ClInclude Include="json.h" />
     <ClInclude Include="log_instruction.h" />
     <ClInclude Include="log_proc_info.h" />
     <ClInclude Include="log_register.h" />

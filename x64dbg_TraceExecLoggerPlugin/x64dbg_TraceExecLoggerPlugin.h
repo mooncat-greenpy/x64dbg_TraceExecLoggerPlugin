@@ -7,11 +7,12 @@
 #include <stdio.h>
 #include <psapi.h>
 #include <Shlwapi.h>
+#include <string>
 #include "pluginsdk\_plugins.h"
 #include "pluginsdk/bridgemain.h"
 #include "pluginsdk/_scriptapi_module.h"
 #include "pluginsdk/_scriptapi_debug.h"
-#include "../include/nlohmann/json.hpp"
+#include "json.h"
 #include "cache.h"
 #include "util.h"
 #include "menu.h"
@@ -50,6 +51,3 @@ DLL_EXPORT void plugsetup(PLUG_SETUPSTRUCT* setupStruct);
 #endif
 
 #endif //_PLUGINMAIN_H
-
-
-using json = nlohmann::json;

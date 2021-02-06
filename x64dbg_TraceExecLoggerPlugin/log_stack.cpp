@@ -3,16 +3,15 @@
 static int stack_log_count = 0x10;
 
 
-json log_stack(REGDUMP* reg_dump)
+LOG_STACK log_stack(REGDUMP* reg_dump)
 {
-	json stack_json = json::object();
+	LOG_STACK stack_json = LOG_STACK();
 	if (!get_stack_enabled())
 	{
 		return stack_json;
 	}
 
-	stack_json["type"] = "stack";
-	stack_json["data"] = json::array();
+	stack_json.type = "stack";
 
 	duint* stack_value = stack_value = new duint[stack_log_count];
 	if (!DbgMemRead(reg_dump->regcontext.csp, stack_value, stack_log_count * sizeof(duint)))
@@ -23,34 +22,34 @@ json log_stack(REGDUMP* reg_dump)
 
 	for (int i = 0; i < stack_log_count; i++)
 	{
-		json tmp_json = json::object();
+		LOG_STACK_ENTRY tmp_json = LOG_STACK_ENTRY();
 		duint stack_addr = reg_dump->regcontext.csp + i * sizeof(duint);
 		STACK_COMMENT comment = { 0 };
 
-		tmp_json["address"] = make_address_json(stack_addr);
-		tmp_json["value"] = make_address_json(stack_value[i]);
+		tmp_json.address = make_address_json(stack_addr);
+		tmp_json.value = make_address_json(stack_value[i]);
 
 		bool cache_result = false;
 		std::string stack_comment_cached = get_stack_comment_string_cache_data(std::make_pair(stack_addr, stack_value[i]), &cache_result);
 		if (cache_result)
 		{
-			tmp_json["comment_cache"] = true;
-			tmp_json["comment"] = stack_comment_cached.c_str();
+			tmp_json.comment_cache = true;
+			tmp_json.comment = stack_comment_cached;
 		}
 		else
 		{
-			tmp_json["comment_cache"] = false;
+			tmp_json.comment_cache = false;
 			if (DbgStackCommentGet(stack_addr, &comment))
 			{
-				tmp_json["comment"] = comment.comment;
+				tmp_json.comment = comment.comment;
 			}
 			else
 			{
-				tmp_json["comment"] = "";
+				tmp_json.comment = "";
 			}
-			set_stack_comment_string_cache_data(std::make_pair(stack_addr, stack_value[i]), std::string(tmp_json["comment"]));
+			set_stack_comment_string_cache_data(std::make_pair(stack_addr, stack_value[i]), tmp_json.comment);
 		}
-		stack_json["data"].push_back(tmp_json);
+		stack_json.data.push_back(tmp_json);
 	}
 	delete[] stack_value;
 

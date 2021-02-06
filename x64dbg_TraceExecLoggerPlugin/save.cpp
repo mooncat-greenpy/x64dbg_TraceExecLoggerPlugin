@@ -28,8 +28,7 @@ void create_thread_log(int thread_id)
         log_state.erase(thread_id);
     }
 
-    THREAD_LOG_STATE thread_log_state = { 0 };
-    thread_log_state.log = json::array();
+    THREAD_LOG_STATE thread_log_state = THREAD_LOG_STATE();
     log_state[thread_id] = thread_log_state;
 
     if (strlen(get_file_name())) {
@@ -71,14 +70,6 @@ void save_log(int thread_id)
     int count = thread_log->count;
     int save_count = thread_log->save_count;
 
-    json save_info = json::object();
-    save_info["process_id"] = thread_log->process_id;
-    save_info["thread_id"] = thread_log->thread_id;
-    save_info["file_name"] = thread_log->file_name;
-    save_info["cmd_line"] = thread_log->cmd_line;
-    save_info["count"] = thread_log->log.size();
-    save_info["log"] = thread_log->log;
-
     HANDLE log_file_handle = INVALID_HANDLE_VALUE;
     char log_file_name[MAX_PATH] = { 0 };
     _snprintf_s(log_file_name, sizeof(log_file_name), _TRUNCATE, "%s\\%s_%#x_%#x_%d.json", dir_name, thread_log->file_name, thread_log->process_id, thread_log->thread_id, save_count);
@@ -89,8 +80,7 @@ void save_log(int thread_id)
         return;
     }
 
-    DWORD written = 0;
-    WriteFile(log_file_handle, save_info.dump().c_str(), strlen(save_info.dump().c_str()), &written, NULL);
+    thread_log->save_write("", log_file_handle);
 
     CloseHandle(log_file_handle);
     telogger_logprintf("Save Log: Thread ID = %#x, Name = %s\n", thread_id, log_file_name);
@@ -101,7 +91,7 @@ void save_log(int thread_id)
 }
 
 
-void add_log(int thread_id, json* log)
+void add_log(int thread_id, LOG_CONTAINER* log)
 {
     if (log == NULL)
     {
@@ -129,7 +119,7 @@ void save_all_thread_log()
 {
     EnterCriticalSection(&save_critical);
     std::vector<int> thread_id_list;
-    for (auto &i : log_state)
+    for (auto& i : log_state)
     {
         thread_id_list.push_back(i.first);
     }

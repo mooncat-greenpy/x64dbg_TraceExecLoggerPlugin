@@ -38,7 +38,7 @@ void save_json_file(const char* file_name, SYSTEMTIME* system_time, int number, 
 	}
 
 	DWORD written = 0;
-	WriteFile(log_file_handle, buffer, strlen(buffer), &written, NULL);
+	WriteFile(log_file_handle, buffer, (DWORD)strlen(buffer), &written, NULL);
 
 	CloseHandle(log_file_handle);
 }
@@ -88,23 +88,23 @@ void make_hex_string(char* data, size_t data_size, char* text, size_t text_size)
 }
 
 
-json make_address_json(duint addr)
+LOG_ADDRESS make_address_json(duint addr)
 {
 	bool cache_result = false;
-	json cache_data = get_address_json_cache_data(addr, &cache_result);
+	LOG_ADDRESS cache_data = get_address_json_cache_data(addr, &cache_result);
 	if (cache_result)
 	{
-		cache_data["cache"] = true;
+		cache_data.cache = true;
 		return cache_data;
 	}
 
-	json address_json = json::object();
-	address_json["cache"] = false;
-	address_json["value"] = addr;
+	LOG_ADDRESS address_json = LOG_ADDRESS();
+	address_json.cache = false;
+	address_json.value = addr;
 
 	char label_text[MAX_LABEL_SIZE] = { 0 };
 	make_address_label_string(addr, label_text, sizeof(label_text));
-	address_json["label"] = label_text;
+	address_json.label = label_text;
 
 	char text[DEFAULT_BUF_SIZE] = { 0 };
 	char string_text[MAX_STRING_SIZE] = { 0 };
@@ -131,37 +131,35 @@ json make_address_json(duint addr)
 		_snprintf_s(text, sizeof(text), _TRUNCATE, "");
 		address_json_cache_enabled = false;
 	}
-	address_json["data"] = text;
+	address_json.data = text;
 
-	address_json["xref"] = json::array();
 	XREF_INFO xref_info = { 0 };
 	if (DbgXrefGet(addr, &xref_info))
 	{
 		for (duint i = 0; i < xref_info.refcount; i++)
 		{
-			json xref_json = json::object();
+			LOG_XREF xref_json = LOG_XREF();
 
-			xref_json["address"] = json::object();
-			xref_json["address"]["value"] = xref_info.references[i].addr;
+			xref_json.address_value = xref_info.references[i].addr;
 			label_text[0] = '\0';
 			make_address_label_string(xref_info.references[i].addr, label_text, sizeof(label_text));
-			xref_json["address"]["label"] = label_text;
+			xref_json.address_label = label_text;
 
 			switch (xref_info.references[i].type)
 			{
 			case XREF_DATA:
-				xref_json["type"] = "data";
+				xref_json.type = "data";
 				break;
 			case XREF_JMP:
-				xref_json["type"] = "jmp";
+				xref_json.type = "jmp";
 				break;
 			case XREF_CALL:
-				xref_json["type"] = "call";
+				xref_json.type = "call";
 				break;
 			default:
-				xref_json["type"] = "none";
+				xref_json.type = "none";
 			}
-			address_json["xref"].push_back(xref_json);
+			address_json.xref.push_back(xref_json);
 		}
 	}
 
