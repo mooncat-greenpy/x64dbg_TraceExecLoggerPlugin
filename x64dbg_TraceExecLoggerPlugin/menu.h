@@ -16,6 +16,7 @@
 #define MENU_LABEL_SAVE_DIR "Save Dir"
 #define MENU_LABEL_AUTO_RUN_ENABLED "Auto Run Enabled"
 #define MENU_LABEL_CACHE_ENABLED "Cache Enabled"
+#define MENU_LABEL_THREAD_STOP_ENABLED "Thread Stop Enabled"
 
 enum
 {
@@ -32,6 +33,7 @@ enum
 	MENU_PROC_NETWORK_ENABLED,
 	MENU_AUTO_RUN_ENABLED,
 	MENU_CACHE_ENABLED,
+	MENU_THREAD_STOP_ENABLED,
 };
 
 bool get_telogger_enabled();
@@ -60,6 +62,8 @@ bool get_auto_run_enabled();
 void set_auto_run_enabled(bool value);
 bool get_cache_enabled();
 void set_cache_enabled(bool value);
+bool get_thread_stop_enabled();
+void set_thread_stop_enabled(bool value);
 
 void menu_callback(PLUG_CB_MENUENTRY* info);
 

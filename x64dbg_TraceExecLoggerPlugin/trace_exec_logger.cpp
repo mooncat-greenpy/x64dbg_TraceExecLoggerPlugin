@@ -75,12 +75,26 @@ bool command_callback(int argc, char* argv[])
 			"    TElogger.enable\n"
 			"    TElogger.disable\n"
 			"    TElogger.setdir dirname\n"
+			"    TElogger.save\n"
+			"    TElogger.threadstop.enable\n"
+			"    TElogger.threadstop.disable\n"
 			"    TElogger.inst.help\n"
 			"    TElogger.reg.help\n"
 			"    TElogger.stack.help\n"
 			"    TElogger.proc.help\n"
 			"    TElogger.filt.help\n"
 			"    TElogger.auto.help");
+		telogger_logprintf("%d %d\n", sizeof(LOG), sizeof(PROC_LOG));
+	}
+	else if (strstr(argv[0], "threadstop.enable"))
+	{
+		set_thread_stop_enabled(true);
+		telogger_logputs("Thread Stop: Enabled");
+	}
+	else if (strstr(argv[0], "threadstop.disable"))
+	{
+		set_thread_stop_enabled(false);
+		telogger_logputs("Thread Stop: Disabled");
 	}
 	else if (strstr(argv[0], "enable"))
 	{
@@ -191,7 +205,7 @@ extern "C" __declspec(dllexport) void CBCREATETHREAD(CBTYPE, PLUG_CB_CREATETHREA
 {
 	telogger_logprintf("CREATETHREAD ID = %d\n", info->dwThreadId);
 	log_proc_info("Create Thread Log");
-	if (get_telogger_enabled() || get_proc_enabled())
+	if (get_thread_stop_enabled())
 	{
 		char cmd[DEFAULT_BUF_SIZE] = { 0 };
 		_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerStartThread, ss", info->CreateThread->lpStartAddress);
@@ -224,6 +238,8 @@ bool init_logger_plugin(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.disable", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.setdir", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.save", command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.threadstop.enable", command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.threadstop.disable", command_callback, false);
 
 	return true;
 }
@@ -246,6 +262,8 @@ bool stop_logger_plugin()
 	_plugin_unregistercommand(pluginHandle, "TElogger.disable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.setdir");
 	_plugin_unregistercommand(pluginHandle, "TElogger.save");
+	_plugin_unregistercommand(pluginHandle, "TElogger.threadstop.enable");
+	_plugin_unregistercommand(pluginHandle, "TElogger.threadstop.disable");
 
 	return true;
 }
