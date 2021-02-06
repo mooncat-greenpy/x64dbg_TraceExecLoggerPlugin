@@ -17,6 +17,11 @@ public:
         add(indent, key, std::string(value), write, last);
     }
 
+    void add(std::string indent, const std::string& key, bool value, std::string& write, bool last = false)
+    {
+        write += indent + "\"" + key + "\": " + (value ? "true" : "false") + (last ? "" : ",") + "\n";
+    }
+
     template<typename T>
     void add(std::string indent, const std::string& key, const T& value, std::string& write, bool last = false)
     {
