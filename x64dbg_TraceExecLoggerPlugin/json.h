@@ -170,6 +170,7 @@ public:
 class LOG_INSTRUCTION : public Log
 {
 public:
+    bool enabled;
     std::string type;
     LOG_ADDRESS address;
     bool asm_str_cache;
@@ -180,6 +181,10 @@ public:
 
     void save_internal(std::string indent, std::string& write)
     {
+        if (!enabled)
+        {
+            return;
+        }
         add(indent, "type", type, write);
         address.save(indent,"address", write);
         add(indent, "asm_str_cache", asm_str_cache, write);
@@ -194,6 +199,7 @@ public:
 class LOG_REGISTER : public Log
 {
 public:
+    bool enabled;
     std::string type;
     LOG_ADDRESS cax;
     LOG_ADDRESS cbx;
@@ -227,6 +233,10 @@ public:
 
     void save_internal(std::string indent, std::string& write)
     {
+        if (!enabled)
+        {
+            return;
+        }
         add(indent, "type", type, write);
         cax.save(indent, "cax", write);
         cbx.save(indent, "cbx", write);
@@ -236,6 +246,7 @@ public:
         cdi.save(indent, "cdi", write);
         csp.save(indent, "csp", write);
         cbp.save(indent, "cbp", write);
+#ifdef _WIN64
         r8.save(indent, "r8", write);
         r9.save(indent, "r9", write);
         r10.save(indent, "r10", write);
@@ -244,6 +255,7 @@ public:
         r13.save(indent, "r13", write);
         r14.save(indent, "r14", write);
         r15.save(indent, "r15", write);
+#endif
 
         write += indent + "\"flags\": {\n";
         add(indent + "    ", "zf", flags_zf, write);
@@ -289,11 +301,16 @@ public:
 class LOG_STACK : public Log
 {
 public:
+    bool enabled;
     std::string type;
     std::list<LOG_STACK_ENTRY> data;
 
     void save_internal(std::string indent, std::string& write)
     {
+        if (!enabled)
+        {
+            return;
+        }
         add(indent, "type", type, write);
         add_list(indent, "data", data, write, true);
     }
@@ -344,12 +361,17 @@ public:
 class LOG_MODULE : public Log
 {
 public:
+    bool enabled;
     std::string type;
     int count;
     std::list<LOG_MODULE_ENTRY> list;
 
     void save_internal(std::string indent, std::string& write)
     {
+        if (!enabled)
+        {
+            return;
+        }
         add(indent, "type", type, write);
         add(indent, "count", count, write);
         add_list(indent, "list", list, write, true);
@@ -387,6 +409,7 @@ public:
 class LOG_THREAD : public Log
 {
 public:
+    bool enabled;
     std::string type;
     int current_thread;
     int count;
@@ -394,6 +417,10 @@ public:
 
     void save_internal(std::string indent, std::string& write)
     {
+        if (!enabled)
+        {
+            return;
+        }
         add(indent, "type", type, write);
         add(indent, "current_thread", current_thread, write);
         add(indent, "count", count, write);
@@ -422,12 +449,17 @@ public:
 class LOG_MEMORY : public Log
 {
 public:
+    bool enabled;
     std::string type;
     int count;
     std::list<LOG_MEMORY_ENTRY> list;
 
     void save_internal(std::string indent, std::string& write)
     {
+        if (!enabled)
+        {
+            return;
+        }
         add(indent, "type", type, write);
         add(indent, "count", count, write);
         add_list(indent, "list", list, write, true);
@@ -455,12 +487,17 @@ public:
 class LOG_HANDLE : public Log
 {
 public:
+    bool enabled;
     std::string type;
     int count;
     std::list<LOG_HANDLE_ENTRY> list;
 
     void save_internal(std::string indent, std::string& write)
     {
+        if (!enabled)
+        {
+            return;
+        }
         add(indent, "type", type, write);
         add(indent, "count", count, write);
         add_list(indent, "list", list, write, true);
@@ -498,12 +535,17 @@ public:
 class LOG_NETWORK : public Log
 {
 public:
+    bool enabled;
     std::string type;
     int count;
     std::list<LOG_NETWORK_ENTRY> list;
 
     void save_internal(std::string indent, std::string& write)
     {
+        if (!enabled)
+        {
+            return;
+        }
         add(indent, "type", type, write);
         add(indent, "count", count, write);
         add_list(indent, "list", list, write, true);
@@ -581,11 +623,11 @@ public:
             write += indent + "    {\n";
             if (itr->is_proc_log)
             {
-                itr->proc.save_internal(indent + "            ", write);
+                itr->proc.save_internal(indent + "        ", write);
             }
             else
             {
-                itr->exec.save_internal(indent + "            ", write);
+                itr->exec.save_internal(indent + "        ", write);
 
             }
             write += indent + "    }";
@@ -593,7 +635,7 @@ public:
             first = false;
         }
 
-        write = indent + "]\n"+indent+"}\n";
+        write = "\n" + indent + "]\n" + indent + "}\n";
         WriteFile(handle, write.c_str(), (DWORD)strlen(write.c_str()), &written, NULL);
     }
 };

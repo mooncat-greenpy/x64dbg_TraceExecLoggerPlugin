@@ -88,17 +88,18 @@ void make_hex_string(char* data, size_t data_size, char* text, size_t text_size)
 }
 
 
-LOG_ADDRESS make_address_json(duint addr)
+void make_address_json(LOG_ADDRESS& address_json, duint addr)
 {
+	address_json.xref.clear();
 	bool cache_result = false;
 	LOG_ADDRESS cache_data = get_address_json_cache_data(addr, &cache_result);
 	if (cache_result)
 	{
-		cache_data.cache = true;
-		return cache_data;
+		address_json = cache_data;
+		address_json.cache = true;
+		return;
 	}
 
-	LOG_ADDRESS address_json = LOG_ADDRESS();
 	address_json.cache = false;
 	address_json.value = addr;
 
@@ -167,6 +168,4 @@ LOG_ADDRESS make_address_json(duint addr)
 	{
 		set_address_json_cache_data(addr, address_json);
 	}
-
-	return address_json;
 }

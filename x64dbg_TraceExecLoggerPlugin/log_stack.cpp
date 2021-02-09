@@ -3,21 +3,24 @@
 static int stack_log_count = 0x10;
 
 
-LOG_STACK log_stack(REGDUMP* reg_dump)
+void log_stack(LOG_STACK& stack_json, REGDUMP* reg_dump)
 {
-	LOG_STACK stack_json = LOG_STACK();
+	stack_json.data.clear();
 	if (!get_stack_enabled())
 	{
-		return stack_json;
+		stack_json.enabled = false;
+		return;
 	}
 
 	stack_json.type = "stack";
 
-	duint* stack_value = stack_value = new duint[stack_log_count];
+	duint* stack_value = new duint[stack_log_count];
 	if (!DbgMemRead(reg_dump->regcontext.csp, stack_value, stack_log_count * sizeof(duint)))
 	{
 		telogger_logputs("Stack Log: Failed to read stack memory");
-		return stack_json;
+		stack_json.enabled = false;
+		delete[] stack_value;
+		return;
 	}
 
 	for (int i = 0; i < stack_log_count; i++)
@@ -26,8 +29,8 @@ LOG_STACK log_stack(REGDUMP* reg_dump)
 		duint stack_addr = reg_dump->regcontext.csp + i * sizeof(duint);
 		STACK_COMMENT comment = { 0 };
 
-		tmp_json.address = make_address_json(stack_addr);
-		tmp_json.value = make_address_json(stack_value[i]);
+		make_address_json(tmp_json.address, stack_addr);
+		make_address_json(tmp_json.value, stack_value[i]);
 
 		bool cache_result = false;
 		std::string stack_comment_cached = get_stack_comment_string_cache_data(std::make_pair(stack_addr, stack_value[i]), &cache_result);
@@ -53,7 +56,7 @@ LOG_STACK log_stack(REGDUMP* reg_dump)
 	}
 	delete[] stack_value;
 
-	return stack_json;
+	stack_json.enabled = true;
 }
 
 

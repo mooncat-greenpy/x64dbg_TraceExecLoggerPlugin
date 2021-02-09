@@ -16,11 +16,11 @@ void log_proc_info(const char* msg)
 	entry.proc = PROC_LOG();
 
 	entry.proc.type = "proc log";
-	entry.proc.module = log_module();
-	entry.proc.thread = log_thread();
-	entry.proc.memory = log_memory();
-	entry.proc.handle = log_handle();
-	entry.proc.network = log_network();
+	log_module(entry.proc.module);
+	log_thread(entry.proc.thread);
+	log_memory(entry.proc.memory);
+	log_handle(entry.proc.handle);
+	log_network(entry.proc.network);
 	entry.proc.message = msg;
 
 	add_log(DbgGetThreadId(), &entry);
@@ -46,11 +46,11 @@ void log_exec(const char* msg, duint cip)
 		return;
 	}
 
-	entry.exec.inst = log_instruction(&reg_dump);
+	log_instruction(entry.exec.inst, &reg_dump);
 	// 28 micro seconds
-	entry.exec.reg = log_register(&reg_dump);
+	log_register(entry.exec.reg, &reg_dump);
 	// 73 micro seconds
-	entry.exec.stack = log_stack(&reg_dump);
+	log_stack(entry.exec.stack, &reg_dump);
 	entry.exec.message = msg;
 
 	// 480 micro seconds

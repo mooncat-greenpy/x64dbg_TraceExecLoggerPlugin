@@ -3,16 +3,23 @@
 static int call_arg_log_count = 5;
 
 
-LOG_CALL make_call_json(REGDUMP* reg_dump)
+void make_call_json(LOG_CALL& call_json, REGDUMP* reg_dump)
 {
-	LOG_CALL call_json = LOG_CALL();
-
 	char value_name[20] = { 0 };
+	call_json.arg.clear();
+	LOG_ADDRESS tmp_addr = LOG_ADDRESS();
 #ifdef _WIN64
-	call_json.arg.push_back({ "ccx", make_address_json(reg_dump->regcontext.ccx) });
-	call_json.arg.push_back({ "cdx", make_address_json(reg_dump->regcontext.cdx) });
-	call_json.arg.push_back({ "r8", make_address_json(reg_dump->regcontext.r8) });
-	call_json.arg.push_back({ "r9", make_address_json(reg_dump->regcontext.r9) });
+	make_address_json(tmp_addr, reg_dump->regcontext.ccx);
+	call_json.arg.push_back({ "ccx", tmp_addr });
+	tmp_addr = LOG_ADDRESS();
+	make_address_json(tmp_addr, reg_dump->regcontext.cdx);
+	call_json.arg.push_back({ "cdx", tmp_addr });
+	tmp_addr = LOG_ADDRESS();
+	make_address_json(tmp_addr, reg_dump->regcontext.r8);
+	call_json.arg.push_back({ "r8", tmp_addr });
+	tmp_addr = LOG_ADDRESS();
+	make_address_json(tmp_addr, reg_dump->regcontext.r9);
+	call_json.arg.push_back({ "r9", tmp_addr });
 	for (int i = 4; i < call_arg_log_count; i++)
 	{
 		duint arg_offset = 0x20 + (i - 4) * 8;
@@ -31,17 +38,16 @@ LOG_CALL make_call_json(REGDUMP* reg_dump)
 			continue;
 		}
 		_snprintf_s(value_name, sizeof(value_name), _TRUNCATE, "csp + %#x", (int)arg_offset);
-		call_json.arg.push_back({ value_name, make_address_json(tmp_value) });
+		tmp_addr = LOG_ADDRESS();
+		make_address_json(tmp_addr, tmp_value);
+		call_json.arg.push_back({ value_name, tmp_addr });
 	}
-
-	return call_json;
 }
 
 
-LOG_ASSEMBLY make_asm_json(REGDUMP* reg_dump)
+void make_asm_json(LOG_ASSEMBLY& asm_json, REGDUMP* reg_dump)
 {
-	LOG_ASSEMBLY asm_json = LOG_ASSEMBLY();
-
+	asm_json.arg.clear();
 	DISASM_INSTR instr = { 0 };
 	DbgDisasmAt(reg_dump->regcontext.cip, &instr);
 	if (instr.type == instr_normal)
@@ -54,7 +60,7 @@ LOG_ASSEMBLY make_asm_json(REGDUMP* reg_dump)
 		if (strncmp(instr.instruction, "call", strlen("call")) == 0)
 		{
 			asm_json.type = "call";
-			asm_json.call = make_call_json(reg_dump);
+			make_call_json(asm_json.call, reg_dump);
 			add_changed_memory(reg_dump->regcontext.csp - sizeof(duint));
 		}
 	}
@@ -132,24 +138,23 @@ LOG_ASSEMBLY make_asm_json(REGDUMP* reg_dump)
 		}
 		arg.mnemonic = instr.arg[i].mnemonic;
 		arg.constant = instr.arg[i].constant;
-		arg.value = make_address_json(instr.arg[i].value);
-		arg.memvalue = make_address_json(instr.arg[i].memvalue);
+		make_address_json(arg.value, instr.arg[i].value);
+		make_address_json(arg.memvalue, instr.arg[i].memvalue);
 		asm_json.arg.push_back(arg);
 	}
-	return asm_json;
 }
 
 
-LOG_INSTRUCTION log_instruction(REGDUMP* reg_dump)
+void log_instruction(LOG_INSTRUCTION& inst_json, REGDUMP* reg_dump)
 {
-	LOG_INSTRUCTION inst_json = LOG_INSTRUCTION();
 	if (!get_instruction_enabled())
 	{
-		return inst_json;
+		inst_json.enabled = false;
+		return;
 	}
 
 	inst_json.type = "instruction";
-	inst_json.address = make_address_json(reg_dump->regcontext.cip);
+	make_address_json(inst_json.address, reg_dump->regcontext.cip);
 
 	char asm_string[GUI_MAX_DISASSEMBLY_SIZE] = { 0 };
 	bool cache_result = false;
@@ -170,7 +175,7 @@ LOG_INSTRUCTION log_instruction(REGDUMP* reg_dump)
 		set_gui_asm_string_cache_data(reg_dump->regcontext.cip, std::string(asm_string));
 	}
 
-	inst_json.assembly = make_asm_json(reg_dump);
+	make_asm_json(inst_json.assembly, reg_dump);
 
 	char comment_text[MAX_COMMENT_SIZE] = { 0 };
 	cache_result = false;
@@ -194,7 +199,7 @@ LOG_INSTRUCTION log_instruction(REGDUMP* reg_dump)
 		set_comment_string_cache_data(reg_dump->regcontext.cip, inst_json.comment);
 	}
 
-	return inst_json;
+	inst_json.enabled = true;
 }
 
 

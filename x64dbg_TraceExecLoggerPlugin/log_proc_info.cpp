@@ -1,12 +1,13 @@
 #include "log_instruction.h"
 
 
-LOG_MODULE log_module()
+void log_module(LOG_MODULE& module_json)
 {
-	LOG_MODULE module_json = LOG_MODULE();
+	module_json.list.clear();
 	if (!get_module_enabled())
 	{
-		return module_json;
+		module_json.enabled = false;
+		return;
 	}
 
 	module_json.type = "module";
@@ -14,7 +15,8 @@ LOG_MODULE log_module()
 	if (!Script::Module::GetList(&module_list))
 	{
 		telogger_logputs("Module Log: Failed to get module list");
-		return module_json;
+		module_json.enabled = false;
+		return;
 	}
 	module_json.count = module_list.Count();
 	for (int i = 0; i < module_list.Count(); i++)
@@ -23,22 +25,24 @@ LOG_MODULE log_module()
 		Script::Module::ModuleInfo module_info = module_list[i];
 		module_entry.name = module_info.name;
 		module_entry.path = module_info.path;
-		module_entry.entry_point = make_address_json(module_info.entry);
-		module_entry.base_address = make_address_json(module_info.base);
+		make_address_json(module_entry.entry_point, module_info.entry);
+		make_address_json(module_entry.base_address, module_info.base);
 		module_entry.size = module_info.size;
 		module_entry.section_count = module_info.sectionCount;
 		module_json.list.push_back(module_entry);
 	}
-	return module_json;
+
+	module_json.enabled = true;
 }
 
 
-LOG_THREAD log_thread()
+void log_thread(LOG_THREAD& thread_json)
 {
-	LOG_THREAD thread_json = LOG_THREAD();
+	thread_json.list.clear();
 	if (!get_thread_enabled())
 	{
-		return thread_json;
+		thread_json.enabled = false;
+		return;
 	}
 
 	THREADLIST thread_list = { 0 };
@@ -56,9 +60,9 @@ LOG_THREAD log_thread()
 		thread_entry.id = thread_list.list[i].BasicInfo.ThreadId;
 		thread_entry.handle = thread_list.list[i].BasicInfo.Handle;
 		thread_entry.name = thread_list.list[i].BasicInfo.threadName;
-		thread_entry.start_address = make_address_json(thread_list.list[i].BasicInfo.ThreadStartAddress);
-		thread_entry.local_base = make_address_json(thread_list.list[i].BasicInfo.ThreadLocalBase);
-		thread_entry.cip = make_address_json(thread_list.list[i].ThreadCip);
+		make_address_json(thread_entry.start_address, thread_list.list[i].BasicInfo.ThreadStartAddress);
+		make_address_json(thread_entry.local_base, thread_list.list[i].BasicInfo.ThreadLocalBase);
+		make_address_json(thread_entry.cip, thread_list.list[i].ThreadCip);
 		thread_entry.suspend_count = thread_list.list[i].SuspendCount;
 		switch (thread_list.list[i].Priority)
 		{
@@ -206,16 +210,18 @@ LOG_THREAD log_thread()
 		}
 		thread_json.list.push_back(thread_entry);
 	}
-	return thread_json;
+
+	thread_json.enabled = true;
 }
 
 
-LOG_MEMORY log_memory()
+void log_memory(LOG_MEMORY& memory_json)
 {
-	LOG_MEMORY memory_json = LOG_MEMORY();
+	memory_json.list.clear();
 	if (!get_memory_enabled())
 	{
-		return memory_json;
+		memory_json.enabled = false;
+		return;
 	}
 
 	MEMMAP memory_map = { 0 };
@@ -223,7 +229,8 @@ LOG_MEMORY log_memory()
 	if (!DbgMemMap(&memory_map))
 	{
 		telogger_logputs("Memory Log: Failed to get memory map");
-		return memory_json;
+		memory_json.enabled = false;
+		return;
 	}
 	memory_json.count = memory_map.count;
 	for (int i = 0; i < memory_map.count; i++)
@@ -234,22 +241,24 @@ LOG_MEMORY log_memory()
 		}
 		LOG_MEMORY_ENTRY memory_entry = LOG_MEMORY_ENTRY();
 		memory_entry.info = memory_map.page[i].info;
-		memory_entry.base_address = make_address_json((duint)memory_map.page[i].mbi.BaseAddress);
-		memory_entry.allocation_base = make_address_json((duint)memory_map.page[i].mbi.AllocationBase);
+		make_address_json(memory_entry.base_address, (duint)memory_map.page[i].mbi.BaseAddress);
+		make_address_json(memory_entry.allocation_base, (duint)memory_map.page[i].mbi.AllocationBase);
 		memory_entry.region_size = memory_map.page[i].mbi.RegionSize;
 		memory_json.list.push_back(memory_entry);
 	}
-	return memory_json;
+
+	memory_json.enabled = true;
 }
 
 
-LOG_HANDLE log_handle()
+void log_handle(LOG_HANDLE& handle_json)
 {
-	LOG_HANDLE handle_json = LOG_HANDLE();
+	handle_json.list.clear();
 	BridgeList<HANDLEINFO> handles;
 	if (!get_handle_enabled() || !DbgFunctions()->EnumHandles(&handles))
 	{
-		return handle_json;
+		handle_json.enabled = false;
+		return;
 	}
 
 	int count = handles.Count();
@@ -274,17 +283,18 @@ LOG_HANDLE log_handle()
 		handle_json.list.push_back(handle_entry);
 	}
 
-	return handle_json;
+	handle_json.enabled = true;
 }
 
 
-LOG_NETWORK log_network()
+void log_network(LOG_NETWORK& network_json)
 {
-	LOG_NETWORK network_json = LOG_NETWORK();
+	network_json.list.clear();
 	BridgeList<TCPCONNECTIONINFO> connections;
 	if (!get_network_enabled() || !DbgFunctions()->EnumTcpConnections(&connections))
 	{
-		return network_json;
+		network_json.enabled = false;
+		return;
 	}
 
 	int count = connections.Count();
@@ -304,7 +314,7 @@ LOG_NETWORK log_network()
 		network_json.list.push_back(network_entry);
 	}
 
-	return network_json;
+	network_json.enabled = true;
 }
 
 
