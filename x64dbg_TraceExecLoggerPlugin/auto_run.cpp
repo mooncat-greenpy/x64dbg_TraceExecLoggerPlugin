@@ -105,8 +105,10 @@ bool auto_run_command_callback(int argc, char* argv[])
 			"    TElogger.auto.enable\n"
 			"    TElogger.auto.disable\n"
 			"    TElogger.auto.addbp address\n"
+			"    TElogger.auto.rmbp address\n"
 			"    TElogger.auto.starti address\n"
-			"    TElogger.auto.starto address");
+			"    TElogger.auto.starto address\n"
+			"    TElogger.auto.call");
 	}
 	else if (strstr(argv[0], "enable"))
 	{

@@ -2,6 +2,12 @@
 
 #include "x64dbg_TraceExecLoggerPlugin.h"
 
+typedef struct _IP_RANGE
+{
+    duint start;
+    duint end;
+}IP_RANGE;
+
 
 bool should_log(duint cip);
 void add_pass_module(const char* mod_name);
