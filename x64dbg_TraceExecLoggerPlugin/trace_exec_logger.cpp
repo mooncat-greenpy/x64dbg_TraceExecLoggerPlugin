@@ -96,6 +96,16 @@ bool command_callback(int argc, char* argv[])
 		set_thread_stop_enabled(false);
 		telogger_logputs("Thread Stop: Disabled");
 	}
+	else if (strstr(argv[0], "dllstop.enable"))
+	{
+		set_dll_stop_enabled(true);
+		telogger_logputs("Dll Stop: Enabled");
+	}
+	else if (strstr(argv[0], "dllstop.disable"))
+	{
+		set_dll_stop_enabled(false);
+		telogger_logputs("Dll Stop: Disabled");
+	}
 	else if (strstr(argv[0], "enable"))
 	{
 		set_telogger_enabled(true);
@@ -218,6 +228,28 @@ extern "C" __declspec(dllexport) void CBLOADDLL(CBTYPE, PLUG_CB_LOADDLL* info)
 {
 	telogger_logprintf("LOADDLL %s\n", info->modname);
 	log_proc_info("Load Dll Log");
+
+	if (!get_dll_stop_enabled())
+	{
+		return;
+	}
+	BridgeList<Script::Module::ModuleInfo> module_list;
+	if (!Script::Module::GetList(&module_list))
+	{
+		telogger_logputs("Load DLL: Failed to get module list");
+		return;
+	}
+	for (int i = 0; i < module_list.Count(); i++)
+	{
+		Script::Module::ModuleInfo module_info = module_list[i];
+		if (module_info.base == (duint)info->LoadDll->lpBaseOfDll && module_info.entry != 0)
+		{
+			char cmd[DEFAULT_BUF_SIZE] = { 0 };
+			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerLoadDLL_%s, ss", (void*)module_info.entry, info->modname);
+			DbgCmdExecDirect(cmd);
+			break;
+		}
+	}
 }
 
 
@@ -240,6 +272,8 @@ bool init_logger_plugin(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.save", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.threadstop.enable", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.threadstop.disable", command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.dllstop.enable", command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.dllstop.disable", command_callback, false);
 
 	return true;
 }
@@ -264,6 +298,8 @@ bool stop_logger_plugin()
 	_plugin_unregistercommand(pluginHandle, "TElogger.save");
 	_plugin_unregistercommand(pluginHandle, "TElogger.threadstop.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.threadstop.disable");
+	_plugin_unregistercommand(pluginHandle, "TElogger.dllstop.enable");
+	_plugin_unregistercommand(pluginHandle, "TElogger.dllstop.disable");
 
 	return true;
 }

@@ -15,6 +15,7 @@ static char save_dir[MAX_SETTING_SIZE] = { 0 };
 static bool auto_run_enabled = false;
 static bool cache_enabled = false;
 static bool thread_stop_enabled = false;
+static bool dll_stop_enabled = false;
 
 bool get_telogger_enabled()
 {
@@ -157,6 +158,16 @@ void set_thread_stop_enabled(bool value)
 	_plugin_menuentrysetchecked(pluginHandle, MENU_THREAD_STOP_ENABLED, thread_stop_enabled);
 	BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_THREAD_STOP_ENABLED, thread_stop_enabled);
 }
+bool get_dll_stop_enabled()
+{
+	return dll_stop_enabled;
+}
+void set_dll_stop_enabled(bool value)
+{
+	dll_stop_enabled = value;
+	_plugin_menuentrysetchecked(pluginHandle, MENU_DLL_STOP_ENABLED, dll_stop_enabled);
+	BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_DLL_STOP_ENABLED, dll_stop_enabled);
+}
 
 
 void menu_callback(PLUG_CB_MENUENTRY* info)
@@ -218,6 +229,10 @@ void menu_callback(PLUG_CB_MENUENTRY* info)
 	case MENU_THREAD_STOP_ENABLED:
 		thread_stop_enabled = !thread_stop_enabled;
 		BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_THREAD_STOP_ENABLED, thread_stop_enabled);
+		break;
+	case MENU_DLL_STOP_ENABLED:
+		dll_stop_enabled = !dll_stop_enabled;
+		BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_DLL_STOP_ENABLED, dll_stop_enabled);
 		break;
 	case MENU_HELP:
 	default:
@@ -284,6 +299,10 @@ void init_menu()
 	{
 		thread_stop_enabled = !!setting;
 	}
+	if (BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_DLL_STOP_ENABLED, &setting))
+	{
+		dll_stop_enabled = !!setting;
+	}
 
 	if (!BridgeSettingGet(PLUGIN_NAME, MENU_LABEL_SAVE_DIR, save_dir) || strlen(save_dir) == 0)
 	{
@@ -330,4 +349,6 @@ void setup_menu()
 	_plugin_menuentrysetchecked(pluginHandle, MENU_CACHE_ENABLED, cache_enabled);
 	_plugin_menuaddentry(hMenu, MENU_THREAD_STOP_ENABLED, MENU_LABEL_THREAD_STOP_ENABLED);
 	_plugin_menuentrysetchecked(pluginHandle, MENU_THREAD_STOP_ENABLED, thread_stop_enabled);
+	_plugin_menuaddentry(hMenu, MENU_DLL_STOP_ENABLED, MENU_LABEL_DLL_STOP_ENABLED);
+	_plugin_menuentrysetchecked(pluginHandle, MENU_DLL_STOP_ENABLED, dll_stop_enabled);
 }
