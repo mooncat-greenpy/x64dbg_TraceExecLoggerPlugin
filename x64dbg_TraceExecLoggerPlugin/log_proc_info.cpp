@@ -318,6 +318,17 @@ void log_network(LOG_NETWORK& network_json)
 }
 
 
+void log_proc(PROC_LOG& proc_json)
+{
+	proc_json.type = "proc log";
+	log_module(proc_json.module);
+	log_thread(proc_json.thread);
+	log_memory(proc_json.memory);
+	log_handle(proc_json.handle);
+	log_network(proc_json.network);
+}
+
+
 bool proc_command_callback(int argc, char* argv[])
 {
 	if (argc < 1)

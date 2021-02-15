@@ -15,12 +15,7 @@ void log_proc_info(const char* msg)
 	entry.is_proc_log = true;
 	entry.proc = PROC_LOG();
 
-	entry.proc.type = "proc log";
-	log_module(entry.proc.module);
-	log_thread(entry.proc.thread);
-	log_memory(entry.proc.memory);
-	log_handle(entry.proc.handle);
-	log_network(entry.proc.network);
+	log_proc(entry.proc);
 	entry.proc.message = msg;
 
 	add_log(DbgGetThreadId(), &entry);

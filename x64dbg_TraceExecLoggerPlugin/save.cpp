@@ -109,6 +109,15 @@ void add_log(int thread_id, LOG_CONTAINER* log)
 
     if (log_state[thread_id].count % MAX_LOG_COUNT == 0)
     {
+        LOG_CONTAINER proc_entry = { 0 };
+        proc_entry.is_proc_log = true;
+        proc_entry.proc = PROC_LOG();
+
+        log_proc(proc_entry.proc);
+        proc_entry.proc.message = "Save Log";
+        log_state[thread_id].log.push_back(proc_entry);
+        log_state[thread_id].count++;
+
         save_log(thread_id);
     }
     LeaveCriticalSection(&save_critical);
