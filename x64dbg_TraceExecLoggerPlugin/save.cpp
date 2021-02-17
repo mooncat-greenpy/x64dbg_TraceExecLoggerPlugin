@@ -4,6 +4,7 @@
 static std::map<int, THREAD_LOG_STATE> log_state;
 static char file_name[MAX_PATH] = { 0 };
 static CRITICAL_SECTION save_critical = { 0 };
+static unsigned long long log_counter = 0;
 
 
 const char* get_file_name()
@@ -17,6 +18,15 @@ void set_file_name(const char* name)
         return;
     }
     strncpy_s(file_name, sizeof(file_name), name, _TRUNCATE);
+}
+
+unsigned long long get_log_counter()
+{
+    return log_counter;
+}
+void set_log_counter(unsigned long long value)
+{
+    log_counter = value;
 }
 
 
@@ -86,7 +96,6 @@ void save_log(int thread_id)
     telogger_logprintf("Save Log: Thread ID = %#x, Name = %s\n", thread_id, log_file_name);
 
     create_thread_log(thread_id);
-    log_state[thread_id].count = count;
     log_state[thread_id].save_count = save_count + 1;
 }
 
@@ -104,14 +113,16 @@ void add_log(int thread_id, LOG_CONTAINER* log)
         create_thread_log(thread_id);
     }
 
+    log->counter = log_counter++;
     log_state[thread_id].log.push_back(*log);
     log_state[thread_id].count++;
 
-    if (log_state[thread_id].count % MAX_LOG_COUNT == 0)
+    if (log_state[thread_id].count % (MAX_LOG_COUNT - 1) == 0)
     {
         LOG_CONTAINER proc_entry = { 0 };
         proc_entry.is_proc_log = true;
         proc_entry.proc = PROC_LOG();
+        proc_entry.counter = log_counter++;
 
         log_proc(proc_entry.proc);
         proc_entry.proc.message = "Save Log";

@@ -584,6 +584,7 @@ typedef struct _LOG_CONTAINER
     LOG exec;
     // 256 bytes
     PROC_LOG proc;
+    unsigned long long counter;
 }LOG_CONTAINER;
 
 
@@ -621,6 +622,7 @@ public:
                 write += ",\n";
             }
             write += indent + "    {\n";
+            add(indent + "        ", "counter", itr->counter, write);
             if (itr->is_proc_log)
             {
                 itr->proc.save_internal(indent + "        ", write);

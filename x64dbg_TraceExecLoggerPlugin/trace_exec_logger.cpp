@@ -24,7 +24,7 @@ void log_proc_info(const char* msg)
 
 void log_exec(const char* msg, duint cip)
 {
-	// 492 micro seconds
+	// 475 micro seconds
 	if (msg == NULL || !get_telogger_enabled() || !should_log(cip))
 	{
 		return;
@@ -42,13 +42,13 @@ void log_exec(const char* msg, duint cip)
 	}
 
 	log_instruction(entry.exec.inst, &reg_dump);
-	// 28 micro seconds
+	// 24 micro seconds
 	log_register(entry.exec.reg, &reg_dump);
-	// 73 micro seconds
+	// 64 micro seconds
 	log_stack(entry.exec.stack, &reg_dump);
 	entry.exec.message = msg;
 
-	// 480 micro seconds
+	// 446 micro seconds
 	add_log(DbgGetThreadId(), &entry);
 
 	flush_changed_memory();
@@ -189,6 +189,7 @@ extern "C" __declspec(dllexport) void CBINITDEBUG(CBTYPE, PLUG_CB_INITDEBUG* inf
 {
 	set_auto_run_enabled(false);
 	set_file_name(info->szFileName);
+	set_log_counter(0);
 	clear_cache();
 }
 
