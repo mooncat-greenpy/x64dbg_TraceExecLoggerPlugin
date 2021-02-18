@@ -244,6 +244,33 @@ void log_memory(LOG_MEMORY& memory_json)
 		make_address_json(memory_entry.base_address, (duint)memory_map.page[i].mbi.BaseAddress);
 		make_address_json(memory_entry.allocation_base, (duint)memory_map.page[i].mbi.AllocationBase);
 		memory_entry.region_size = memory_map.page[i].mbi.RegionSize;
+		char protect[RIGHTS_STRING_SIZE] = { 0 };
+		if (!DbgFunctions()->PageRightsToString(memory_map.page[i].mbi.Protect, protect))
+		{
+			strncpy_s(protect, sizeof(protect), "bad", _TRUNCATE);
+		}
+		memory_entry.protect = protect;
+		char alloc_protect[RIGHTS_STRING_SIZE] = { 0 };
+		if (!DbgFunctions()->PageRightsToString(memory_map.page[i].mbi.AllocationProtect, alloc_protect))
+		{
+			strncpy_s(alloc_protect, sizeof(alloc_protect), "bad", _TRUNCATE);
+		}
+		memory_entry.allocation_protect = alloc_protect;
+		switch (memory_map.page[i].mbi.Type)
+		{
+		case MEM_IMAGE:
+			memory_entry.type = "IMG";
+			break;
+		case MEM_MAPPED:
+			memory_entry.type = "MAP";
+			break;
+		case MEM_PRIVATE:
+			memory_entry.type = "PRV";
+			break;
+		default:
+			memory_entry.type = "N/A";
+			break;
+		}
 		memory_json.list.push_back(memory_entry);
 	}
 

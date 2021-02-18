@@ -434,15 +434,21 @@ class LOG_MEMORY_ENTRY : public Log
 public:
     std::string info;
     LOG_ADDRESS base_address;
-    LOG_ADDRESS allocation_base;
     SIZE_T region_size;
+    std::string protect;
+    std::string type;
+    LOG_ADDRESS allocation_base;
+    std::string allocation_protect;
 
     void save_internal(std::string indent, std::string& write)
     {
         add(indent, "info", info, write);
         base_address.save(indent, "base_address", write);
+        add(indent, "region_size", region_size, write);
+        add(indent, "protect", protect, write);
+        add(indent, "type", type, write);
         allocation_base.save(indent, "allocation_base", write);
-        add(indent, "region_size", region_size, write, true);
+        add(indent, "allocation_protect", allocation_protect, write, true);
     }
 };
 
