@@ -119,15 +119,18 @@ void add_log(int thread_id, LOG_CONTAINER* log)
 
     if (log_state[thread_id].count % (MAX_LOG_COUNT - 1) == 0)
     {
-        LOG_CONTAINER proc_entry = { 0 };
-        proc_entry.is_proc_log = true;
-        proc_entry.proc = PROC_LOG();
-        proc_entry.counter = log_counter++;
+        if (get_proc_enabled())
+        {
+            LOG_CONTAINER proc_entry = { 0 };
+            proc_entry.is_proc_log = true;
+            proc_entry.proc = PROC_LOG();
+            proc_entry.counter = log_counter++;
 
-        log_proc(proc_entry.proc);
-        proc_entry.proc.message = "Save Log";
-        log_state[thread_id].log.push_back(proc_entry);
-        log_state[thread_id].count++;
+            log_proc(proc_entry.proc);
+            proc_entry.proc.message = "Save Log";
+            log_state[thread_id].log.push_back(proc_entry);
+            log_state[thread_id].count++;
+        }
 
         save_log(thread_id);
     }
