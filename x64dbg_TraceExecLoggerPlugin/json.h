@@ -113,17 +113,6 @@ public:
     }
 };
 
-class LOG_CALL : public Log
-{
-public:
-    std::list<LOG_CALL_ARUGMENT> arg;
-
-    void save_internal(std::string indent, std::string& write)
-    {
-        add_list(indent, "arg", arg, write, true);
-    }
-};
-
 class LOG_ARGUMENT : public Log
 {
 public:
@@ -149,7 +138,6 @@ class LOG_ASSEMBLY : public Log
 {
 public:
     std::string type;
-    LOG_CALL call;
     std::string instruction;
     int size;
     int argcount;
@@ -158,7 +146,6 @@ public:
     void save_internal(std::string indent, std::string& write)
         {
             add(indent, "type", type, write);
-            call.save(indent,"call", write);
             add(indent, "instruction", instruction, write);
             add(indent, "size", size, write);
             add(indent, "argcount", argcount, write);

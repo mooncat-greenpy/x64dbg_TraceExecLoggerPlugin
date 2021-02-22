@@ -1,49 +1,5 @@
 #include "log_instruction.h"
 
-static int call_arg_log_count = 5;
-
-
-void make_call_json(LOG_CALL& call_json, REGDUMP* reg_dump)
-{
-	char value_name[20] = { 0 };
-	call_json.arg.clear();
-	LOG_ADDRESS tmp_addr = LOG_ADDRESS();
-#ifdef _WIN64
-	make_address_json(tmp_addr, reg_dump->regcontext.ccx);
-	call_json.arg.push_back({ "ccx", tmp_addr });
-	tmp_addr = LOG_ADDRESS();
-	make_address_json(tmp_addr, reg_dump->regcontext.cdx);
-	call_json.arg.push_back({ "cdx", tmp_addr });
-	tmp_addr = LOG_ADDRESS();
-	make_address_json(tmp_addr, reg_dump->regcontext.r8);
-	call_json.arg.push_back({ "r8", tmp_addr });
-	tmp_addr = LOG_ADDRESS();
-	make_address_json(tmp_addr, reg_dump->regcontext.r9);
-	call_json.arg.push_back({ "r9", tmp_addr });
-	for (int i = 4; i < call_arg_log_count; i++)
-	{
-		duint arg_offset = 0x20 + (i - 4) * 8;
-#else
-	for (int i = 0; i < call_arg_log_count; i++)
-	{
-		duint arg_offset = i * 4;
-#endif
-		if (!DbgMemIsValidReadPtr(reg_dump->regcontext.csp + arg_offset))
-		{
-			continue;
-		}
-		duint tmp_value = 0;
-		if (!DbgMemRead(reg_dump->regcontext.csp + arg_offset, &tmp_value, sizeof(tmp_value)))
-		{
-			continue;
-		}
-		_snprintf_s(value_name, sizeof(value_name), _TRUNCATE, "csp + %#x", (int)arg_offset);
-		tmp_addr = LOG_ADDRESS();
-		make_address_json(tmp_addr, tmp_value);
-		call_json.arg.push_back({ value_name, tmp_addr });
-	}
-}
-
 
 void make_asm_json(LOG_ASSEMBLY& asm_json, REGDUMP* reg_dump)
 {
@@ -60,7 +16,6 @@ void make_asm_json(LOG_ASSEMBLY& asm_json, REGDUMP* reg_dump)
 		if (strncmp(instr.instruction, "call", strlen("call")) == 0)
 		{
 			asm_json.type = "call";
-			make_call_json(asm_json.call, reg_dump);
 			add_changed_memory(reg_dump->regcontext.csp - sizeof(duint));
 		}
 	}
@@ -215,8 +170,7 @@ bool instruction_command_callback(int argc, char* argv[])
 			"Command:\n"
 			"    TElogger.inst.help\n"
 			"    TElogger.inst.enable\n"
-			"    TElogger.inst.disable\n"
-			"    TElogger.inst.arglogcount [num]");
+			"    TElogger.inst.disable");
 	}
 	else if (strstr(argv[0], "enable"))
 	{
@@ -228,16 +182,6 @@ bool instruction_command_callback(int argc, char* argv[])
 		set_instruction_enabled(false);
 		telogger_logputs("Instruction Log: Disabled");
 	}
-	else if (strstr(argv[0], "arglogcount"))
-	{
-		if (argc < 2)
-		{
-			telogger_logprintf("Instruction Log: Number of arguments %d\n", call_arg_log_count);
-			return true;
-		}
-		call_arg_log_count = atoi(argv[1]);
-		telogger_logprintf("Instruction Log: Number of arguments %d\n", call_arg_log_count);
-	}
 
 	return true;
 }
@@ -248,7 +192,6 @@ bool init_instruction_log(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.inst.help", instruction_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.inst.enable", instruction_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.inst.disable", instruction_command_callback, false);
-	_plugin_registercommand(pluginHandle, "TElogger.inst.arglogcount", instruction_command_callback, false);
 	return true;
 }
 
@@ -258,7 +201,6 @@ bool stop_instruction_log()
 	_plugin_unregistercommand(pluginHandle, "TElogger.inst.help");
 	_plugin_unregistercommand(pluginHandle, "TElogger.inst.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.inst.disable");
-	_plugin_unregistercommand(pluginHandle, "TElogger.inst.arglogcount");
 	return true;
 }
 
