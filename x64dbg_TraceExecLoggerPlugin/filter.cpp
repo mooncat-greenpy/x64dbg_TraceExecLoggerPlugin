@@ -11,6 +11,19 @@ bool should_log(duint addr)
         return true;
     }
 
+    for (auto i : pass_ip_range)
+    {
+        if (i.start <= addr && addr < i.end)
+        {
+            return true;
+        }
+    }
+
+    if (pass_mod.size() == 0)
+    {
+        return false;
+    }
+
     char mod_name[MAX_MODULE_SIZE] = { 0 };
     if (!DbgGetModuleAt(addr, mod_name))
     {
@@ -23,14 +36,6 @@ bool should_log(duint addr)
     if (std::find(pass_mod.begin(), pass_mod.end(), mod_name_lower) != pass_mod.end())
     {
         return true;
-    }
-
-    for (auto i : pass_ip_range)
-    {
-        if (i.start <= addr && addr < i.end)
-        {
-            return true;
-        }
     }
     return false;
 }
