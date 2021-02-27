@@ -18,6 +18,7 @@
 #define MENU_LABEL_CACHE_ENABLED "Cache Enabled"
 #define MENU_LABEL_THREAD_STOP_ENABLED "Thread Stop Enabled"
 #define MENU_LABEL_DLL_STOP_ENABLED "Dll Stop Enabled"
+#define MENU_LABEL_COMPACT_LOG_ENABLED "Compact Log Enabled"
 
 enum
 {
@@ -36,6 +37,7 @@ enum
 	MENU_CACHE_ENABLED,
 	MENU_THREAD_STOP_ENABLED,
 	MENU_DLL_STOP_ENABLED,
+	MENU_COMPACT_LOG_ENABLED,
 };
 
 bool get_telogger_enabled();
@@ -68,6 +70,8 @@ bool get_thread_stop_enabled();
 void set_thread_stop_enabled(bool value);
 bool get_dll_stop_enabled();
 void set_dll_stop_enabled(bool value);
+bool get_compact_log_enabled();
+void set_compact_log_enabled(bool value);
 
 void menu_callback(PLUG_CB_MENUENTRY* info);
 

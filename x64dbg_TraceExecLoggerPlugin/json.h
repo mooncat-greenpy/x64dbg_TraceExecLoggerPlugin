@@ -1,15 +1,25 @@
 #pragma once
 
+extern bool get_compact_log_enabled();
 
 void escape(std::string& str);
 
 class Log
 {
 public:
+    std::string get_one_indent()
+    {
+        return get_compact_log_enabled() ? "" : "    ";
+    }
+    std::string get_end_line()
+    {
+        return get_compact_log_enabled() ? "" : "\n";
+    }
+
     void add(std::string indent, const std::string& key, std::string value, std::string& write, bool last = false)
     {
         escape(value);
-        write += indent + "\"" + key + "\": \"" + value + "\"" + (last ? "" : ",") + "\n";
+        write += indent + "\"" + key + "\": \"" + value + "\"" + (last ? "" : ",") + get_end_line();
     }
 
     void add(std::string indent, const std::string& key, const char* value, std::string& write, bool last = false)
@@ -19,39 +29,43 @@ public:
 
     void add(std::string indent, const std::string& key, bool value, std::string& write, bool last = false)
     {
-        write += indent + "\"" + key + "\": " + (value ? "true" : "false") + (last ? "" : ",") + "\n";
+        write += indent + "\"" + key + "\": " + (value ? "true" : "false") + (last ? "" : ",") + get_end_line();
     }
 
     template<typename T>
     void add(std::string indent, const std::string& key, const T& value, std::string& write, bool last = false)
     {
-        write += indent + "\"" + key + "\": " + std::to_string(value) + (last ? "" : ",") + "\n";
+        write += indent + "\"" + key + "\": " + std::to_string(value) + (last ? "" : ",") + get_end_line();
     }
 
     template<typename T>
     void add_list(std::string indent, const std::string& key, std::list<T>& value, std::string& write, bool last = false)
     {
-        write += indent + "\"" + key + "\": [\n";
+        write += indent + "\"" + key + "\": [" + get_end_line();
         for (auto& i : value)
         {
-            write += indent + "    {\n";
-            i.save_internal(indent + "        ", write);
-            write += indent + "    },\n";
+            write += indent + get_one_indent() + "{" + get_end_line();
+            i.save_internal(indent + get_one_indent() + get_one_indent(), write);
+            write += indent + get_one_indent() + "}," + get_end_line();
         }
         if (value.size() > 0)
         {
-            write.replace(write.size() - 2, 2, "\n");
+            size_t last_comma = write.rfind(",");
+            if (last_comma != std::string::npos && last_comma > write.size() - 3)
+            {
+                write.replace(last_comma, 1, "");
+            }
         }
-        write += indent + "]" + (last ? "" : ",") + "\n";
+        write += indent + "]" + (last ? "" : ",") + get_end_line();
     }
 
     virtual void save_internal(std::string indent, std::string& write) {}
 
     void save(std::string indent, const std::string& key, std::string& write, bool last = false)
     {
-        write += indent + "\"" + key + "\": {\n";
-        save_internal(indent + "    ", write);
-        write += indent + "}" + (last ? "" : ",") + "\n";
+        write += indent + "\"" + key + "\": {" + get_end_line();
+        save_internal(indent + get_one_indent(), write);
+        write += indent + "}" + (last ? "" : ",") + get_end_line();
     }
 };
 
@@ -244,26 +258,26 @@ public:
         r15.save(indent, "r15", write);
 #endif
 
-        write += indent + "\"flags\": {\n";
-        add(indent + "    ", "zf", flags_zf, write);
-        add(indent + "    ", "of", flags_of, write);
-        add(indent + "    ", "cf", flags_cf, write);
-        add(indent + "    ", "pf", flags_pf, write);
-        add(indent + "    ", "sf", flags_sf, write);
-        add(indent + "    ", "tf", flags_tf, write);
-        add(indent + "    ", "af", flags_af, write);
-        add(indent + "    ", "df", flags_df, write);
-        add(indent + "    ", "if", flags_if, write, true);
-        write += indent + "},\n";
+        write += indent + "\"flags\": {" + get_end_line();
+        add(indent + get_one_indent(), "zf", flags_zf, write);
+        add(indent + get_one_indent(), "of", flags_of, write);
+        add(indent + get_one_indent(), "cf", flags_cf, write);
+        add(indent + get_one_indent(), "pf", flags_pf, write);
+        add(indent + get_one_indent(), "sf", flags_sf, write);
+        add(indent + get_one_indent(), "tf", flags_tf, write);
+        add(indent + get_one_indent(), "af", flags_af, write);
+        add(indent + get_one_indent(), "df", flags_df, write);
+        add(indent + get_one_indent(), "if", flags_if, write, true);
+        write += indent + "}," + get_end_line();
 
-        write += indent + "\"error\": {\n";
-        add(indent + "    ", "name", error_name, write);
-        add(indent + "    ", "value", error_value, write, true);
-        write += indent + "},\n";
-        write += indent + "\"status\": {\n";
-        add(indent + "    ", "name", status_name, write);
-        add(indent + "    ", "value", status_value, write, true);
-        write += indent + "}\n";
+        write += indent + "\"error\": {" + get_end_line();
+        add(indent + get_one_indent(), "name", error_name, write);
+        add(indent + get_one_indent(), "value", error_value, write, true);
+        write += indent + "}," + get_end_line();
+        write += indent + "\"status\": {" + get_end_line();
+        add(indent + get_one_indent(), "name", status_name, write);
+        add(indent + get_one_indent(), "value", status_value, write, true);
+        write += indent + "}" + get_end_line();
     }
 };
 
@@ -510,18 +524,18 @@ public:
 
     void save_internal(std::string indent, std::string& write)
     {
-        write += indent + "\"remote\": {\n";
-        add(indent + "    ", "address", remote_address, write);
-        add(indent + "    ", "port", remote_port, write, true);
-        write += indent + "},\n";
-        write += indent + "\"local\": {\n";
-        add(indent + "    ", "address", local_address, write);
-        add(indent + "    ", "port", local_port, write, true);
-        write += indent + "},\n";
-        write += indent + "\"status\": {\n";
-        add(indent + "    ", "text", state_text, write);
-        add(indent + "    ", "value", state_value, write, true);
-        write += indent + "}\n";
+        write += indent + "\"remote\": {" + get_end_line();
+        add(indent + get_one_indent(), "address", remote_address, write);
+        add(indent + get_one_indent(), "port", remote_port, write, true);
+        write += indent + "}," + get_end_line();
+        write += indent + "\"local\": {" + get_end_line();
+        add(indent + get_one_indent(), "address", local_address, write);
+        add(indent + get_one_indent(), "port", local_port, write, true);
+        write += indent + "}," + get_end_line();
+        write += indent + "\"status\": {" + get_end_line();
+        add(indent + get_one_indent(), "text", state_text, write);
+        add(indent + get_one_indent(), "value", state_value, write, true);
+        write += indent + "}" + get_end_line();
     }
 };
 
@@ -594,8 +608,8 @@ public:
 
     void save_write(std::string indent, HANDLE handle)
     {
-        std::string write = indent+"{\n";
-        indent += "    ";
+        std::string write = indent + "{" + get_end_line();
+        indent += get_one_indent();
         add(indent, "file_name", (const char*)file_name, write);
         add(indent, "cmd_line", (const char*)cmd_line, write);
         add(indent, "count", count, write);
@@ -614,23 +628,22 @@ public:
             {
                 write += ",\n";
             }
-            write += indent + "    {\n";
-            add(indent + "        ", "counter", itr->counter, write);
+            write += indent + get_one_indent() + "{" + get_end_line();
+            add(indent + get_one_indent() + get_one_indent(), "counter", itr->counter, write);
             if (itr->is_proc_log)
             {
-                itr->proc.save_internal(indent + "        ", write);
+                itr->proc.save_internal(indent + get_one_indent() + get_one_indent(), write);
             }
             else
             {
-                itr->exec.save_internal(indent + "        ", write);
-
+                itr->exec.save_internal(indent + get_one_indent() + get_one_indent(), write);
             }
-            write += indent + "    }";
+            write += indent + get_one_indent() + "}";
             WriteFile(handle, write.c_str(), (DWORD)strlen(write.c_str()), &written, NULL);
             first = false;
         }
 
-        write = "\n" + indent + "]\n" + indent + "}\n";
+        write = get_end_line() + indent + "]" + get_end_line() + indent + "}" + get_end_line();
         WriteFile(handle, write.c_str(), (DWORD)strlen(write.c_str()), &written, NULL);
     }
 };

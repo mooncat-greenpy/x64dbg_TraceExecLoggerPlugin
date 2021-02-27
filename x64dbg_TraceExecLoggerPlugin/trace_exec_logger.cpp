@@ -47,7 +47,6 @@ void log_exec(const char* msg, duint cip)
 	// 64 micro seconds
 	log_stack(entry.exec.stack, &reg_dump);
 	entry.exec.message = msg;
-
 	// 446 micro seconds
 	add_log(DbgGetThreadId(), &entry);
 
@@ -100,6 +99,16 @@ bool command_callback(int argc, char* argv[])
 	{
 		set_dll_stop_enabled(false);
 		telogger_logputs("Dll Stop: Disabled");
+	}
+	else if (strstr(argv[0], "compactlog.enable"))
+	{
+		set_compact_log_enabled(true);
+		telogger_logputs("Compact Log: Enabled");
+	}
+	else if (strstr(argv[0], "compactlog.disable"))
+	{
+		set_compact_log_enabled(false);
+		telogger_logputs("Compact Log: Disabled");
 	}
 	else if (strstr(argv[0], "enable"))
 	{
@@ -270,6 +279,8 @@ bool init_logger_plugin(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.threadstop.disable", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.dllstop.enable", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.dllstop.disable", command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.compactlog.enable", command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.compactlog.disable", command_callback, false);
 
 	return true;
 }
@@ -296,6 +307,8 @@ bool stop_logger_plugin()
 	_plugin_unregistercommand(pluginHandle, "TElogger.threadstop.disable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.dllstop.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.dllstop.disable");
+	_plugin_unregistercommand(pluginHandle, "TElogger.compactlog.enable");
+	_plugin_unregistercommand(pluginHandle, "TElogger.compactlog.disable");
 
 	return true;
 }
