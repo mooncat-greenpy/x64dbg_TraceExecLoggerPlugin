@@ -236,6 +236,10 @@ void menu_callback(PLUG_CB_MENUENTRY* info)
 	case MENU_CACHE_ENABLED:
 		cache_enabled = !cache_enabled;
 		BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_CACHE_ENABLED, cache_enabled);
+		if (!cache_enabled)
+		{
+			clear_cache();
+		}
 		break;
 	case MENU_THREAD_STOP_ENABLED:
 		thread_stop_enabled = !thread_stop_enabled;

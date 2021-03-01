@@ -80,14 +80,52 @@ void clear_cache()
 }
 
 
+bool cache_command_callback(int argc, char* argv[])
+{
+	if (argc < 1)
+	{
+		return false;
+	}
+	if (strstr(argv[0], "help"))
+	{
+		telogger_logputs("Cache: Help\n"
+			"Command:\n"
+			"    TElogger.cache.help\n"
+			"    TElogger.cache.enable\n"
+			"    TElogger.cache.disable");
+	}
+	else if (strstr(argv[0], "enable"))
+	{
+		set_cache_enabled(true);
+		telogger_logputs("Cache: Enabled");
+	}
+	else if (strstr(argv[0], "disable"))
+	{
+		set_cache_enabled(false);
+		telogger_logputs("Cache: Disabled");
+		clear_cache();
+	}
+
+	return true;
+}
+
+
 void init_cache()
 {
+	_plugin_registercommand(pluginHandle, "TElogger.cache.help", cache_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.cache.enable", cache_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.cache.disable", cache_command_callback, false);
+
 	clear_cache();
 }
 
 
 void stop_cache()
 {
+	_plugin_unregistercommand(pluginHandle, "TElogger.cache.help");
+	_plugin_unregistercommand(pluginHandle, "TElogger.cache.enable");
+	_plugin_unregistercommand(pluginHandle, "TElogger.cache.disable");
+
 	clear_cache();
 }
 

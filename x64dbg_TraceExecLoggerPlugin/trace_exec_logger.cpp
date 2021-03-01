@@ -24,7 +24,7 @@ void log_proc_info(const char* msg)
 
 void log_exec(const char* msg, duint cip)
 {
-	// 475 micro seconds
+	// 480 micro seconds
 	if (msg == NULL || !get_telogger_enabled() || !should_log(cip))
 	{
 		return;
@@ -42,12 +42,12 @@ void log_exec(const char* msg, duint cip)
 	}
 
 	log_instruction(entry.exec.inst, &reg_dump);
-	// 24 micro seconds
+	// 20 micro seconds
 	log_register(entry.exec.reg, &reg_dump);
-	// 64 micro seconds
+	// 61 micro seconds
 	log_stack(entry.exec.stack, &reg_dump);
 	entry.exec.message = msg;
-	// 446 micro seconds
+	// 234 micro seconds
 	add_log(DbgGetThreadId(), &entry);
 
 	flush_changed_memory();
@@ -261,6 +261,7 @@ extern "C" __declspec(dllexport) void CBLOADDLL(CBTYPE, PLUG_CB_LOADDLL* info)
 bool init_logger_plugin(PLUG_INITSTRUCT* init_struct)
 {
 	init_menu();
+	init_cache();
 
 	init_instruction_log(init_struct);
 	init_register_log(init_struct);
@@ -289,6 +290,7 @@ bool init_logger_plugin(PLUG_INITSTRUCT* init_struct)
 bool stop_logger_plugin()
 {
 	stop_menu();
+	stop_cache();
 
 	stop_instruction_log();
 	stop_register_log();
@@ -317,6 +319,7 @@ bool stop_logger_plugin()
 void setup_logger_plugin()
 {
 	setup_menu();
+	setup_cache();
 
 	setup_instruction_log();
 	setup_register_log();
