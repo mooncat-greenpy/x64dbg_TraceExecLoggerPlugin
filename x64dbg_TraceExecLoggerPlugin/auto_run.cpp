@@ -2,7 +2,7 @@
 
 static duint skip_addr = 0;
 std::vector<duint> auto_run_breakpoints;
-static bool stepover_enabled = false;
+static AUTO_RUN_TYPE auto_run_state = AUTO_RUN_TYPE::AUTO_STOP;
 
 
 void add_breakpoint(duint addr)
@@ -51,6 +51,7 @@ void run_debug()
 {
 	if (!get_auto_run_enabled())
 	{
+		auto_run_state = AUTO_RUN_TYPE::AUTO_STOP;
 		return;
 	}
 	duint cip = 0;
@@ -58,6 +59,7 @@ void run_debug()
 	cip = DbgEval("cip", &result_eval);
 	if (!result_eval)
 	{
+		auto_run_state = AUTO_RUN_TYPE::AUTO_STOP;
 		telogger_logputs("Auto Run: Failed to get cip");
 		return;
 	}
@@ -72,15 +74,22 @@ void run_debug()
 	{
 		remove_breakpoint(cip);
 		set_auto_run_enabled(false);
-		stepover_enabled = false;
+		auto_run_state = AUTO_RUN_TYPE::AUTO_STOP;
+		telogger_logprintf("Auto Run Log: Break at %p\n", cip);
 		return;
 	}
 
-	if (stepover_enabled) {
+	if (auto_run_state == AUTO_RUN_TYPE::AUTO_STEP_OVER)
+	{
 		DbgCmdExec("TraceOverConditional 0, 50");
 	}
-	else {
+	else if (auto_run_state == AUTO_RUN_TYPE::AUTO_STEP_INTO)
+	{
 		DbgCmdExec("TraceIntoConditional 0, 50");
+	}
+	else if (auto_run_state == AUTO_RUN_TYPE::AUTO_RUN)
+	{
+		DbgCmdExec("run");
 	}
 }
 
@@ -108,6 +117,7 @@ bool auto_run_command_callback(int argc, char* argv[])
 			"    TElogger.auto.rmbp address\n"
 			"    TElogger.auto.starti address\n"
 			"    TElogger.auto.starto address\n"
+			"    TElogger.auto.startr address\n"
 			"    TElogger.auto.call");
 	}
 	else if (strstr(argv[0], "enable"))
@@ -145,16 +155,23 @@ bool auto_run_command_callback(int argc, char* argv[])
 		if (strstr(argv[0], "starti"))
 		{
 			set_auto_run_enabled(true);
-			stepover_enabled = false;
+			auto_run_state = AUTO_RUN_TYPE::AUTO_STEP_INTO;
 			DbgCmdExec("StepInto");
 			telogger_logputs("Auto Run Log: Start StepInto");
 		}
 		else if (strstr(argv[0], "starto"))
 		{
 			set_auto_run_enabled(true);
-			stepover_enabled = true;
+			auto_run_state = AUTO_RUN_TYPE::AUTO_STEP_OVER;
 			DbgCmdExec("StepOver");
 			telogger_logputs("Auto Run Log: Start StepOver");
+		}
+		else if (strstr(argv[0], "startr"))
+		{
+			set_auto_run_enabled(true);
+			auto_run_state = AUTO_RUN_TYPE::AUTO_RUN;
+			DbgCmdExec("run");
+			telogger_logputs("Auto Run Log: Start Run");
 		}
 	}
 	else if (strstr(argv[0], "rmbp"))
@@ -185,7 +202,7 @@ bool auto_run_command_callback(int argc, char* argv[])
 		telogger_logprintf("Auto Run Log: BP %p\n", (char*)next_cip);
 
 		set_auto_run_enabled(true);
-		stepover_enabled = false;
+		auto_run_state = AUTO_RUN_TYPE::AUTO_STEP_INTO;
 		DbgCmdExec("StepInto");
 		telogger_logputs("Auto Run Log: Start call");
 	}
@@ -202,6 +219,7 @@ bool init_auto_run(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.auto.rmbp", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.starti", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.starto", auto_run_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.auto.startr", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.call", auto_run_command_callback, false);
 	return true;
 }
@@ -216,6 +234,7 @@ bool stop_auto_run()
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.rmbp");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.starti");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.starto");
+	_plugin_unregistercommand(pluginHandle, "TElogger.auto.startr");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.call");
 	return true;
 }

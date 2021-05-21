@@ -2,6 +2,13 @@
 
 #include "x64dbg_TraceExecLoggerPlugin.h"
 
+enum class AUTO_RUN_TYPE
+{
+	AUTO_STOP,
+	AUTO_RUN,
+	AUTO_STEP_INTO,
+	AUTO_STEP_OVER,
+};
 
 void run_debug();
 void skip_system_break_point(duint addr);
