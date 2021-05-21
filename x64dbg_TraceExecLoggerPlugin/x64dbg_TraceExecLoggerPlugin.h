@@ -8,7 +8,7 @@
 #include <psapi.h>
 #include <Shlwapi.h>
 #include <string>
-#include "pluginsdk\_plugins.h"
+#include "pluginsdk/_plugins.h"
 #include "pluginsdk/bridgemain.h"
 #include "pluginsdk/_scriptapi_module.h"
 #include "pluginsdk/_scriptapi_debug.h"

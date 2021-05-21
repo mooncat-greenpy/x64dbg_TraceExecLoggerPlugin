@@ -80,7 +80,7 @@ void add_pass_ip_range(duint start, duint end)
 }
 
 
-bool remove_pass_ip_range(int index)
+bool remove_pass_ip_range(size_t index)
 {
     if (index >= pass_ip_range.size())
     {
@@ -130,7 +130,7 @@ bool filter_command_callback(int argc, char* argv[])
         {
             telogger_logputs("Log Filter: IP range list");
             logputs("{");
-            for (int i = 0; i < pass_ip_range.size(); i++)
+            for (size_t i = 0; i < pass_ip_range.size(); i++)
             {
                 logprintf("    %x: %p-%p,\n", i, pass_ip_range.at(i).start, pass_ip_range.at(i).end);
             }
@@ -140,7 +140,7 @@ bool filter_command_callback(int argc, char* argv[])
         else if (argc < 3)
         {
             char* str_end = NULL;
-            int index = (int)_strtoi64(argv[1], &str_end, 16);
+            unsigned int index = (unsigned int)_strtoui64(argv[1], &str_end, 16);
             if (str_end == NULL || *str_end != '\0')
             {
                 telogger_logprintf("Log Filter: Remove IP range filter\n"

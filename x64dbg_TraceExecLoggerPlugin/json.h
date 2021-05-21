@@ -74,8 +74,8 @@ class LOG_XREF : public Log
 {
 public:
     std::string type;
-    duint address;
-    duint address_value;
+    duint address = 0;
+    duint address_value = 0;
     std::string address_label;
 
     void save_internal(std::string indent, std::string& write)
@@ -90,8 +90,8 @@ public:
 class LOG_ADDRESS : public Log
 {
 public:
-    bool cache;
-    duint value;
+    bool cache = false;
+    duint value = 0;
     std::string label;
     std::string data;
     std::list<LOG_XREF> xref;
@@ -133,7 +133,7 @@ public:
     std::string type;
     std::string segment;
     std::string mnemonic;
-    duint constant;
+    duint constant = 0;
     LOG_ADDRESS value;
     LOG_ADDRESS memvalue;
 
@@ -153,8 +153,8 @@ class LOG_ASSEMBLY : public Log
 public:
     std::string type;
     std::string instruction;
-    int size;
-    int argcount;
+    int size = 0;
+    int argcount = 0;
     std::list<LOG_ARGUMENT> arg;
 
     void save_internal(std::string indent, std::string& write)
@@ -171,13 +171,13 @@ public:
 class LOG_INSTRUCTION : public Log
 {
 public:
-    bool enabled;
+    bool enabled = false;
     std::string type;
     LOG_ADDRESS address;
-    bool asm_str_cache;
+    bool asm_str_cache = false;
     std::string asm_str;
     LOG_ASSEMBLY assembly;
-    bool comment_cache;
+    bool comment_cache = false;
     std::string comment;
 
     void save_internal(std::string indent, std::string& write)
@@ -200,7 +200,7 @@ public:
 class LOG_REGISTER : public Log
 {
 public:
-    bool enabled;
+    bool enabled = false;
     std::string type;
     LOG_ADDRESS cax;
     LOG_ADDRESS cbx;
@@ -218,19 +218,19 @@ public:
     LOG_ADDRESS r13;
     LOG_ADDRESS r14;
     LOG_ADDRESS r15;
-    bool flags_zf;
-    bool flags_of;
-    bool flags_cf;
-    bool flags_pf;
-    bool flags_sf;
-    bool flags_tf;
-    bool flags_af;
-    bool flags_df;
-    bool flags_if;
+    bool flags_zf = false;
+    bool flags_of = false;
+    bool flags_cf = false;
+    bool flags_pf = false;
+    bool flags_sf = false;
+    bool flags_tf = false;
+    bool flags_af = false;
+    bool flags_df = false;
+    bool flags_if = false;
     std::string error_name;
-    DWORD error_value;
+    DWORD error_value = 0;
     std::string status_name;
-    DWORD status_value;
+    DWORD status_value = 0;
 
     void save_internal(std::string indent, std::string& write)
     {
@@ -287,7 +287,7 @@ class LOG_STACK_ENTRY : public Log
 public:
     LOG_ADDRESS address;
     LOG_ADDRESS value;
-    bool comment_cache;
+    bool comment_cache = false;
     std::string comment;
 
     void save_internal(std::string indent, std::string& write)
@@ -302,7 +302,7 @@ public:
 class LOG_STACK : public Log
 {
 public:
-    bool enabled;
+    bool enabled = false;
     std::string type;
     std::list<LOG_STACK_ENTRY> data;
 
@@ -345,8 +345,8 @@ public:
     std::string path;
     LOG_ADDRESS entry_point;
     LOG_ADDRESS base_address;
-    duint size;
-    int section_count;
+    duint size = 0;
+    int section_count = 0;
 
     void save_internal(std::string indent, std::string& write)
     {
@@ -362,9 +362,9 @@ public:
 class LOG_MODULE : public Log
 {
 public:
-    bool enabled;
+    bool enabled = false;
     std::string type;
-    int count;
+    int count = 0;
     std::list<LOG_MODULE_ENTRY> list;
 
     void save_internal(std::string indent, std::string& write)
@@ -383,13 +383,13 @@ public:
 class LOG_THREAD_ENTRY : public Log
 {
 public:
-    DWORD id;
-    HANDLE handle;
+    DWORD id = 0;
+    HANDLE handle = INVALID_HANDLE_VALUE;
     std::string name;
     LOG_ADDRESS start_address;
     LOG_ADDRESS local_base;
     LOG_ADDRESS cip;
-    DWORD suspend_count;
+    DWORD suspend_count = 0;
     std::string priority;
     std::string wait_reason;
 
@@ -410,10 +410,10 @@ public:
 class LOG_THREAD : public Log
 {
 public:
-    bool enabled;
+    bool enabled = false;
     std::string type;
-    int current_thread;
-    int count;
+    int current_thread = 0;
+    int count = 0;
     std::list<LOG_THREAD_ENTRY> list;
 
     void save_internal(std::string indent, std::string& write)
@@ -435,7 +435,7 @@ class LOG_MEMORY_ENTRY : public Log
 public:
     std::string info;
     LOG_ADDRESS base_address;
-    SIZE_T region_size;
+    SIZE_T region_size = 0;
     std::string protect;
     std::string type;
     LOG_ADDRESS allocation_base;
@@ -456,9 +456,9 @@ public:
 class LOG_MEMORY : public Log
 {
 public:
-    bool enabled;
+    bool enabled = false;
     std::string type;
-    int count;
+    int count = 0;
     std::list<LOG_MEMORY_ENTRY> list;
 
     void save_internal(std::string indent, std::string& write)
@@ -477,10 +477,10 @@ public:
 class LOG_HANDLE_ENTRY : public Log
 {
 public:
-    duint value;
+    duint value = 0;
     std::string name;
     std::string type;
-    unsigned int granted_access;
+    unsigned int granted_access = 0;
 
     void save_internal(std::string indent, std::string& write)
     {
@@ -494,9 +494,9 @@ public:
 class LOG_HANDLE : public Log
 {
 public:
-    bool enabled;
+    bool enabled = false;
     std::string type;
-    int count;
+    int count = 0;
     std::list<LOG_HANDLE_ENTRY> list;
 
     void save_internal(std::string indent, std::string& write)
@@ -516,11 +516,11 @@ class LOG_NETWORK_ENTRY : public Log
 {
 public:
     std::string remote_address;
-    unsigned short remote_port;
+    unsigned short remote_port = 0;
     std::string local_address;
-    unsigned short local_port;
+    unsigned short local_port = 0;
     std::string state_text;
-    unsigned int state_value;
+    unsigned int state_value = 0;
 
     void save_internal(std::string indent, std::string& write)
     {
@@ -542,9 +542,9 @@ public:
 class LOG_NETWORK : public Log
 {
 public:
-    bool enabled;
+    bool enabled = false;
     std::string type;
-    int count;
+    int count = 0;
     std::list<LOG_NETWORK_ENTRY> list;
 
     void save_internal(std::string indent, std::string& write)
@@ -586,12 +586,12 @@ public:
 
 typedef struct _LOG_CONTAINER
 {
-    bool is_proc_log;
+    bool is_proc_log = false;
     // 1520 bytes
     LOG exec;
     // 256 bytes
     PROC_LOG proc;
-    unsigned long long counter;
+    unsigned long long counter = 0;
 }LOG_CONTAINER;
 
 
