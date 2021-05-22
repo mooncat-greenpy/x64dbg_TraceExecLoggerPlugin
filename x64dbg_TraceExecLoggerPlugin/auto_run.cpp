@@ -47,6 +47,107 @@ void remove_all_breakpoint()
 }
 
 
+// This function takes a long time to complete
+void add_import_log_breakpoint(const char* mod_name = NULL, const char* api_name = NULL)
+{
+	BridgeList<Script::Module::ModuleInfo> module_list;
+	if (!Script::Module::GetList(&module_list))
+	{
+		telogger_logputs("Auto Run Log: Failed to get module list");
+		return;
+	}
+	for (int i = 0; i < module_list.Count(); i++)
+	{
+		if (mod_name != NULL && stricmp(module_list[i].name, mod_name) != 0)
+		{
+			continue;
+		}
+
+		BridgeList<Script::Module::ModuleImport> import_list;
+		if (!Script::Module::GetImports(&module_list[i], &import_list))
+		{
+			telogger_logputs("Auto Run Log: Failed to get module import list");
+			return;
+		}
+		for (int j = 0; j < import_list.Count(); j++)
+		{
+			if (api_name != NULL && stricmp(import_list[j].name, api_name) != 0)
+			{
+				continue;
+			}
+			char cmd[DEFAULT_BUF_SIZE] = { 0 };
+			if (!DbgMemIsValidReadPtr(import_list[j].iatVa))
+			{
+				telogger_logprintf("Auto Run Log: Invalid ptr %p\n", import_list[j].iatVa);
+				continue;
+			}
+			char data[sizeof(char*)] = { 0 };
+			if (!DbgMemRead(import_list[j].iatVa, data, sizeof(data)))
+			{
+				telogger_logprintf("Auto Run Log: Failed to read %p\n", import_list[j].iatVa);
+				continue;
+			}
+			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerAutoRunLogBP_Import_%s_%s", *(char**)data, module_list[i].name, import_list[j].name);
+			DbgCmdExecDirect(cmd);
+			if (api_name != NULL)
+			{
+				break;
+			}
+		}
+
+		if (mod_name != NULL)
+		{
+			break;
+		}
+	}
+}
+
+
+// This function takes a long time to complete
+void add_export_log_breakpoint(const char* mod_name = NULL, const char* api_name = NULL)
+{
+	BridgeList<Script::Module::ModuleInfo> module_list;
+	if (!Script::Module::GetList(&module_list))
+	{
+		telogger_logputs("Auto Run Log: Failed to get module list");
+		return;
+	}
+	for (int i = 0; i < module_list.Count(); i++)
+	{
+		if (mod_name != NULL && stricmp(module_list[i].name, mod_name) != 0)
+		{
+			continue;
+		}
+
+		BridgeList<Script::Module::ModuleExport> export_list;
+		if (!Script::Module::GetExports(&module_list[i], &export_list))
+		{
+			telogger_logputs("Auto Run Log: Failed to get module export list");
+			return;
+		}
+		for (int j = 0; j < export_list.Count(); j++)
+		{
+			if (api_name != NULL && stricmp(export_list[j].name, api_name) != 0)
+			{
+				continue;
+			}
+			char cmd[DEFAULT_BUF_SIZE] = { 0 };
+			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerAutoRunLogBP_Export_%s_%s", (char*)export_list[j].va, module_list[i].name, export_list[j].name);
+			DbgCmdExecDirect(cmd);
+			if (api_name != NULL)
+			{
+				break;
+			}
+		}
+
+		if (mod_name != NULL)
+		{
+			break;
+		}
+	}
+}
+
+
 void run_debug()
 {
 	if (!get_auto_run_enabled())
@@ -115,6 +216,8 @@ bool auto_run_command_callback(int argc, char* argv[])
 			"    TElogger.auto.disable\n"
 			"    TElogger.auto.addbp address\n"
 			"    TElogger.auto.rmbp address\n"
+			"    TElogger.auto.addlogbp.dll.import [dllname]\n"
+			"    TElogger.auto.addlogbp.dll.export [dllname]\n"
 			"    TElogger.auto.starti address\n"
 			"    TElogger.auto.starto address\n"
 			"    TElogger.auto.startr address\n"
@@ -206,6 +309,40 @@ bool auto_run_command_callback(int argc, char* argv[])
 		DbgCmdExec("StepInto");
 		telogger_logputs("Auto Run Log: Start call");
 	}
+	else if (strstr(argv[0], "addlogbp.dll.import"))
+	{
+		telogger_logputs("Auto Run Log: Start addlogbp.dll.import ...");
+		if (argc < 2)
+		{
+			add_import_log_breakpoint();
+		}
+		else if (argc < 3)
+		{
+			add_import_log_breakpoint(argv[1]);
+		}
+		else
+		{
+			add_import_log_breakpoint(argv[1], argv[2]);
+		}
+		telogger_logputs("Auto Run Log: Finish addlogbp.dll.import");
+	}
+	else if (strstr(argv[0], "addlogbp.dll.export"))
+	{
+		telogger_logputs("Auto Run Log: Start addlogbp.dll.export ...");
+		if (argc < 2)
+		{
+			add_export_log_breakpoint();
+		}
+		else if (argc < 3)
+		{
+			add_export_log_breakpoint(argv[1]);
+		}
+		else
+		{
+			add_export_log_breakpoint(argv[1], argv[2]);
+		}
+		telogger_logputs("Auto Run Log: Finish addlogbp.dll.export");
+	}
 	return true;
 }
 
@@ -217,6 +354,8 @@ bool init_auto_run(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.auto.disable", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.addbp", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.rmbp", auto_run_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.auto.addlogbp.dll.import", auto_run_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.auto.addlogbp.dll.export", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.starti", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.starto", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.startr", auto_run_command_callback, false);
@@ -232,6 +371,8 @@ bool stop_auto_run()
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.disable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.addbp");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.rmbp");
+	_plugin_unregistercommand(pluginHandle, "TElogger.auto.addlogbp.dll.import");
+	_plugin_unregistercommand(pluginHandle, "TElogger.auto.addlogbp.dll.export");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.starti");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.starto");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.startr");
