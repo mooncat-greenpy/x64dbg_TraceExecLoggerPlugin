@@ -6,6 +6,7 @@ typedef struct _IP_RANGE
 {
     duint start;
     duint end;
+    std::string comment;
 }IP_RANGE;
 
 

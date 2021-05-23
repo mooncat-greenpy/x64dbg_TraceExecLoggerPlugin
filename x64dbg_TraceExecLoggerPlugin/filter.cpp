@@ -74,9 +74,9 @@ bool remove_pass_module(const char* mod_name)
 }
 
 
-void add_pass_ip_range(duint start, duint end)
+void add_pass_ip_range(duint start, duint end, const char* comment)
 {
-    pass_ip_range.push_back({ start, end });
+    pass_ip_range.push_back({ start, end, comment });
 }
 
 
@@ -103,7 +103,7 @@ bool filter_command_callback(int argc, char* argv[])
             "Command:\n"
             "    TElogger.filt.help\n"
             "    TElogger.filt.mod.pass [dllname]\n"
-            "    TElogger.filt.ip.range.pass [start], [end]\n"
+            "    TElogger.filt.ip.range.pass [start], [end], [comment]\n"
             "    TElogger.filt.ip.range.pass [remove index]");
     }
     else if (strstr(argv[0], "mod.pass"))
@@ -132,7 +132,7 @@ bool filter_command_callback(int argc, char* argv[])
             logputs("{");
             for (size_t i = 0; i < pass_ip_range.size(); i++)
             {
-                logprintf("    %x: %p-%p,\n", i, pass_ip_range.at(i).start, pass_ip_range.at(i).end);
+                logprintf("    %x: %p-%p    %s,\n", i, pass_ip_range.at(i).start, pass_ip_range.at(i).end, pass_ip_range.at(i).comment.c_str());
             }
             logputs("}");
             return true;
@@ -145,7 +145,7 @@ bool filter_command_callback(int argc, char* argv[])
             {
                 telogger_logprintf("Log Filter: Remove IP range filter\n"
                     "Command:\n"
-                    "    TElogger.filt.ip.range.pass [index]");
+                    "    TElogger.filt.ip.range.pass index");
                 return false;
             }
             remove_pass_ip_range(index);
@@ -160,10 +160,17 @@ bool filter_command_callback(int argc, char* argv[])
             {
                 telogger_logprintf("Log Filter: Add IP range filter\n"
                     "Command:\n"
-                    "    TElogger.filt.ip.range.pass [start], [end]");
+                    "    TElogger.filt.ip.range.pass start, end, [comment]");
                 return false;
             }
-            add_pass_ip_range(start, end);
+            if (argc > 3)
+            {
+                add_pass_ip_range(start, end, argv[3]);
+            }
+            else
+            {
+                add_pass_ip_range(start, end, "");
+            }
         }
     }
 
