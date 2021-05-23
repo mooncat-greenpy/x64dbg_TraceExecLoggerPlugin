@@ -14,10 +14,16 @@ void log_stack(LOG_STACK& stack_json, REGDUMP* reg_dump)
 
 	stack_json.type = "stack";
 
+	// Sometimes fails to read stack
+	if (!DbgMemIsValidReadPtr(reg_dump->regcontext.csp))
+	{
+		telogger_logprintf("Stack Log: Invalid ptr %p\n", reg_dump->regcontext.csp);
+		return;
+	}
 	duint* stack_value = new duint[stack_log_count];
 	if (!DbgMemRead(reg_dump->regcontext.csp, stack_value, stack_log_count * sizeof(duint)))
 	{
-		telogger_logputs("Stack Log: Failed to read stack memory");
+		telogger_logprintf("Stack Log: Failed to read stack memory %p\n", reg_dump->regcontext.csp);
 		stack_json.enabled = false;
 		delete[] stack_value;
 		return;
