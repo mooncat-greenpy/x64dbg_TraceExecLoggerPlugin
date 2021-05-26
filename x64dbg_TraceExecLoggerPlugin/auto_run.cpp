@@ -222,28 +222,28 @@ bool auto_run_command_callback(int argc, char* argv[])
 			"    TElogger.auto.help\n"
 			"    TElogger.auto.enable\n"
 			"    TElogger.auto.disable\n"
-			"    TElogger.auto.addbp address\n"
-			"    TElogger.auto.rmbp\n"
-			"    TElogger.auto.addlogbp address, name\n"
-			"    TElogger.auto.addlogbp.dll.import [dllname]\n"
-			"    TElogger.auto.addlogbp.dll.export [dllname]\n"
-			"    TElogger.auto.rmlogbp\n"
+			"    TElogger.auto.bp.add address\n"
+			"    TElogger.auto.bp.rm\n"
+			"    TElogger.auto.logbp.add address, name\n"
+			"    TElogger.auto.logbp.add.dll.import dllname, [apiname]\n"
+			"    TElogger.auto.logbp.add.dll.export dllname, [apiname]\n"
+			"    TElogger.auto.logbp.rm\n"
 			"    TElogger.auto.starti address\n"
 			"    TElogger.auto.starto address\n"
 			"    TElogger.auto.startr address\n"
 			"    TElogger.auto.call");
 	}
-	else if (strstr(argv[0], "enable"))
+	else if (strstr(argv[0], "auto.enable"))
 	{
 		set_auto_run_enabled(true);
 		telogger_logputs("Auto Run Log: Enabled");
 	}
-	else if (strstr(argv[0], "disable"))
+	else if (strstr(argv[0], "auto.disable"))
 	{
 		set_auto_run_enabled(false);
 		telogger_logputs("Auto Run Log: Disabled");
 	}
-	else if (strstr(argv[0], "addbp") || strstr(argv[0], "start"))
+	else if (strstr(argv[0], "auto.bp.add") || strstr(argv[0], "auto.start"))
 	{
 		if (argc < 2)
 		{
@@ -265,21 +265,21 @@ bool auto_run_command_callback(int argc, char* argv[])
 		add_breakpoint(value);
 		telogger_logprintf("Auto Run Log: BP %p\n", (char*)value);
 
-		if (strstr(argv[0], "starti"))
+		if (strstr(argv[0], "auto.starti"))
 		{
 			set_auto_run_enabled(true);
 			auto_run_state = AUTO_RUN_TYPE::AUTO_STEP_INTO;
 			DbgCmdExec("StepInto");
 			telogger_logputs("Auto Run Log: Start StepInto");
 		}
-		else if (strstr(argv[0], "starto"))
+		else if (strstr(argv[0], "auto.starto"))
 		{
 			set_auto_run_enabled(true);
 			auto_run_state = AUTO_RUN_TYPE::AUTO_STEP_OVER;
 			DbgCmdExec("StepOver");
 			telogger_logputs("Auto Run Log: Start StepOver");
 		}
-		else if (strstr(argv[0], "startr"))
+		else if (strstr(argv[0], "auto.startr"))
 		{
 			set_auto_run_enabled(true);
 			auto_run_state = AUTO_RUN_TYPE::AUTO_RUN;
@@ -287,12 +287,12 @@ bool auto_run_command_callback(int argc, char* argv[])
 			telogger_logputs("Auto Run Log: Start Run");
 		}
 	}
-	else if (strstr(argv[0], "rmbp"))
+	else if (strstr(argv[0], "auto.bp.rm"))
 	{
 		remove_all_breakpoint("TEloggerAutoRunBP");
 		telogger_logputs("Auto Run Log: Remove all breakpoints");
 	}
-	else if (strstr(argv[0], "call"))
+	else if (strstr(argv[0], "auto.call"))
 	{
 		duint cip = 0;
 		bool result_eval = false;
@@ -319,12 +319,14 @@ bool auto_run_command_callback(int argc, char* argv[])
 		DbgCmdExec("StepInto");
 		telogger_logputs("Auto Run Log: Start call");
 	}
-	else if (strstr(argv[0], "addlogbp.dll.import"))
+	else if (strstr(argv[0], "auto.logbp.add.dll.import"))
 	{
 		telogger_logputs("Auto Run Log: Start addlogbp.dll.import ...");
 		if (argc < 2)
 		{
-			add_import_log_breakpoint();
+			telogger_logputs("Auto Run Log: Failed\n"
+				"Command:\n"
+				"    TElogger.auto.logbp.add.dll.import dllname, [apiname]");
 		}
 		else if (argc < 3)
 		{
@@ -336,12 +338,14 @@ bool auto_run_command_callback(int argc, char* argv[])
 		}
 		telogger_logputs("Auto Run Log: Finish addlogbp.dll.import");
 	}
-	else if (strstr(argv[0], "addlogbp.dll.export"))
+	else if (strstr(argv[0], "auto.logbp.add.dll.export"))
 	{
 		telogger_logputs("Auto Run Log: Start addlogbp.dll.export ...");
 		if (argc < 2)
 		{
-			add_export_log_breakpoint();
+			telogger_logputs("Auto Run Log: Failed\n"
+				"Command:\n"
+				"    TElogger.auto.logbp.add.dll.export dllname, [apiname]");
 		}
 		else if (argc < 3)
 		{
@@ -353,13 +357,13 @@ bool auto_run_command_callback(int argc, char* argv[])
 		}
 		telogger_logputs("Auto Run Log: Finish addlogbp.dll.export");
 	}
-	else if (strstr(argv[0], "addlogbp"))
+	else if (strstr(argv[0], "auto.logbp.add"))
 	{
 		if (argc < 3)
 		{
 			telogger_logputs("Auto Run Log: Failed\n"
 				"Command:\n"
-				"    TElogger.auto.addlogbp address, name");
+				"    TElogger.auto.logbp.add address, name");
 			return false;
 		}
 		char* end = NULL;
@@ -368,17 +372,18 @@ bool auto_run_command_callback(int argc, char* argv[])
 		{
 			telogger_logputs("Auto Run Log: Failed\n"
 				"Command:\n"
-				"    TElogger.auto.addlogbp address, name");
+				"    TElogger.auto.logbp.add address, name");
 			return false;
 		}
 		add_log_breakpoint(value, argv[2]);
 		telogger_logprintf("Auto Run Log: LBP %p\n", (char*)value);
 	}
-	else if (strstr(argv[0], "rmlogbp"))
+	else if (strstr(argv[0], "auto.logbp.rm"))
 	{
 		remove_all_breakpoint("TEloggerAutoRunLogBP");
 		telogger_logputs("Auto Run Log: Remove all log breakpoints");
 	}
+
 	return true;
 }
 
@@ -388,12 +393,12 @@ bool init_auto_run(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.auto.help", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.enable", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.disable", auto_run_command_callback, false);
-	_plugin_registercommand(pluginHandle, "TElogger.auto.addbp", auto_run_command_callback, false);
-	_plugin_registercommand(pluginHandle, "TElogger.auto.rmbp", auto_run_command_callback, false);
-	_plugin_registercommand(pluginHandle, "TElogger.auto.addlogbp", auto_run_command_callback, false);
-	_plugin_registercommand(pluginHandle, "TElogger.auto.addlogbp.dll.import", auto_run_command_callback, false);
-	_plugin_registercommand(pluginHandle, "TElogger.auto.addlogbp.dll.export", auto_run_command_callback, false);
-	_plugin_registercommand(pluginHandle, "TElogger.auto.rmlogbp", auto_run_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.auto.bp.add", auto_run_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.auto.bp.rm", auto_run_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.auto.logbp.add", auto_run_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.auto.logbp.add.dll.import", auto_run_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.auto.logbp.add.dll.export", auto_run_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.auto.logbp.rm", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.starti", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.starto", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.startr", auto_run_command_callback, false);
@@ -407,12 +412,12 @@ bool stop_auto_run()
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.help");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.disable");
-	_plugin_unregistercommand(pluginHandle, "TElogger.auto.addbp");
-	_plugin_unregistercommand(pluginHandle, "TElogger.auto.rmbp");
-	_plugin_unregistercommand(pluginHandle, "TElogger.auto.addlogbp");
-	_plugin_unregistercommand(pluginHandle, "TElogger.auto.addlogbp.dll.import");
-	_plugin_unregistercommand(pluginHandle, "TElogger.auto.addlogbp.dll.export");
-	_plugin_unregistercommand(pluginHandle, "TElogger.auto.rmlogbp");
+	_plugin_unregistercommand(pluginHandle, "TElogger.auto.bp.add");
+	_plugin_unregistercommand(pluginHandle, "TElogger.auto.bp.rm");
+	_plugin_unregistercommand(pluginHandle, "TElogger.auto.logbp.add");
+	_plugin_unregistercommand(pluginHandle, "TElogger.auto.logbp.add.dll.import");
+	_plugin_unregistercommand(pluginHandle, "TElogger.auto.logbp.add.dll.export");
+	_plugin_unregistercommand(pluginHandle, "TElogger.auto.logbp.rm");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.starti");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.starto");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.startr");
