@@ -72,6 +72,7 @@ bool command_callback(int argc, char* argv[])
 			"    TElogger.save\n"
 			"    TElogger.threadstop.enable\n"
 			"    TElogger.threadstop.disable\n"
+			"    TElogger.hex.size size\n"
 			"    TElogger.inst.help\n"
 			"    TElogger.reg.help\n"
 			"    TElogger.stack.help\n"
@@ -136,6 +137,25 @@ bool command_callback(int argc, char* argv[])
 	{
 		save_all_thread_log();
 		telogger_logputs("Log: Save");
+	}
+	else if (strstr(argv[0], "hex.size"))
+	{
+		if (argc < 2)
+		{
+			telogger_logprintf("Log: Hex size %x\n", get_hex_log_size());
+			return true;
+		}
+		char* end = NULL;
+		duint value = (duint)_strtoi64(argv[1], &end, 16);
+		if (end == NULL || *end != '\0')
+		{
+			telogger_logputs("Log: Failed to set hex size\n"
+				"Command:\n"
+				"    TElogger.hex.size size");
+			return false;
+		}
+		set_hex_log_size(value);
+		telogger_logputs("Log: Hex size");
 	}
 
 	return true;
@@ -282,6 +302,7 @@ bool init_logger_plugin(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.dllstop.disable", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.compactlog.enable", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.compactlog.disable", command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.hex.size", command_callback, false);
 
 	return true;
 }
@@ -311,6 +332,7 @@ bool stop_logger_plugin()
 	_plugin_unregistercommand(pluginHandle, "TElogger.dllstop.disable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.compactlog.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.compactlog.disable");
+	_plugin_unregistercommand(pluginHandle, "TElogger.hex.size");
 
 	return true;
 }

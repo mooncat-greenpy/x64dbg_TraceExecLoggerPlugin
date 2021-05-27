@@ -19,6 +19,7 @@
 #define MENU_LABEL_THREAD_STOP_ENABLED "Thread Stop Enabled"
 #define MENU_LABEL_DLL_STOP_ENABLED "Dll Stop Enabled"
 #define MENU_LABEL_COMPACT_LOG_ENABLED "Compact Log Enabled"
+#define MENU_LABEL_HEX_LOG_SIZE "Hex Log Size"
 
 enum
 {
@@ -72,6 +73,8 @@ bool get_dll_stop_enabled();
 void set_dll_stop_enabled(bool value);
 bool get_compact_log_enabled();
 void set_compact_log_enabled(bool value);
+duint get_hex_log_size();
+void set_hex_log_size(duint value);
 
 void menu_callback(PLUG_CB_MENUENTRY* info);
 

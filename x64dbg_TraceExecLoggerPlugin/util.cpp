@@ -1,7 +1,7 @@
 #include "util.h"
 
 
-char hex_database[][4] = {
+constexpr char hex_database[][4] = {
 	"00 ", "01 ", "02 ", "03 ", "04 ", "05 ", "06 ", "07 ", "08 ", "09 ", "0a ", "0b ", "0c ", "0d ", "0e ", "0f ",
 	"10 ", "11 ", "12 ", "13 ", "14 ", "15 ", "16 ", "17 ", "18 ", "19 ", "1a ", "1b ", "1c ", "1d ", "1e ", "1f ",
 	"20 ", "21 ", "22 ", "23 ", "24 ", "25 ", "26 ", "27 ", "28 ", "29 ", "2a ", "2b ", "2c ", "2d ", "2e ", "2f ",
@@ -19,29 +19,6 @@ char hex_database[][4] = {
 	"e0 ", "e1 ", "e2 ", "e3 ", "e4 ", "e5 ", "e6 ", "e7 ", "e8 ", "e9 ", "ea ", "eb ", "ec ", "ed ", "ee ", "ef ",
 	"f0 ", "f1 ", "f2 ", "f3 ", "f4 ", "f5 ", "f6 ", "f7 ", "f8 ", "f9 ", "fa ", "fb ", "fc ", "fd ", "fe ", "ff "
 };
-
-
-void save_json_file(const char* file_name, SYSTEMTIME* system_time, int number, const char* buffer)
-{
-	if (!file_name || !system_time || !buffer)
-	{
-		return;
-	}
-
-	HANDLE log_file_handle = INVALID_HANDLE_VALUE;
-	char log_file_name[MAX_PATH] = { 0 };
-	_snprintf_s(log_file_name, sizeof(log_file_name), _TRUNCATE, "%s_%d-%d-%d-%d-%d-%d_%d.json", PathFindFileNameA(file_name), system_time->wYear, system_time->wMonth, system_time->wDay, system_time->wHour, system_time->wMinute, system_time->wSecond, number);
-	log_file_handle = CreateFileA(log_file_name, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (log_file_handle == INVALID_HANDLE_VALUE)
-	{
-		return;
-	}
-
-	DWORD written = 0;
-	WriteFile(log_file_handle, buffer, (DWORD)strlen(buffer), &written, NULL);
-
-	CloseHandle(log_file_handle);
-}
 
 
 void make_address_label_string(duint addr, char* text, size_t text_size)
@@ -115,9 +92,10 @@ void make_address_json(LOG_ADDRESS& address_json, duint addr)
 	bool address_json_cache_enabled = true;
 	if (DbgMemIsValidReadPtr(addr))
 	{
-		char data[HEX_SIZE] = { 0 };
-		has_hex = DbgMemRead(addr, data, sizeof(data));
-		make_hex_string(data, sizeof(data), hex_string, sizeof(hex_string));
+		char data[MAX_HEX_SIZE] = { 0 };
+		duint data_size = get_hex_log_size() < sizeof(data) ? get_hex_log_size() : sizeof(data);
+		has_hex = DbgMemRead(addr, data, data_size);
+		make_hex_string(data, data_size, hex_string, sizeof(hex_string));
 	}
 	if (has_string)
 	{

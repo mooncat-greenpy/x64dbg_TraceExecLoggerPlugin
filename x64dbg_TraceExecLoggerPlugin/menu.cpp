@@ -17,6 +17,7 @@ static bool cache_enabled = false;
 static bool thread_stop_enabled = false;
 static bool dll_stop_enabled = false;
 static bool compact_log_enabled = true;
+static duint hex_log_size = 0x30;
 
 bool get_telogger_enabled()
 {
@@ -148,6 +149,7 @@ void set_cache_enabled(bool value)
 {
 	cache_enabled = value;
 	_plugin_menuentrysetchecked(pluginHandle, MENU_CACHE_ENABLED, cache_enabled);
+	BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_CACHE_ENABLED, cache_enabled);
 }
 bool get_thread_stop_enabled()
 {
@@ -178,6 +180,15 @@ void set_compact_log_enabled(bool value)
 	compact_log_enabled = value;
 	_plugin_menuentrysetchecked(pluginHandle, MENU_COMPACT_LOG_ENABLED, compact_log_enabled);
 	BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_COMPACT_LOG_ENABLED, compact_log_enabled);
+}
+duint get_hex_log_size()
+{
+	return hex_log_size;
+}
+void set_hex_log_size(duint value)
+{
+	hex_log_size = value;
+	BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_HEX_LOG_SIZE, hex_log_size);
 }
 
 
@@ -325,6 +336,10 @@ void init_menu()
 	if (BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_COMPACT_LOG_ENABLED, &setting))
 	{
 		compact_log_enabled = !!setting;
+	}
+	if (BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_HEX_LOG_SIZE, &setting))
+	{
+		hex_log_size = setting;
 	}
 
 	if (!BridgeSettingGet(PLUGIN_NAME, MENU_LABEL_SAVE_DIR, save_dir) || strlen(save_dir) == 0)
