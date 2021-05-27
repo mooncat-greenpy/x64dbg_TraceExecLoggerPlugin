@@ -47,6 +47,54 @@ void remove_all_breakpoint(const char* name = NULL)
 }
 
 
+void enable_all_breakpoint(const char* name = NULL)
+{
+	BPMAP bp_map = { 0 };
+	DbgGetBpList(bp_normal, &bp_map);
+	if (bp_map.bp == NULL)
+	{
+		return;
+	}
+	for (int i = 0; i < bp_map.count; i++)
+	{
+		if (bp_map.bp[i].enabled)
+		{
+			continue;
+		}
+		if (name != NULL && strstr(bp_map.bp[i].name, name) == NULL)
+		{
+			continue;
+		}
+		char cmd[DEFAULT_BUF_SIZE] = {};
+		_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "EnableBPX %p", (char*)bp_map.bp[i].addr);
+		DbgCmdExecDirect(cmd);
+	}
+}
+
+
+void disable_all_breakpoint(const char* name = NULL)
+{
+	BPMAP bp_map = { 0 };
+	DbgGetBpList(bp_normal, &bp_map);
+	if (bp_map.bp == NULL)
+	{
+		return;
+	}
+	for (int i = 0; i < bp_map.count; i++)
+	{
+		if (!bp_map.bp[i].enabled)
+		{
+			continue;
+		}
+		if (name != NULL && strstr(bp_map.bp[i].name, name) == NULL)
+		{
+			continue;
+		}
+		Script::Debug::DisableBreakpoint(bp_map.bp[i].addr);
+	}
+}
+
+
 void add_log_breakpoint(duint addr, const char* name)
 {
 	char cmd[DEFAULT_BUF_SIZE] = { 0 };
@@ -228,6 +276,8 @@ bool auto_run_command_callback(int argc, char* argv[])
 			"    TElogger.auto.logbp.add.dll.import dllname, [apiname]\n"
 			"    TElogger.auto.logbp.add.dll.export dllname, [apiname]\n"
 			"    TElogger.auto.logbp.rm\n"
+			"    TElogger.auto.logbp.enable\n"
+			"    TElogger.auto.logbp.disable\n"
 			"    TElogger.auto.starti address\n"
 			"    TElogger.auto.starto address\n"
 			"    TElogger.auto.startr address\n"
@@ -383,6 +433,16 @@ bool auto_run_command_callback(int argc, char* argv[])
 		remove_all_breakpoint("TEloggerAutoRunLogBP");
 		telogger_logputs("Auto Run Log: Remove all log breakpoints");
 	}
+	else if (strstr(argv[0], "auto.logbp.enable"))
+	{
+		enable_all_breakpoint("TEloggerAutoRunLogBP");
+		telogger_logputs("Auto Run Log: Enable all log breakpoints");
+	}
+	else if (strstr(argv[0], "auto.logbp.disable"))
+	{
+		disable_all_breakpoint("TEloggerAutoRunLogBP");
+		telogger_logputs("Auto Run Log: Disable all log breakpoints");
+	}
 
 	return true;
 }
@@ -399,6 +459,8 @@ bool init_auto_run(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.auto.logbp.add.dll.import", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.logbp.add.dll.export", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.logbp.rm", auto_run_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.auto.logbp.enable", auto_run_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.auto.logbp.disable", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.starti", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.starto", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.startr", auto_run_command_callback, false);
@@ -418,6 +480,8 @@ bool stop_auto_run()
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.logbp.add.dll.import");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.logbp.add.dll.export");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.logbp.rm");
+	_plugin_unregistercommand(pluginHandle, "TElogger.auto.logbp.enable");
+	_plugin_unregistercommand(pluginHandle, "TElogger.auto.logbp.disable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.starti");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.starto");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.startr");
