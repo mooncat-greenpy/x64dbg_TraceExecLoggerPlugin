@@ -103,7 +103,7 @@ void add_log_breakpoint(duint addr, const char* name)
 }
 
 
-// This function takes a long time to complete
+// This function takes a long time to complete.
 void add_import_log_breakpoint(const char* mod_name = NULL, const char* api_name = NULL)
 {
 	BridgeList<Script::Module::ModuleInfo> module_list;
@@ -159,7 +159,9 @@ void add_import_log_breakpoint(const char* mod_name = NULL, const char* api_name
 }
 
 
-// This function takes a long time to complete
+// This function takes a long time to complete.
+// When mod_name is ntdll.dll, an error sometimes occurs during debugging.
+// We need to restart to avoid it.
 void add_export_log_breakpoint(const char* mod_name = NULL, const char* api_name = NULL)
 {
 	BridgeList<Script::Module::ModuleInfo> module_list;
