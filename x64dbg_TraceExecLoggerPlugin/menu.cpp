@@ -128,6 +128,10 @@ void set_auto_run_enabled(bool value)
 {
 	auto_run_enabled = value;
 	_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_RUN_ENABLED, auto_run_enabled);
+	if (!value)
+	{
+		Script::Debug::Pause();
+	}
 }
 bool get_cache_enabled()
 {
@@ -245,6 +249,7 @@ void menu_callback(PLUG_CB_MENUENTRY* info)
 		}
 		auto_run_enabled = false;
 		_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_RUN_ENABLED, auto_run_enabled);
+		Script::Debug::Pause();
 		break;
 	case MENU_CACHE_ENABLED:
 		cache_enabled = !cache_enabled;
