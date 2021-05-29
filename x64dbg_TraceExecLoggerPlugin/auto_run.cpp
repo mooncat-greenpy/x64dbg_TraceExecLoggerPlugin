@@ -30,7 +30,7 @@ void remove_breakpoint(duint addr)
 
 void remove_all_breakpoint(const char* name = NULL)
 {
-	BPMAP bp_map = { 0 };
+	BPMAP bp_map = {};
 	DbgGetBpList(bp_normal, &bp_map);
 	if (bp_map.bp == NULL)
 	{
@@ -49,7 +49,7 @@ void remove_all_breakpoint(const char* name = NULL)
 
 void enable_all_breakpoint(const char* name = NULL)
 {
-	BPMAP bp_map = { 0 };
+	BPMAP bp_map = {};
 	DbgGetBpList(bp_normal, &bp_map);
 	if (bp_map.bp == NULL)
 	{
@@ -74,7 +74,7 @@ void enable_all_breakpoint(const char* name = NULL)
 
 void disable_all_breakpoint(const char* name = NULL)
 {
-	BPMAP bp_map = { 0 };
+	BPMAP bp_map = {};
 	DbgGetBpList(bp_normal, &bp_map);
 	if (bp_map.bp == NULL)
 	{
@@ -354,7 +354,7 @@ bool auto_run_command_callback(int argc, char* argv[])
 			telogger_logputs("Auto Run Log: Failed to get cip");
 			return false;
 		}
-		BASIC_INSTRUCTION_INFO basic_info = { 0 };
+		BASIC_INSTRUCTION_INFO basic_info = {};
 		DbgDisasmFastAt(cip, &basic_info);
 		if (!basic_info.call)
 		{

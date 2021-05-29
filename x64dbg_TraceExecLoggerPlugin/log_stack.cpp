@@ -1,6 +1,6 @@
 #include "log_stack.h"
 
-static int stack_log_count = 0x10;
+static duint stack_log_count = 0x10;
 
 
 void log_stack(LOG_STACK& stack_json, REGDUMP* reg_dump)
@@ -29,11 +29,11 @@ void log_stack(LOG_STACK& stack_json, REGDUMP* reg_dump)
 		return;
 	}
 
-	for (int i = 0; i < stack_log_count; i++)
+	for (duint i = 0; i < stack_log_count; i++)
 	{
 		LOG_STACK_ENTRY tmp_json = LOG_STACK_ENTRY();
 		duint stack_addr = reg_dump->regcontext.csp + i * sizeof(duint);
-		STACK_COMMENT comment = { 0 };
+		STACK_COMMENT comment = {};
 
 		make_address_json(tmp_json.address, stack_addr);
 		make_address_json(tmp_json.value, stack_value[i]);
@@ -95,11 +95,20 @@ bool stack_command_callback(int argc, char* argv[])
 	{
 		if (argc < 2)
 		{
-			telogger_logprintf("Stack Log: Count %d\n", stack_log_count);
+			telogger_logprintf("Stack Log: Count %#x\n", stack_log_count);
 			return true;
 		}
-		stack_log_count = atoi(argv[1]);
-		telogger_logprintf("Stack Log: Count %d\n", stack_log_count);
+		char* end = NULL;
+		duint value = (duint)_strtoi64(argv[1], &end, 16);
+		if (end == NULL || *end != '\0')
+		{
+			telogger_logputs("Stack Log: Failed\n"
+				"Command:\n"
+				"    TElogger.stack.stacklogcount [num]");
+			return false;
+		}
+		stack_log_count = value;
+		telogger_logprintf("Stack Log: Count %#x\n", stack_log_count);
 	}
 
 	return true;

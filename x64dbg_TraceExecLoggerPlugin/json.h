@@ -587,9 +587,7 @@ public:
 typedef struct _LOG_CONTAINER
 {
     bool is_proc_log = false;
-    // 1520 bytes
     LOG exec;
-    // 256 bytes
     PROC_LOG proc;
     unsigned long long counter = 0;
 }LOG_CONTAINER;

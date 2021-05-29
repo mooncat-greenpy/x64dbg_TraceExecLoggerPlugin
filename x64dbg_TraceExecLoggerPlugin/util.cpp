@@ -112,7 +112,7 @@ void make_address_json(LOG_ADDRESS& address_json, duint addr)
 	}
 	address_json.data = text;
 
-	XREF_INFO xref_info = { 0 };
+	XREF_INFO xref_info = {};
 	if (DbgXrefGet(addr, &xref_info))
 	{
 		for (duint i = 0; i < xref_info.refcount; i++)

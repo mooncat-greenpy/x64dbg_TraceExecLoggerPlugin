@@ -45,7 +45,7 @@ void log_thread(LOG_THREAD& thread_json)
 		return;
 	}
 
-	THREADLIST thread_list = { 0 };
+	THREADLIST thread_list = {};
 	DbgGetThreadList(&thread_list);
 	thread_json.type = "thread";
 	thread_json.current_thread = thread_list.CurrentThread;
@@ -224,7 +224,7 @@ void log_memory(LOG_MEMORY& memory_json)
 		return;
 	}
 
-	MEMMAP memory_map = { 0 };
+	MEMMAP memory_map = {};
 	memory_json.type = "memory";
 	if (!DbgMemMap(&memory_map))
 	{

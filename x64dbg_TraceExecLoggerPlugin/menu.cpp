@@ -11,12 +11,13 @@ static bool thread_enabled = true;
 static bool memory_enabled = true;
 static bool handle_enabled = true;
 static bool network_enabled = true;
-static char save_dir[MAX_SETTING_SIZE] = { 0 };
 static bool auto_run_enabled = false;
 static bool cache_enabled = false;
 static bool thread_stop_enabled = false;
 static bool dll_stop_enabled = false;
 static bool compact_log_enabled = true;
+
+static char save_dir[MAX_SETTING_SIZE] = { 0 };
 static duint hex_log_size = 0x30;
 
 bool get_telogger_enabled()
@@ -119,19 +120,6 @@ void set_network_enabled(bool value)
 	_plugin_menuentrysetchecked(pluginHandle, MENU_PROC_NETWORK_ENABLED, network_enabled);
 	BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_NETWORK_ENABLED, network_enabled);
 }
-const char* get_save_dir()
-{
-	return save_dir;
-}
-void set_save_dir(const char* dir_name)
-{
-	if (dir_name == NULL)
-	{
-		return;
-	}
-	strncpy_s(save_dir, sizeof(save_dir), dir_name, _TRUNCATE);
-	BridgeSettingSet(PLUGIN_NAME, MENU_LABEL_SAVE_DIR, save_dir);
-}
 bool get_auto_run_enabled()
 {
 	return auto_run_enabled;
@@ -180,6 +168,20 @@ void set_compact_log_enabled(bool value)
 	compact_log_enabled = value;
 	_plugin_menuentrysetchecked(pluginHandle, MENU_COMPACT_LOG_ENABLED, compact_log_enabled);
 	BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_COMPACT_LOG_ENABLED, compact_log_enabled);
+}
+
+const char* get_save_dir()
+{
+	return save_dir;
+}
+void set_save_dir(const char* dir_name)
+{
+	if (dir_name == NULL)
+	{
+		return;
+	}
+	strncpy_s(save_dir, sizeof(save_dir), dir_name, _TRUNCATE);
+	BridgeSettingSet(PLUGIN_NAME, MENU_LABEL_SAVE_DIR, save_dir);
 }
 duint get_hex_log_size()
 {
@@ -337,14 +339,14 @@ void init_menu()
 	{
 		compact_log_enabled = !!setting;
 	}
-	if (BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_HEX_LOG_SIZE, &setting))
-	{
-		hex_log_size = setting;
-	}
 
 	if (!BridgeSettingGet(PLUGIN_NAME, MENU_LABEL_SAVE_DIR, save_dir) || strlen(save_dir) == 0)
 	{
 		set_save_dir("TElogger");
+	}
+	if (BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_HEX_LOG_SIZE, &setting))
+	{
+		hex_log_size = setting;
 	}
 }
 

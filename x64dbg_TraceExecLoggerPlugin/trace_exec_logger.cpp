@@ -11,7 +11,7 @@ void log_proc_info(const char* msg)
 		return;
 	}
 
-	LOG_CONTAINER entry = { 0 };
+	LOG_CONTAINER entry = {};
 	entry.is_proc_log = true;
 	entry.proc = PROC_LOG();
 
@@ -24,7 +24,6 @@ void log_proc_info(const char* msg)
 
 void log_exec(const char* msg, duint cip)
 {
-	// 480 micro seconds
 	if (msg == NULL || !get_telogger_enabled() || !should_log(cip))
 	{
 		return;
@@ -42,12 +41,9 @@ void log_exec(const char* msg, duint cip)
 	}
 
 	log_instruction(entry.exec.inst, &reg_dump);
-	// 20 micro seconds
 	log_register(entry.exec.reg, &reg_dump);
-	// 61 micro seconds
 	log_stack(entry.exec.stack, &reg_dump);
 	entry.exec.message = msg;
-	// 234 micro seconds
 	add_log(DbgGetThreadId(), &entry);
 
 	flush_changed_memory();
@@ -72,14 +68,18 @@ bool command_callback(int argc, char* argv[])
 			"    TElogger.save\n"
 			"    TElogger.threadstop.enable\n"
 			"    TElogger.threadstop.disable\n"
+			"    TElogger.dllstop.enable\n"
+			"    TElogger.dllstop.disable\n"
+			"    TElogger.compactlog.enable\n"
+			"    TElogger.compactlog.disable\n"
 			"    TElogger.hex.size size\n"
 			"    TElogger.inst.help\n"
 			"    TElogger.reg.help\n"
 			"    TElogger.stack.help\n"
 			"    TElogger.proc.help\n"
+			"    TElogger.cache.help\n"
 			"    TElogger.filt.help\n"
 			"    TElogger.auto.help");
-		telogger_logprintf("%d %d\n", sizeof(LOG), sizeof(PROC_LOG));
 	}
 	else if (strstr(argv[0], "threadstop.enable"))
 	{
@@ -142,7 +142,7 @@ bool command_callback(int argc, char* argv[])
 	{
 		if (argc < 2)
 		{
-			telogger_logprintf("Log: Hex size %x\n", get_hex_log_size());
+			telogger_logprintf("Log: Hex size %#x\n", get_hex_log_size());
 			return true;
 		}
 		char* end = NULL;
@@ -155,7 +155,7 @@ bool command_callback(int argc, char* argv[])
 			return false;
 		}
 		set_hex_log_size(value);
-		telogger_logputs("Log: Hex size");
+		telogger_logprintf("Log: Hex size %#x\n", get_hex_log_size());
 	}
 
 	return true;
@@ -232,13 +232,13 @@ extern "C" __declspec(dllexport) void CBSTOPDEBUG(CBTYPE, PLUG_CB_STOPDEBUG* inf
 
 extern "C" __declspec(dllexport) void CBCREATEPROCESS(CBTYPE, PLUG_CB_CREATEPROCESS* info)
 {
-	telogger_logprintf("CREATEPROCESS ID = %d\n", info->fdProcessInfo->dwProcessId);
+	telogger_logprintf("CREATEPROCESS ID = %#x\n", info->fdProcessInfo->dwProcessId);
 }
 
 
 extern "C" __declspec(dllexport) void CBCREATETHREAD(CBTYPE, PLUG_CB_CREATETHREAD* info)
 {
-	telogger_logprintf("CREATETHREAD ID = %d\n", info->dwThreadId);
+	telogger_logprintf("CREATETHREAD ID = %#x\n", info->dwThreadId);
 	log_proc_info("Create Thread Log");
 	if (get_thread_stop_enabled())
 	{

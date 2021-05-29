@@ -3,7 +3,7 @@
 
 static std::map<int, THREAD_LOG_STATE> log_state;
 static char file_name[MAX_PATH] = { 0 };
-static CRITICAL_SECTION save_critical = { 0 };
+static CRITICAL_SECTION save_critical = {};
 static unsigned long long log_counter = 0;
 
 
@@ -49,7 +49,7 @@ void create_thread_log(int thread_id)
         strncpy_s(log_state[thread_id].file_name, MAX_PATH, "x64dbgtmp", _TRUNCATE);
     }
 
-    size_t cmd_line_size = MAX_STRING_SIZE;
+    size_t cmd_line_size = sizeof(log_state[thread_id].cmd_line);
     if (!DbgFunctions()->GetCmdline(log_state[thread_id].cmd_line, &cmd_line_size))
     {
         strncpy_s(log_state[thread_id].cmd_line, MAX_STRING_SIZE, "error", _TRUNCATE);
@@ -77,7 +77,6 @@ void save_log(int thread_id)
         return;
     }
 
-    int count = thread_log->count;
     int save_count = thread_log->save_count;
 
     HANDLE log_file_handle = INVALID_HANDLE_VALUE;
@@ -121,7 +120,7 @@ void add_log(int thread_id, LOG_CONTAINER* log)
     {
         if (get_proc_enabled())
         {
-            LOG_CONTAINER proc_entry = { 0 };
+            LOG_CONTAINER proc_entry = {};
             proc_entry.is_proc_log = true;
             proc_entry.proc = PROC_LOG();
             proc_entry.counter = log_counter++;

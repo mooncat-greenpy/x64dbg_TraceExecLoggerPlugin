@@ -4,7 +4,7 @@
 void make_asm_json(LOG_ASSEMBLY& asm_json, REGDUMP* reg_dump)
 {
 	asm_json.arg.clear();
-	DISASM_INSTR instr = { 0 };
+	DISASM_INSTR instr = {};
 	DbgDisasmAt(reg_dump->regcontext.cip, &instr);
 	if (instr.type == instr_normal)
 	{

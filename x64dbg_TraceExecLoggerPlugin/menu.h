@@ -13,12 +13,13 @@
 #define MENU_LABEL_MEMORY_ENABLED "Memory Enabled"
 #define MENU_LABEL_HANDLE_ENABLED "Handle Enabled"
 #define MENU_LABEL_NETWORK_ENABLED "Network Enabled"
-#define MENU_LABEL_SAVE_DIR "Save Dir"
 #define MENU_LABEL_AUTO_RUN_ENABLED "Auto Run Enabled"
 #define MENU_LABEL_CACHE_ENABLED "Cache Enabled"
 #define MENU_LABEL_THREAD_STOP_ENABLED "Thread Stop Enabled"
 #define MENU_LABEL_DLL_STOP_ENABLED "Dll Stop Enabled"
 #define MENU_LABEL_COMPACT_LOG_ENABLED "Compact Log Enabled"
+
+#define MENU_LABEL_SAVE_DIR "Save Dir"
 #define MENU_LABEL_HEX_LOG_SIZE "Hex Log Size"
 
 enum
@@ -61,8 +62,6 @@ bool get_handle_enabled();
 void set_handle_enabled(bool value);
 bool get_network_enabled();
 void set_network_enabled(bool value);
-const char* get_save_dir();
-void set_save_dir(const char* dir_name);
 bool get_auto_run_enabled();
 void set_auto_run_enabled(bool value);
 bool get_cache_enabled();
@@ -73,6 +72,9 @@ bool get_dll_stop_enabled();
 void set_dll_stop_enabled(bool value);
 bool get_compact_log_enabled();
 void set_compact_log_enabled(bool value);
+
+const char* get_save_dir();
+void set_save_dir(const char* dir_name);
 duint get_hex_log_size();
 void set_hex_log_size(duint value);
 

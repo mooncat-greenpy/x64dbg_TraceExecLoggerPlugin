@@ -11,7 +11,7 @@ bool should_log(duint addr)
         return true;
     }
 
-    for (auto i : pass_ip_range)
+    for (auto& i : pass_ip_range)
     {
         if (i.start <= addr && addr < i.end)
         {
@@ -103,8 +103,8 @@ bool filter_command_callback(int argc, char* argv[])
             "Command:\n"
             "    TElogger.filt.help\n"
             "    TElogger.filt.mod.pass [dllname]\n"
-            "    TElogger.filt.ip.range.pass [start], [end], [comment]\n"
-            "    TElogger.filt.ip.range.pass [remove index]");
+            "    TElogger.filt.ip.range.pass [remove index]\n"
+            "    TElogger.filt.ip.range.pass start, end, [comment]");
     }
     else if (strstr(argv[0], "mod.pass"))
     {
@@ -112,7 +112,7 @@ bool filter_command_callback(int argc, char* argv[])
         {
             telogger_logputs("Log Filter: Pass module list");
             logputs("{");
-            for (auto i : pass_mod)
+            for (auto& i : pass_mod)
             {
                 logprintf("    %s,\n", i.c_str());
             }
@@ -132,7 +132,7 @@ bool filter_command_callback(int argc, char* argv[])
             logputs("{");
             for (size_t i = 0; i < pass_ip_range.size(); i++)
             {
-                logprintf("    %x: %p-%p    %s,\n", i, pass_ip_range.at(i).start, pass_ip_range.at(i).end, pass_ip_range.at(i).comment.c_str());
+                logprintf("    %#x: %p-%p    %s,\n", i, pass_ip_range.at(i).start, pass_ip_range.at(i).end, pass_ip_range.at(i).comment.c_str());
             }
             logputs("}");
             return true;
