@@ -382,7 +382,14 @@ bool auto_run_command_callback(int argc, char* argv[])
 		}
 		else if (argc < 3)
 		{
-			add_import_log_breakpoint(argv[1]);
+			if (!strcmp(argv[1], "all"))
+			{
+				add_import_log_breakpoint();
+			}
+			else
+			{
+				add_import_log_breakpoint(argv[1]);
+			}
 		}
 		else
 		{
@@ -401,7 +408,14 @@ bool auto_run_command_callback(int argc, char* argv[])
 		}
 		else if (argc < 3)
 		{
-			add_export_log_breakpoint(argv[1]);
+			if (!strcmp(argv[1], "all"))
+			{
+				add_export_log_breakpoint();
+			}
+			else
+			{
+				add_export_log_breakpoint(argv[1]);
+			}
 		}
 		else
 		{
