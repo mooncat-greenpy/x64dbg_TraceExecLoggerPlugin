@@ -21,6 +21,7 @@
 
 #define MENU_LABEL_SAVE_DIR "Save Dir"
 #define MENU_LABEL_HEX_LOG_SIZE "Hex Log Size"
+#define MENU_LABEL_STACK_LOG_COUNT "Stack Log Count"
 
 enum
 {
@@ -77,6 +78,8 @@ const char* get_save_dir();
 void set_save_dir(const char* dir_name);
 duint get_hex_log_size();
 void set_hex_log_size(duint value);
+duint get_stack_log_count();
+void set_stack_log_count(duint value);
 
 void menu_callback(PLUG_CB_MENUENTRY* info);
 

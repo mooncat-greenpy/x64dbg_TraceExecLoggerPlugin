@@ -1,7 +1,5 @@
 #include "log_stack.h"
 
-static duint stack_log_count = 0x10;
-
 
 void log_stack(LOG_STACK& stack_json, REGDUMP* reg_dump)
 {
@@ -20,8 +18,10 @@ void log_stack(LOG_STACK& stack_json, REGDUMP* reg_dump)
 		telogger_logprintf("Stack Log: Invalid ptr %p\n", reg_dump->regcontext.csp);
 		return;
 	}
-	duint* stack_value = new duint[stack_log_count];
-	if (!DbgMemRead(reg_dump->regcontext.csp, stack_value, stack_log_count * sizeof(duint)))
+
+	duint log_count = get_stack_log_count();
+	duint* stack_value = new duint[log_count];
+	if (!DbgMemRead(reg_dump->regcontext.csp, stack_value, log_count * sizeof(duint)))
 	{
 		telogger_logprintf("Stack Log: Failed to read stack memory %p\n", reg_dump->regcontext.csp);
 		stack_json.enabled = false;
@@ -29,7 +29,7 @@ void log_stack(LOG_STACK& stack_json, REGDUMP* reg_dump)
 		return;
 	}
 
-	for (duint i = 0; i < stack_log_count; i++)
+	for (duint i = 0; i < log_count; i++)
 	{
 		LOG_STACK_ENTRY tmp_json = LOG_STACK_ENTRY();
 		duint stack_addr = reg_dump->regcontext.csp + i * sizeof(duint);
@@ -95,7 +95,7 @@ bool stack_command_callback(int argc, char* argv[])
 	{
 		if (argc < 2)
 		{
-			telogger_logprintf("Stack Log: Count %#x\n", stack_log_count);
+			telogger_logprintf("Stack Log: Count %#x\n", get_stack_log_count());
 			return true;
 		}
 		char* end = NULL;
@@ -107,8 +107,8 @@ bool stack_command_callback(int argc, char* argv[])
 				"    TElogger.stack.stacklogcount [num]");
 			return false;
 		}
-		stack_log_count = value;
-		telogger_logprintf("Stack Log: Count %#x\n", stack_log_count);
+		set_stack_log_count(value);
+		telogger_logprintf("Stack Log: Count %#x\n", get_stack_log_count());
 	}
 
 	return true;
