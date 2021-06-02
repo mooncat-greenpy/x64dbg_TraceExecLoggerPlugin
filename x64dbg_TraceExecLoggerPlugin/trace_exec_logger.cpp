@@ -64,19 +64,17 @@ bool command_callback(int argc, char* argv[])
 			"    TElogger.help\n"
 			"    TElogger.enable\n"
 			"    TElogger.disable\n"
-			"    TElogger.setdir dirname\n"
-			"    TElogger.save\n"
 			"    TElogger.threadstop.enable\n"
 			"    TElogger.threadstop.disable\n"
 			"    TElogger.dllstop.enable\n"
 			"    TElogger.dllstop.disable\n"
 			"    TElogger.compactlog.enable\n"
 			"    TElogger.compactlog.disable\n"
-			"    TElogger.hex.size size\n"
 			"    TElogger.inst.help\n"
 			"    TElogger.reg.help\n"
 			"    TElogger.stack.help\n"
 			"    TElogger.proc.help\n"
+			"    TElogger.save.help\n"
 			"    TElogger.cache.help\n"
 			"    TElogger.filt.help\n"
 			"    TElogger.auto.help");
@@ -120,42 +118,6 @@ bool command_callback(int argc, char* argv[])
 	{
 		set_telogger_enabled(false);
 		telogger_logputs("Log: Disabled");
-	}
-	else if (strstr(argv[0], "setdir"))
-	{
-		if (argc < 2)
-		{
-			telogger_logputs("Log: Failed to set dir\n"
-				"Command:\n"
-				"    TElogger.setdir dirname");
-			return false;
-		}
-		set_save_dir(argv[1]);
-		telogger_logputs("Log: Setdir");
-	}
-	else if (strstr(argv[0], "save"))
-	{
-		save_all_thread_log();
-		telogger_logputs("Log: Save");
-	}
-	else if (strstr(argv[0], "hex.size"))
-	{
-		if (argc < 2)
-		{
-			telogger_logprintf("Log: Hex size %#x\n", get_hex_log_size());
-			return true;
-		}
-		char* end = NULL;
-		duint value = (duint)_strtoi64(argv[1], &end, 16);
-		if (end == NULL || *end != '\0')
-		{
-			telogger_logputs("Log: Failed to set hex size\n"
-				"Command:\n"
-				"    TElogger.hex.size size");
-			return false;
-		}
-		set_hex_log_size(value);
-		telogger_logprintf("Log: Hex size %#x\n", get_hex_log_size());
 	}
 
 	return true;
@@ -294,15 +256,12 @@ bool init_logger_plugin(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.help", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.enable", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.disable", command_callback, false);
-	_plugin_registercommand(pluginHandle, "TElogger.setdir", command_callback, false);
-	_plugin_registercommand(pluginHandle, "TElogger.save", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.threadstop.enable", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.threadstop.disable", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.dllstop.enable", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.dllstop.disable", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.compactlog.enable", command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.compactlog.disable", command_callback, false);
-	_plugin_registercommand(pluginHandle, "TElogger.hex.size", command_callback, false);
 
 	return true;
 }
@@ -324,15 +283,12 @@ bool stop_logger_plugin()
 	_plugin_unregistercommand(pluginHandle, "TElogger.help");
 	_plugin_unregistercommand(pluginHandle, "TElogger.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.disable");
-	_plugin_unregistercommand(pluginHandle, "TElogger.setdir");
-	_plugin_unregistercommand(pluginHandle, "TElogger.save");
 	_plugin_unregistercommand(pluginHandle, "TElogger.threadstop.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.threadstop.disable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.dllstop.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.dllstop.disable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.compactlog.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.compactlog.disable");
-	_plugin_unregistercommand(pluginHandle, "TElogger.hex.size");
 
 	return true;
 }

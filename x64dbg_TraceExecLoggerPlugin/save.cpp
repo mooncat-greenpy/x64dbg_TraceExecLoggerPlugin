@@ -161,9 +161,70 @@ void delete_all_log()
 }
 
 
+bool save_command_callback(int argc, char* argv[])
+{
+    if (argc < 1)
+    {
+        return false;
+    }
+    if (strstr(argv[0], "help"))
+    {
+        telogger_logputs("Save Log: Help\n"
+            "Command:\n"
+            "    TElogger.save.help\n"
+            "    TElogger.save.save\n"
+            "    TElogger.save.setdir dirname\n"
+            "    TElogger.save.hex.size size");
+    }
+    else if (strstr(argv[0], "save.save"))
+    {
+        save_all_thread_log();
+        telogger_logputs("Save Log: Save");
+    }
+    else if (strstr(argv[0], "save.setdir"))
+    {
+        if (argc < 2)
+        {
+            telogger_logputs("Save Log: Failed to set dir\n"
+                "Command:\n"
+                "    TElogger.save.setdir dirname");
+            return false;
+        }
+        set_save_dir(argv[1]);
+        telogger_logputs("Save Log: Setdir");
+    }
+    else if (strstr(argv[0], "save.hex.size"))
+    {
+        if (argc < 2)
+        {
+            telogger_logprintf("Save Log: Hex size %#x\n", get_hex_log_size());
+            return true;
+        }
+        char* end = NULL;
+        duint value = (duint)_strtoi64(argv[1], &end, 16);
+        if (end == NULL || *end != '\0')
+        {
+            telogger_logputs("Save Log: Failed to set hex size\n"
+                "Command:\n"
+                "    TElogger.save.hex.size size");
+            return false;
+        }
+        set_hex_log_size(value);
+        telogger_logprintf("Save Log: Hex size %#x\n", get_hex_log_size());
+    }
+
+    return true;
+}
+
+
 bool init_save(PLUG_INITSTRUCT* init_struct)
 {
     InitializeCriticalSection(&save_critical);
+
+    _plugin_registercommand(pluginHandle, "TElogger.save.help", save_command_callback, false);
+    _plugin_registercommand(pluginHandle, "TElogger.save.save", save_command_callback, false);
+    _plugin_registercommand(pluginHandle, "TElogger.save.setdir", save_command_callback, false);
+    _plugin_registercommand(pluginHandle, "TElogger.save.hex.size", save_command_callback, false);
 
     return true;
 }
@@ -171,6 +232,11 @@ bool init_save(PLUG_INITSTRUCT* init_struct)
 
 bool stop_save()
 {
+    _plugin_unregistercommand(pluginHandle, "TElogger.save.help");
+    _plugin_unregistercommand(pluginHandle, "TElogger.save.save");
+    _plugin_unregistercommand(pluginHandle, "TElogger.save.setdir");
+    _plugin_unregistercommand(pluginHandle, "TElogger.save.hex.size");
+
     DeleteCriticalSection(&save_critical);
 
     return true;
