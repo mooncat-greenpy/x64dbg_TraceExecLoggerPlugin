@@ -9,6 +9,16 @@
 #define logprintf(format, ...) _plugin_logprintf(format, __VA_ARGS__)
 #define logputs(text) _plugin_logputs(text)
 
+class StepInfo
+{
+public:
+	bool is_reg_dump_initialized;
+	REGDUMP reg_dump;
+
+	StepInfo();
+	REGDUMP* get_reg_dump();
+};
+
 void make_address_label_string(duint addr, char* text, size_t text_size);
 void make_hex_string(char* data, size_t data_size, char* text, size_t text_size);
 void make_address_json(LOG_ADDRESS& address_json, duint addr);

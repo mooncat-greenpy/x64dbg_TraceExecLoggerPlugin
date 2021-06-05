@@ -100,7 +100,7 @@ void make_asm_json(LOG_ASSEMBLY& asm_json, REGDUMP* reg_dump)
 }
 
 
-void log_instruction(LOG_INSTRUCTION& inst_json, REGDUMP* reg_dump)
+void log_instruction(LOG_INSTRUCTION& inst_json, StepInfo& step_info)
 {
 	if (!get_instruction_enabled())
 	{
@@ -108,6 +108,7 @@ void log_instruction(LOG_INSTRUCTION& inst_json, REGDUMP* reg_dump)
 		return;
 	}
 
+	REGDUMP* reg_dump = step_info.get_reg_dump();
 	make_address_json(inst_json.address, reg_dump->regcontext.cip);
 
 	char asm_string[GUI_MAX_DISASSEMBLY_SIZE] = { 0 };

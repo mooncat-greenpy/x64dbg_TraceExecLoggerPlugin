@@ -1,7 +1,7 @@
 #include "log_instruction.h"
 
 
-void log_register(LOG_REGISTER& reg_json, REGDUMP* reg_dump)
+void log_register(LOG_REGISTER& reg_json, StepInfo& step_info)
 {
 	if (!get_register_enabled())
 	{
@@ -9,6 +9,7 @@ void log_register(LOG_REGISTER& reg_json, REGDUMP* reg_dump)
 		return;
 	}
 
+	REGDUMP* reg_dump = step_info.get_reg_dump();
 	REGISTERCONTEXT reg = reg_dump->regcontext;
 
 	make_address_json(reg_json.cax, reg.cax);

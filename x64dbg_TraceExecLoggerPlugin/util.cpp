@@ -21,6 +21,21 @@ constexpr char hex_database[][4] = {
 };
 
 
+StepInfo::StepInfo()
+{
+	is_reg_dump_initialized = false;
+	reg_dump = {};
+}
+REGDUMP* StepInfo::get_reg_dump()
+{
+	if (!is_reg_dump_initialized && DbgGetRegDumpEx(&reg_dump, sizeof(reg_dump)))
+	{
+		is_reg_dump_initialized = true;
+	}
+	return &reg_dump;
+}
+
+
 void make_address_label_string(duint addr, char* text, size_t text_size)
 {
 	if (!text)

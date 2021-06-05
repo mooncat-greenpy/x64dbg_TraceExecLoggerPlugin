@@ -1,7 +1,7 @@
 #include "log_stack.h"
 
 
-void log_stack(LOG_STACK& stack_json, REGDUMP* reg_dump)
+void log_stack(LOG_STACK& stack_json, StepInfo& step_info)
 {
 	stack_json.data.clear();
 	if (!get_stack_enabled())
@@ -9,6 +9,8 @@ void log_stack(LOG_STACK& stack_json, REGDUMP* reg_dump)
 		stack_json.enabled = false;
 		return;
 	}
+
+	REGDUMP* reg_dump = step_info.get_reg_dump();
 
 	// Sometimes fails to read stack
 	if (!DbgMemIsValidReadPtr(reg_dump->regcontext.csp))

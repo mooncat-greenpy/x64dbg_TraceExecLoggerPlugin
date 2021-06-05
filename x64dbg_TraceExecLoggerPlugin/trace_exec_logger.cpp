@@ -33,16 +33,11 @@ void log_exec(const char* msg, duint cip)
 
 	entry.exec.type = "log";
 
-	REGDUMP reg_dump;
-	if (!DbgGetRegDumpEx(&reg_dump, sizeof(reg_dump)))
-	{
-		add_log(DbgGetThreadId(), &entry);
-		return;
-	}
+	StepInfo step_info;
 
-	log_instruction(entry.exec.inst, &reg_dump);
-	log_register(entry.exec.reg, &reg_dump);
-	log_stack(entry.exec.stack, &reg_dump);
+	log_instruction(entry.exec.inst, step_info);
+	log_register(entry.exec.reg, step_info);
+	log_stack(entry.exec.stack, step_info);
 	entry.exec.message = msg;
 	add_log(DbgGetThreadId(), &entry);
 
