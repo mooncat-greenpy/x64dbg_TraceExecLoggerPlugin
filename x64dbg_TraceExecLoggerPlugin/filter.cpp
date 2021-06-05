@@ -2,11 +2,12 @@
 
 std::vector<std::string> pass_mod;
 std::vector<IP_RANGE> pass_ip_range;
+std::vector<std::string> contain_asm;
 
 
 bool should_log(duint addr)
 {
-    if (pass_mod.size() == 0 && pass_ip_range.size() == 0)
+    if (pass_mod.size() == 0 && pass_ip_range.size() == 0 && contain_asm.size() == 0)
     {
         return true;
     }
@@ -19,24 +20,49 @@ bool should_log(duint addr)
         }
     }
 
-    if (pass_mod.size() == 0)
+    if (pass_mod.size() != 0)
     {
-        return false;
+        char mod_name[MAX_MODULE_SIZE] = { 0 };
+        if (!DbgGetModuleAt(addr, mod_name))
+        {
+            telogger_logputs("Log Filter: Failed to get module name");
+            return true;
+        }
+        char mod_name_lower[MAX_MODULE_SIZE] = { 0 };
+        strncpy_s(mod_name_lower, sizeof(mod_name_lower), mod_name, _TRUNCATE);
+        _strlwr_s(mod_name_lower, sizeof(mod_name_lower));
+        if (std::find(pass_mod.begin(), pass_mod.end(), mod_name_lower) != pass_mod.end())
+        {
+            return true;
+        }
     }
 
-    char mod_name[MAX_MODULE_SIZE] = { 0 };
-    if (!DbgGetModuleAt(addr, mod_name))
+    if (contain_asm.size() != 0)
     {
-        telogger_logputs("Log Filter: Failed to get module name");
-        return true;
+        char asm_string[GUI_MAX_DISASSEMBLY_SIZE] = { 0 };
+        bool cache_result = false;
+        std::string gui_asm_cached = get_gui_asm_string_cache_data(addr, &cache_result);
+        if (cache_result)
+        {
+            strncpy_s(asm_string, sizeof(asm_string), gui_asm_cached.c_str(), _TRUNCATE);
+        }
+        else
+        {
+            if (!GuiGetDisassembly(addr, asm_string))
+            {
+                strncpy_s(asm_string, sizeof(asm_string), "error", _TRUNCATE);
+            }
+            set_gui_asm_string_cache_data(addr, asm_string);
+        }
+        for (auto& i : contain_asm)
+        {
+            if (strstr(asm_string, i.c_str()))
+            {
+                return true;
+            }
+        }
     }
-    char mod_name_lower[MAX_MODULE_SIZE] = { 0 };
-    strncpy_s(mod_name_lower, sizeof(mod_name_lower), mod_name, _TRUNCATE);
-    _strlwr_s(mod_name_lower, sizeof(mod_name_lower));
-    if (std::find(pass_mod.begin(), pass_mod.end(), mod_name_lower) != pass_mod.end())
-    {
-        return true;
-    }
+
     return false;
 }
 
@@ -91,6 +117,29 @@ bool remove_pass_ip_range(size_t index)
 }
 
 
+void add_contain_asm(const char* assembly)
+{
+    contain_asm.push_back(assembly);
+}
+
+
+bool remove_contain_asm(const char* assembly)
+{
+    if (assembly == NULL)
+    {
+        return false;
+    }
+
+    std::vector<std::string>::iterator itr = std::find(contain_asm.begin(), contain_asm.end(), assembly);
+    if (itr == contain_asm.end())
+    {
+        return false;
+    }
+    contain_asm.erase(itr);
+    return true;
+}
+
+
 bool filter_command_callback(int argc, char* argv[])
 {
     if (argc < 1)
@@ -104,7 +153,8 @@ bool filter_command_callback(int argc, char* argv[])
             "    TElogger.filt.help\n"
             "    TElogger.filt.mod.pass [dllname]\n"
             "    TElogger.filt.ip.range.pass [remove index]\n"
-            "    TElogger.filt.ip.range.pass start, end, [comment]");
+            "    TElogger.filt.ip.range.pass start, end, [comment]\n"
+            "    TElogger.filt.asm.contain [asm]");
     }
     else if (strstr(argv[0], "mod.pass"))
     {
@@ -173,6 +223,24 @@ bool filter_command_callback(int argc, char* argv[])
             }
         }
     }
+    else if (strstr(argv[0], "asm.contain"))
+    {
+        if (argc < 2)
+        {
+            telogger_logputs("Log Filter: Asm list");
+            logputs("{");
+            for (auto& i : contain_asm)
+            {
+                logprintf("    %s,\n", i.c_str());
+            }
+            logputs("}");
+            return true;
+        }
+        if (!remove_contain_asm(argv[1]))
+        {
+            add_contain_asm(argv[1]);
+        }
+    }
 
     return true;
 }
@@ -183,6 +251,7 @@ bool init_filter_log(PLUG_INITSTRUCT* init_struct)
     _plugin_registercommand(pluginHandle, "TElogger.filt.help", filter_command_callback, false);
     _plugin_registercommand(pluginHandle, "TElogger.filt.mod.pass", filter_command_callback, false);
     _plugin_registercommand(pluginHandle, "TElogger.filt.ip.range.pass", filter_command_callback, false);
+    _plugin_registercommand(pluginHandle, "TElogger.filt.asm.contain", filter_command_callback, false);
     return true;
 }
 
@@ -192,6 +261,7 @@ bool stop_filter_log()
     _plugin_unregistercommand(pluginHandle, "TElogger.filt.help");
     _plugin_unregistercommand(pluginHandle, "TElogger.filt.mod.pass");
     _plugin_unregistercommand(pluginHandle, "TElogger.filt.ip.range.pass");
+    _plugin_unregistercommand(pluginHandle, "TElogger.filt.asm.contain");
     return true;
 }
 
