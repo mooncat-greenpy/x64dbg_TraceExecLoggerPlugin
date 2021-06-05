@@ -10,8 +10,6 @@ void log_stack(LOG_STACK& stack_json, REGDUMP* reg_dump)
 		return;
 	}
 
-	stack_json.type = "stack";
-
 	// Sometimes fails to read stack
 	if (!DbgMemIsValidReadPtr(reg_dump->regcontext.csp))
 	{

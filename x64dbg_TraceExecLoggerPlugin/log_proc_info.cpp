@@ -10,7 +10,6 @@ void log_module(LOG_MODULE& module_json)
 		return;
 	}
 
-	module_json.type = "module";
 	BridgeList<Script::Module::ModuleInfo> module_list;
 	if (!Script::Module::GetList(&module_list))
 	{
@@ -47,7 +46,6 @@ void log_thread(LOG_THREAD& thread_json)
 
 	THREADLIST thread_list = {};
 	DbgGetThreadList(&thread_list);
-	thread_json.type = "thread";
 	thread_json.current_thread = thread_list.CurrentThread;
 	thread_json.count = thread_list.count;
 	for (int i = 0; i < thread_list.count; i++)
@@ -225,7 +223,6 @@ void log_memory(LOG_MEMORY& memory_json)
 	}
 
 	MEMMAP memory_map = {};
-	memory_json.type = "memory";
 	if (!DbgMemMap(&memory_map))
 	{
 		telogger_logputs("Memory Log: Failed to get memory map");
@@ -289,7 +286,6 @@ void log_handle(LOG_HANDLE& handle_json)
 	}
 
 	int count = handles.Count();
-	handle_json.type = "handle";
 	handle_json.count = count;
 
 	for (int i = 0; i < count; i++)
@@ -325,7 +321,6 @@ void log_network(LOG_NETWORK& network_json)
 	}
 
 	int count = connections.Count();
-	network_json.type = "network";
 	network_json.count = count;
 
 	for (int i = 0; i < count; i++)

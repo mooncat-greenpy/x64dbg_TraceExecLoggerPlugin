@@ -172,7 +172,6 @@ class LOG_INSTRUCTION : public Log
 {
 public:
     bool enabled = false;
-    std::string type;
     LOG_ADDRESS address;
     bool asm_str_cache = false;
     std::string asm_str;
@@ -182,11 +181,11 @@ public:
 
     void save_internal(std::string indent, std::string& write)
     {
+        add(indent, "active", enabled, write, !enabled);
         if (!enabled)
         {
             return;
         }
-        add(indent, "type", type, write);
         address.save(indent,"address", write);
         add(indent, "asm_str_cache", asm_str_cache, write);
         add(indent, "asm_str", asm_str, write);
@@ -201,7 +200,6 @@ class LOG_REGISTER : public Log
 {
 public:
     bool enabled = false;
-    std::string type;
     LOG_ADDRESS cax;
     LOG_ADDRESS cbx;
     LOG_ADDRESS ccx;
@@ -234,11 +232,11 @@ public:
 
     void save_internal(std::string indent, std::string& write)
     {
+        add(indent, "active", enabled, write, !enabled);
         if (!enabled)
         {
             return;
         }
-        add(indent, "type", type, write);
         cax.save(indent, "cax", write);
         cbx.save(indent, "cbx", write);
         ccx.save(indent, "ccx", write);
@@ -303,16 +301,15 @@ class LOG_STACK : public Log
 {
 public:
     bool enabled = false;
-    std::string type;
     std::list<LOG_STACK_ENTRY> data;
 
     void save_internal(std::string indent, std::string& write)
     {
+        add(indent, "active", enabled, write, !enabled);
         if (!enabled)
         {
             return;
         }
-        add(indent, "type", type, write);
         add_list(indent, "data", data, write, true);
     }
 };
@@ -363,17 +360,16 @@ class LOG_MODULE : public Log
 {
 public:
     bool enabled = false;
-    std::string type;
     int count = 0;
     std::list<LOG_MODULE_ENTRY> list;
 
     void save_internal(std::string indent, std::string& write)
     {
+        add(indent, "active", enabled, write, !enabled);
         if (!enabled)
         {
             return;
         }
-        add(indent, "type", type, write);
         add(indent, "count", count, write);
         add_list(indent, "list", list, write, true);
     }
@@ -411,18 +407,17 @@ class LOG_THREAD : public Log
 {
 public:
     bool enabled = false;
-    std::string type;
     int current_thread = 0;
     int count = 0;
     std::list<LOG_THREAD_ENTRY> list;
 
     void save_internal(std::string indent, std::string& write)
     {
+        add(indent, "active", enabled, write, !enabled);
         if (!enabled)
         {
             return;
         }
-        add(indent, "type", type, write);
         add(indent, "current_thread", current_thread, write);
         add(indent, "count", count, write);
         add_list(indent, "list", list, write, true);
@@ -457,17 +452,16 @@ class LOG_MEMORY : public Log
 {
 public:
     bool enabled = false;
-    std::string type;
     int count = 0;
     std::list<LOG_MEMORY_ENTRY> list;
 
     void save_internal(std::string indent, std::string& write)
     {
+        add(indent, "active", enabled, write, !enabled);
         if (!enabled)
         {
             return;
         }
-        add(indent, "type", type, write);
         add(indent, "count", count, write);
         add_list(indent, "list", list, write, true);
     }
@@ -495,17 +489,16 @@ class LOG_HANDLE : public Log
 {
 public:
     bool enabled = false;
-    std::string type;
     int count = 0;
     std::list<LOG_HANDLE_ENTRY> list;
 
     void save_internal(std::string indent, std::string& write)
     {
+        add(indent, "active", enabled, write, !enabled);
         if (!enabled)
         {
             return;
         }
-        add(indent, "type", type, write);
         add(indent, "count", count, write);
         add_list(indent, "list", list, write, true);
     }
@@ -543,17 +536,16 @@ class LOG_NETWORK : public Log
 {
 public:
     bool enabled = false;
-    std::string type;
     int count = 0;
     std::list<LOG_NETWORK_ENTRY> list;
 
     void save_internal(std::string indent, std::string& write)
     {
+        add(indent, "active", enabled, write, !enabled);
         if (!enabled)
         {
             return;
         }
-        add(indent, "type", type, write);
         add(indent, "count", count, write);
         add_list(indent, "list", list, write, true);
     }

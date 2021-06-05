@@ -9,8 +9,6 @@ void log_register(LOG_REGISTER& reg_json, REGDUMP* reg_dump)
 		return;
 	}
 
-	reg_json.type = "register";
-
 	REGISTERCONTEXT reg = reg_dump->regcontext;
 
 	make_address_json(reg_json.cax, reg.cax);

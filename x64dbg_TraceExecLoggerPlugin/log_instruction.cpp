@@ -108,7 +108,6 @@ void log_instruction(LOG_INSTRUCTION& inst_json, REGDUMP* reg_dump)
 		return;
 	}
 
-	inst_json.type = "instruction";
 	make_address_json(inst_json.address, reg_dump->regcontext.cip);
 
 	char asm_string[GUI_MAX_DISASSEMBLY_SIZE] = { 0 };
