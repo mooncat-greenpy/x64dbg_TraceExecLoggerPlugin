@@ -1,0 +1,88 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "file_name": {
+            "type": "string"
+        },
+        "cmd_line": {
+            "type": "string"
+        },
+        "count": {
+            "type": "integer"
+        },
+        "save_count": {
+            "type": "integer"
+        },
+        "process_id": {
+            "type": "integer"
+        },
+        "thread_id": {
+            "type": "integer"
+        },
+        "log": {
+            "type": "array",
+            "items": {
+                "if": {
+                    "properties": {
+                        "type": {
+                            "enum": [
+                                "log",
+                                "proc log"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "type"
+                    ]
+                },
+                "then": {
+                    "allOf": [
+                        {
+                            "if": {
+                                "properties": {
+                                    "type": {
+                                        "enum": [
+                                            "log"
+                                        ]
+                                    }
+                                }
+                            },
+                            "then": {
+                                "$ref": "log.json"
+                            }
+                        },
+                        {
+                            "if": {
+                                "properties": {
+                                    "type": {
+                                        "enum": [
+                                            "proc log"
+                                        ]
+                                    }
+                                }
+                            },
+                            "then": {
+                                "$ref": "proclog.json"
+                            }
+                        }
+                    ]
+                },
+                "else": {
+                    "additionalProperties": false,
+                    "properties": {}
+                }
+            }
+        }
+    },
+    "required": [
+        "file_name",
+        "cmd_line",
+        "count",
+        "save_count",
+        "process_id",
+        "thread_id",
+        "log"
+    ]
+}

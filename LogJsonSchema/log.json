@@ -1,0 +1,343 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "counter": {
+            "type": "integer"
+        },
+        "type": {
+            "type": "string",
+            "enum": [
+                "log"
+            ]
+        },
+        "message": {
+            "type": "string"
+        },
+        "inst": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "address": {
+                    "$ref": "address.json"
+                },
+                "asm_str_cache": {
+                    "type": "boolean"
+                },
+                "asm_str": {
+                    "type": "string"
+                },
+                "asm": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "normal",
+                                "branch",
+                                "call",
+                                "stack",
+                                "other"
+                            ]
+                        },
+                        "instruction": {
+                            "type": "string"
+                        },
+                        "size": {
+                            "type": "integer"
+                        },
+                        "argcount": {
+                            "type": "integer"
+                        },
+                        "arg": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "normal",
+                                            "memory",
+                                            "other"
+                                        ]
+                                    },
+                                    "segment": {
+                                        "type": "string",
+                                        "enum": [
+                                            "default",
+                                            "cs",
+                                            "ds",
+                                            "es",
+                                            "fs",
+                                            "gs",
+                                            "ss",
+                                            "other"
+                                        ]
+                                    },
+                                    "mnemonic": {
+                                        "type": "string"
+                                    },
+                                    "constant": {
+                                        "type": "integer"
+                                    },
+                                    "value": {
+                                        "$ref": "address.json"
+                                    },
+                                    "memvalue": {
+                                        "$ref": "address.json"
+                                    }
+                                },
+                                "required": [
+                                    "type",
+                                    "segment",
+                                    "mnemonic",
+                                    "constant",
+                                    "value",
+                                    "memvalue"
+                                ]
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "instruction",
+                        "size",
+                        "argcount",
+                        "arg"
+                    ]
+                },
+                "comment_cache": {
+                    "type": "boolean"
+                },
+                "comment": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "active"
+            ],
+            "if": {
+                "properties": {
+                    "active": {
+                        "enum": [
+                            true
+                        ]
+                    }
+                }
+            },
+            "then": {
+                "required": [
+                    "address",
+                    "asm_str_cache",
+                    "asm_str",
+                    "asm",
+                    "comment_cache",
+                    "comment"
+                ]
+            }
+        },
+        "reg": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "cax": {
+                    "$ref": "address.json"
+                },
+                "cbx": {
+                    "$ref": "address.json"
+                },
+                "ccx": {
+                    "$ref": "address.json"
+                },
+                "cdx": {
+                    "$ref": "address.json"
+                },
+                "csi": {
+                    "$ref": "address.json"
+                },
+                "cdi": {
+                    "$ref": "address.json"
+                },
+                "csp": {
+                    "$ref": "address.json"
+                },
+                "cbp": {
+                    "$ref": "address.json"
+                },
+                "flags": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "zf": {
+                            "type": "boolean"
+                        },
+                        "of": {
+                            "type": "boolean"
+                        },
+                        "cf": {
+                            "type": "boolean"
+                        },
+                        "pf": {
+                            "type": "boolean"
+                        },
+                        "sf": {
+                            "type": "boolean"
+                        },
+                        "tf": {
+                            "type": "boolean"
+                        },
+                        "af": {
+                            "type": "boolean"
+                        },
+                        "df": {
+                            "type": "boolean"
+                        },
+                        "if": {
+                            "type": "boolean"
+                        }
+                    },
+                    "required": [
+                        "zf",
+                        "of",
+                        "cf",
+                        "pf",
+                        "sf",
+                        "tf",
+                        "af",
+                        "df",
+                        "if"
+                    ]
+                },
+                "error": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "value"
+                    ]
+                },
+                "status": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "value"
+                    ]
+                }
+            },
+            "required": [
+                "active"
+            ],
+            "if": {
+                "properties": {
+                    "active": {
+                        "enum": [
+                            true
+                        ]
+                    }
+                }
+            },
+            "then": {
+                "required": [
+                    "cax",
+                    "cbx",
+                    "ccx",
+                    "cdx",
+                    "csi",
+                    "cdi",
+                    "csp",
+                    "cbp",
+                    "flags",
+                    "error",
+                    "status"
+                ]
+            }
+        },
+        "stack": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "address": {
+                                "$ref": "address.json"
+                            },
+                            "value": {
+                                "$ref": "address.json"
+                            },
+                            "comment_cache": {
+                                "type": "boolean"
+                            },
+                            "comment": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "address",
+                            "value",
+                            "comment_cache",
+                            "comment"
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "active"
+            ],
+            "if": {
+                "properties": {
+                    "active": {
+                        "enum": [
+                            true
+                        ]
+                    }
+                }
+            },
+            "then": {
+                "required": [
+                    "data"
+                ]
+            }
+        }
+    },
+    "required": [
+        "counter",
+        "type",
+        "message",
+        "inst",
+        "reg",
+        "stack"
+    ]
+}

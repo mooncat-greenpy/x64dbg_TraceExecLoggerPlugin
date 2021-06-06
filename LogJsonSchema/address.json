@@ -1,0 +1,58 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "cache": {
+            "type": "boolean"
+        },
+        "value": {
+            "type": "integer"
+        },
+        "label": {
+            "type": "string"
+        },
+        "data": {
+            "type": "string"
+        },
+        "xref": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "data",
+                            "jmp",
+                            "call",
+                            "none"
+                        ]
+                    },
+                    "address": {
+                        "type": "integer"
+                    },
+                    "address_value": {
+                        "type": "integer"
+                    },
+                    "address_label": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "type",
+                    "address",
+                    "address_value",
+                    "address_label"
+                ]
+            }
+        }
+    },
+    "required": [
+        "cache",
+        "value",
+        "label",
+        "data",
+        "xref"
+    ]
+}

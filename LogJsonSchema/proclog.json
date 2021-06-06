@@ -1,0 +1,371 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "counter": {
+            "type": "integer"
+        },
+        "type": {
+            "type": "string",
+            "enum": [
+                "proc log"
+            ]
+        },
+        "message": {
+            "type": "string"
+        },
+        "module": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "path": {
+                                "type": "string"
+                            },
+                            "entry_point": {
+                                "$ref": "address.json"
+                            },
+                            "base_address": {
+                                "$ref": "address.json"
+                            },
+                            "size": {
+                                "type": "integer"
+                            },
+                            "section_count": {
+                                "type": "integer"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "path",
+                            "entry_point",
+                            "base_address",
+                            "size",
+                            "section_count"
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "active"
+            ],
+            "if": {
+                "properties": {
+                    "active": {
+                        "enum": [
+                            true
+                        ]
+                    }
+                }
+            },
+            "then": {
+                "required": [
+                    "count",
+                    "list"
+                ]
+            }
+        },
+        "thread": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "current_thread": {
+                    "type": "integer"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "handle": {
+                                "type": "integer"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "start_address": {
+                                "$ref": "address.json"
+                            },
+                            "local_base": {
+                                "$ref": "address.json"
+                            },
+                            "cip": {
+                                "$ref": "address.json"
+                            },
+                            "suspend_count": {
+                                "type": "integer"
+                            },
+                            "priority": {
+                                "type": "string"
+                            },
+                            "wait_reason": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "handle",
+                            "name",
+                            "start_address",
+                            "local_base",
+                            "cip",
+                            "suspend_count",
+                            "priority",
+                            "wait_reason"
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "active"
+            ],
+            "if": {
+                "properties": {
+                    "active": {
+                        "enum": [
+                            true
+                        ]
+                    }
+                }
+            },
+            "then": {
+                "required": [
+                    "current_thread",
+                    "count",
+                    "list"
+                ]
+            }
+        },
+        "memory": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "info": {
+                                "type": "string"
+                            },
+                            "base_address": {
+                                "$ref": "address.json"
+                            },
+                            "region_size": {
+                                "type": "integer"
+                            },
+                            "protect": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "IMG",
+                                    "MAP",
+                                    "PRV",
+                                    "N/A"
+                                ]
+                            },
+                            "allocation_base": {
+                                "$ref": "address.json"
+                            },
+                            "allocation_protect": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "info",
+                            "base_address",
+                            "region_size",
+                            "protect",
+                            "type",
+                            "allocation_base",
+                            "allocation_protect"
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "active"
+            ],
+            "if": {
+                "properties": {
+                    "active": {
+                        "enum": [
+                            true
+                        ]
+                    }
+                }
+            },
+            "then": {
+                "required": [
+                    "count",
+                    "list"
+                ]
+            }
+        },
+        "handle": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "value": {
+                                "type": "integer"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "granted_access": {
+                                "type": "integer"
+                            }
+                        },
+                        "required": [
+                            "value",
+                            "name",
+                            "type",
+                            "granted_access"
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "active"
+            ],
+            "if": {
+                "properties": {
+                    "active": {
+                        "enum": [
+                            true
+                        ]
+                    }
+                }
+            },
+            "then": {
+                "required": [
+                    "count",
+                    "list"
+                ]
+            }
+        },
+        "network": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "remote_address": {
+                                "type": "string"
+                            },
+                            "remote_port": {
+                                "type": "integer"
+                            },
+                            "local_address": {
+                                "type": "string"
+                            },
+                            "local_port": {
+                                "type": "integer"
+                            },
+                            "state_text": {
+                                "type": "string"
+                            },
+                            "state_value": {
+                                "type": "integer"
+                            }
+                        },
+                        "required": [
+                            "remote_address",
+                            "remote_port",
+                            "local_address",
+                            "local_port",
+                            "state_text",
+                            "state_value"
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "active"
+            ],
+            "if": {
+                "properties": {
+                    "active": {
+                        "enum": [
+                            true
+                        ]
+                    }
+                }
+            },
+            "then": {
+                "required": [
+                    "count",
+                    "list"
+                ]
+            }
+        }
+    },
+    "required": [
+        "counter",
+        "type",
+        "message",
+        "module",
+        "thread",
+        "memory",
+        "handle",
+        "network"
+    ]
+}
