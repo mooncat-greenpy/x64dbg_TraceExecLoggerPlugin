@@ -173,6 +173,30 @@
                 "cbp": {
                     "$ref": "address.json"
                 },
+                "r8": {
+                    "$ref": "address.json"
+                },
+                "r9": {
+                    "$ref": "address.json"
+                },
+                "r10": {
+                    "$ref": "address.json"
+                },
+                "r11": {
+                    "$ref": "address.json"
+                },
+                "r12": {
+                    "$ref": "address.json"
+                },
+                "r13": {
+                    "$ref": "address.json"
+                },
+                "r14": {
+                    "$ref": "address.json"
+                },
+                "r15": {
+                    "$ref": "address.json"
+                },
                 "flags": {
                     "type": "object",
                     "additionalProperties": false,
@@ -275,7 +299,18 @@
                     "flags",
                     "error",
                     "status"
-                ]
+                ],
+                "dependencies": {
+                    "r8": [
+                        "r9",
+                        "r10",
+                        "r11",
+                        "r12",
+                        "r13",
+                        "r14",
+                        "r15"
+                    ]
+                }
             }
         },
         "stack": {
