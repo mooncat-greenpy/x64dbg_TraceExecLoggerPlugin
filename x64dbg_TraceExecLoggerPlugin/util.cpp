@@ -135,10 +135,10 @@ void make_address_json(LOG_ADDRESS& address_json, duint addr)
 		{
 			LOG_XREF xref_json = LOG_XREF();
 
-			xref_json.address_value = xref_info.references[i].addr;
+			xref_json.address = xref_info.references[i].addr;
 			label_text[0] = '\0';
 			make_address_label_string(xref_info.references[i].addr, label_text, sizeof(label_text));
-			xref_json.address_label = label_text;
+			xref_json.label = label_text;
 
 			switch (xref_info.references[i].type)
 			{

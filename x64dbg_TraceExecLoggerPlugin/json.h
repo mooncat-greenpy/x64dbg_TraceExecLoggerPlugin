@@ -75,15 +75,13 @@ class LOG_XREF : public Log
 public:
     std::string type;
     duint address = 0;
-    duint address_value = 0;
-    std::string address_label;
+    std::string label;
 
     void save_internal(std::string indent, std::string& write)
     {
         add(indent, "type", type, write);
         add(indent, "address", address, write);
-        add(indent, "address_value", address_value, write);
-        add(indent, "address_label", address_label, write, true);
+        add(indent, "label", label, write, true);
     }
 };
 

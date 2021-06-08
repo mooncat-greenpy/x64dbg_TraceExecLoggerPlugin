@@ -35,18 +35,14 @@
                     "address": {
                         "type": "integer"
                     },
-                    "address_value": {
-                        "type": "integer"
-                    },
-                    "address_label": {
+                    "label": {
                         "type": "string"
                     }
                 },
                 "required": [
                     "type",
                     "address",
-                    "address_value",
-                    "address_label"
+                    "label"
                 ]
             }
         }
