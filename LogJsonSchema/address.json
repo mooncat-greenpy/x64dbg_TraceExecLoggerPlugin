@@ -5,11 +5,14 @@
         "cache": {
             "type": "boolean"
         },
-        "value": {
+        "address": {
             "type": "integer"
         },
         "label": {
             "type": "string"
+        },
+        "value": {
+            "type": "integer"
         },
         "data": {
             "type": "string"
@@ -50,8 +53,9 @@
     },
     "required": [
         "cache",
-        "value",
+        "address",
         "label",
+        "value",
         "data",
         "xref"
     ]

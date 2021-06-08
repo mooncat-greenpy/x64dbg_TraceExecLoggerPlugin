@@ -93,7 +93,7 @@ void make_address_json(LOG_ADDRESS& address_json, duint addr)
 	}
 
 	address_json.cache = false;
-	address_json.value = addr;
+	address_json.address = addr;
 
 	char label_text[MAX_LABEL_SIZE] = { 0 };
 	make_address_label_string(addr, label_text, sizeof(label_text));
@@ -111,6 +111,7 @@ void make_address_json(LOG_ADDRESS& address_json, duint addr)
 		duint data_size = get_hex_log_size() < sizeof(data) ? get_hex_log_size() : sizeof(data);
 		has_hex = DbgMemRead(addr, data, data_size);
 		make_hex_string(data, data_size, hex_string, sizeof(hex_string));
+		address_json.value = *(duint*)data;
 	}
 	if (has_string)
 	{
