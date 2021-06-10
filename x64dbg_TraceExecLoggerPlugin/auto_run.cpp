@@ -3,6 +3,7 @@
 static duint skip_addr = 0;
 std::vector<duint> auto_run_breakpoints;
 static AUTO_RUN_TYPE auto_run_state = AUTO_RUN_TYPE::AUTO_STOP;
+static std::map<duint, BP_INFO> log_breakpoints_info;
 
 
 void add_breakpoint(duint addr)
@@ -43,6 +44,10 @@ void remove_all_breakpoint(const char* name = NULL)
 			continue;
 		}
 		Script::Debug::DeleteBreakpoint(bp_map.bp[i].addr);
+		if (log_breakpoints_info.count(bp_map.bp[i].addr))
+		{
+			log_breakpoints_info.erase(bp_map.bp[i].addr);
+		}
 	}
 }
 
@@ -95,8 +100,16 @@ void disable_all_breakpoint(const char* name = NULL)
 }
 
 
-void add_log_breakpoint(duint addr, const char* name)
+void add_log_breakpoint(duint addr, const char* name, const char* command = NULL)
 {
+	if (command == NULL)
+	{
+		log_breakpoints_info[addr] = { addr, name, };
+	}
+	else
+	{
+		log_breakpoints_info[addr] = { addr, name, command };
+	}
 	char cmd[DEFAULT_BUF_SIZE] = { 0 };
 	_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerAutoRunLogBP_%s", (char*)addr, name);
 	DbgCmdExecDirect(cmd);
@@ -238,6 +251,11 @@ void run_debug()
 		return;
 	}
 
+	if (log_breakpoints_info.count(cip))
+	{
+		DbgCmdExecDirect(log_breakpoints_info[cip].command.c_str());
+	}
+
 	if (auto_run_state == AUTO_RUN_TYPE::AUTO_STEP_OVER)
 	{
 		DbgCmdExec("TraceOverConditional 0, 50");
@@ -274,7 +292,7 @@ bool auto_run_command_callback(int argc, char* argv[])
 			"    TElogger.auto.disable\n"
 			"    TElogger.auto.bp.add address\n"
 			"    TElogger.auto.bp.rm\n"
-			"    TElogger.auto.logbp.add address, name\n"
+			"    TElogger.auto.logbp.add address, name, [command]\n"
 			"    TElogger.auto.logbp.add.dll.import dllname, [apiname]\n"
 			"    TElogger.auto.logbp.add.dll.export dllname, [apiname]\n"
 			"    TElogger.auto.logbp.rm\n"
@@ -429,7 +447,7 @@ bool auto_run_command_callback(int argc, char* argv[])
 		{
 			telogger_logputs("Auto Run Log: Failed\n"
 				"Command:\n"
-				"    TElogger.auto.logbp.add address, name");
+				"    TElogger.auto.logbp.add address, name, [command]");
 			return false;
 		}
 		char* end = NULL;
@@ -438,10 +456,17 @@ bool auto_run_command_callback(int argc, char* argv[])
 		{
 			telogger_logputs("Auto Run Log: Failed\n"
 				"Command:\n"
-				"    TElogger.auto.logbp.add address, name");
+				"    TElogger.auto.logbp.add address, name, [command]");
 			return false;
 		}
-		add_log_breakpoint(value, argv[2]);
+		if (argc > 3)
+		{
+			add_log_breakpoint(value, argv[2], argv[3]);
+		}
+		else
+		{
+			add_log_breakpoint(value, argv[2]);
+		}
 		telogger_logprintf("Auto Run Log: LBP %p\n", (char*)value);
 	}
 	else if (strstr(argv[0], "auto.logbp.rm"))
