@@ -200,9 +200,9 @@ bool save_command_callback(int argc, char* argv[])
             telogger_logprintf("Save Log: Hex size %#x\n", get_hex_log_size());
             return true;
         }
-        char* end = NULL;
-        duint value = (duint)_strtoi64(argv[1], &end, 16);
-        if (end == NULL || *end != '\0')
+        bool result_eval = false;
+        duint value = DbgEval(argv[1], &result_eval);
+        if (!result_eval)
         {
             telogger_logputs("Save Log: Failed to set hex size\n"
                 "Command:\n"

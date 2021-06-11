@@ -351,9 +351,9 @@ bool auto_run_command_callback(int argc, char* argv[])
 				"    %s address\n", argv[0]);
 			return false;
 		}
-		char* end = NULL;
-		duint value = (duint)_strtoi64(argv[1], &end, 16);
-		if (end == NULL || *end != '\0')
+		bool result_eval = false;
+		duint value = DbgEval(argv[1], &result_eval);
+		if (!result_eval)
 		{
 			telogger_logprintf("Auto Run Log: Failed\n"
 				"Command:\n"
@@ -499,9 +499,9 @@ bool auto_run_command_callback(int argc, char* argv[])
 				"    TElogger.auto.logbp.add address, name, [command]");
 			return false;
 		}
-		char* end = NULL;
-		duint value = (duint)_strtoi64(argv[1], &end, 16);
-		if (end == NULL || *end != '\0')
+		bool result_eval = false;
+		duint value = DbgEval(argv[1], &result_eval);
+		if (!result_eval)
 		{
 			telogger_logputs("Auto Run Log: Failed\n"
 				"Command:\n"

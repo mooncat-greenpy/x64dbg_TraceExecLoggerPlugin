@@ -189,9 +189,9 @@ bool filter_command_callback(int argc, char* argv[])
         }
         else if (argc < 3)
         {
-            char* str_end = NULL;
-            unsigned int index = (unsigned int)_strtoui64(argv[1], &str_end, 16);
-            if (str_end == NULL || *str_end != '\0')
+            bool result_eval = false;
+            duint index = DbgEval(argv[1], &result_eval);
+            if (!result_eval)
             {
                 telogger_logprintf("Log Filter: Remove IP range filter\n"
                     "Command:\n"
@@ -202,11 +202,11 @@ bool filter_command_callback(int argc, char* argv[])
         }
         else
         {
-            char* str1_end = NULL;
-            duint start = (duint)_strtoi64(argv[1], &str1_end, 16);
-            char* str2_end = NULL;
-            duint end = (duint)_strtoi64(argv[2], &str2_end, 16);
-            if (str1_end == NULL || *str1_end != '\0' || str2_end == NULL || *str2_end != '\0')
+            bool result_eval1 = false;
+            duint start = DbgEval(argv[1], &result_eval1);
+            bool result_eval2 = false;
+            duint end = DbgEval(argv[2], &result_eval2);
+            if (!result_eval1 || !result_eval2)
             {
                 telogger_logprintf("Log Filter: Add IP range filter\n"
                     "Command:\n"

@@ -98,9 +98,9 @@ bool stack_command_callback(int argc, char* argv[])
 			telogger_logprintf("Stack Log: Count %#x\n", get_stack_log_count());
 			return true;
 		}
-		char* end = NULL;
-		duint value = (duint)_strtoi64(argv[1], &end, 16);
-		if (end == NULL || *end != '\0')
+		bool result_eval = false;
+		duint value = DbgEval(argv[1], &result_eval);
+		if (!result_eval)
 		{
 			telogger_logputs("Stack Log: Failed\n"
 				"Command:\n"
