@@ -219,6 +219,34 @@ void add_export_log_breakpoint(const char* mod_name = NULL, const char* api_name
 }
 
 
+void add_export_log_breakpoint_without(std::vector<std::string>& mod_list)
+{
+	BridgeList<Script::Module::ModuleInfo> module_list;
+	if (!Script::Module::GetList(&module_list))
+	{
+		telogger_logputs("Auto Run Log: Failed to get module list");
+		return;
+	}
+	for (int i = 0; i < module_list.Count(); i++)
+	{
+		bool skip = false;
+		for (auto& mod_name : mod_list)
+		{
+			if (_stricmp(module_list[i].name, mod_name.c_str()) == 0)
+			{
+				skip = true;
+				break;
+			}
+		}
+		if (skip)
+		{
+			continue;
+		}
+		add_export_log_breakpoint(module_list[i].name);
+	}
+}
+
+
 void run_debug()
 {
 	if (!get_auto_run_enabled())
@@ -295,6 +323,7 @@ bool auto_run_command_callback(int argc, char* argv[])
 			"    TElogger.auto.logbp.add address, name, [command]\n"
 			"    TElogger.auto.logbp.add.dll.import dllname, [apiname]\n"
 			"    TElogger.auto.logbp.add.dll.export dllname, [apiname]\n"
+			"    TElogger.auto.logbp.add.dll.export.without dllname, [...]\n"
 			"    TElogger.auto.logbp.rm\n"
 			"    TElogger.auto.logbp.enable\n"
 			"    TElogger.auto.logbp.disable\n"
@@ -415,6 +444,26 @@ bool auto_run_command_callback(int argc, char* argv[])
 		}
 		telogger_logputs("Auto Run Log: Finish addlogbp.dll.import");
 	}
+	else if (strstr(argv[0], "auto.logbp.add.dll.export.without"))
+	{
+		telogger_logputs("Auto Run Log: Start addlogbp.dll.export.without ...");
+		if (argc < 2)
+		{
+			telogger_logputs("Auto Run Log: Failed\n"
+				"Command:\n"
+				"    TElogger.auto.logbp.add.dll.export.without dllname, [...]");
+		}
+		else
+		{
+			std::vector<std::string> skip_list;
+			for (int i = 1; i < argc; i++)
+			{
+				skip_list.push_back(argv[i]);
+			}
+			add_export_log_breakpoint_without(skip_list);
+		}
+		telogger_logputs("Auto Run Log: Finish addlogbp.dll.export.without");
+	}
 	else if (strstr(argv[0], "auto.logbp.add.dll.export"))
 	{
 		telogger_logputs("Auto Run Log: Start addlogbp.dll.export ...");
@@ -499,6 +548,7 @@ bool init_auto_run(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.auto.logbp.add", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.logbp.add.dll.import", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.logbp.add.dll.export", auto_run_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.auto.logbp.add.dll.export.without", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.logbp.rm", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.logbp.enable", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.logbp.disable", auto_run_command_callback, false);
@@ -520,6 +570,7 @@ bool stop_auto_run()
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.logbp.add");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.logbp.add.dll.import");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.logbp.add.dll.export");
+	_plugin_unregistercommand(pluginHandle, "TElogger.auto.logbp.add.dll.export.without");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.logbp.rm");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.logbp.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.logbp.disable");
