@@ -10,37 +10,37 @@ void log_register(LOG_REGISTER& reg_json, StepInfo& step_info)
 	}
 
 	REGDUMP* reg_dump = step_info.get_reg_dump();
-	REGISTERCONTEXT reg = reg_dump->regcontext;
+	REGISTERCONTEXT* reg = &reg_dump->regcontext;
 
-	make_address_json(reg_json.cax, reg.cax);
-	make_address_json(reg_json.cbx, reg.cbx);
-	make_address_json(reg_json.ccx, reg.ccx);
-	make_address_json(reg_json.cdx, reg.cdx);
-	make_address_json(reg_json.csi, reg.csi);
-	make_address_json(reg_json.cdi, reg.cdi);
-	make_address_json(reg_json.csp, reg.csp);
-	make_address_json(reg_json.cbp, reg.cbp);
+	make_address_json(reg_json.cax, reg->cax);
+	make_address_json(reg_json.cbx, reg->cbx);
+	make_address_json(reg_json.ccx, reg->ccx);
+	make_address_json(reg_json.cdx, reg->cdx);
+	make_address_json(reg_json.csi, reg->csi);
+	make_address_json(reg_json.cdi, reg->cdi);
+	make_address_json(reg_json.csp, reg->csp);
+	make_address_json(reg_json.cbp, reg->cbp);
 #ifdef _WIN64
-	make_address_json(reg_json.r8, reg.r8);
-	make_address_json(reg_json.r9, reg.r9);
-	make_address_json(reg_json.r10, reg.r10);
-	make_address_json(reg_json.r11, reg.r11);
-	make_address_json(reg_json.r12, reg.r12);
-	make_address_json(reg_json.r13, reg.r13);
-	make_address_json(reg_json.r14, reg.r14);
-	make_address_json(reg_json.r15, reg.r15);
+	make_address_json(reg_json.r8, reg->r8);
+	make_address_json(reg_json.r9, reg->r9);
+	make_address_json(reg_json.r10, reg->r10);
+	make_address_json(reg_json.r11, reg->r11);
+	make_address_json(reg_json.r12, reg->r12);
+	make_address_json(reg_json.r13, reg->r13);
+	make_address_json(reg_json.r14, reg->r14);
+	make_address_json(reg_json.r15, reg->r15);
 #endif
 
-	FLAGS flags = reg_dump->flags;
-	reg_json.flags_zf = flags.z;
-	reg_json.flags_of = flags.o;
-	reg_json.flags_cf = flags.c;
-	reg_json.flags_pf = flags.p;
-	reg_json.flags_sf = flags.s;
-	reg_json.flags_tf = flags.t;
-	reg_json.flags_af = flags.a;
-	reg_json.flags_df = flags.d;
-	reg_json.flags_if = flags.i;
+	FLAGS* flags = &reg_dump->flags;
+	reg_json.flags_zf = flags->z;
+	reg_json.flags_of = flags->o;
+	reg_json.flags_cf = flags->c;
+	reg_json.flags_pf = flags->p;
+	reg_json.flags_sf = flags->s;
+	reg_json.flags_tf = flags->t;
+	reg_json.flags_af = flags->a;
+	reg_json.flags_df = flags->d;
+	reg_json.flags_if = flags->i;
 
 	reg_json.error_name = reg_dump->lastError.name;
 	reg_json.error_value = reg_dump->lastError.code;
