@@ -91,8 +91,8 @@ public:
     bool cache = false;
     duint address = 0;
     std::string label;
-    duint value = 0;
     std::string data;
+    std::list<LOG_ADDRESS> child;
     std::list<LOG_XREF> xref;
 
     void save_internal(std::string indent, std::string& write)
@@ -100,8 +100,8 @@ public:
         add(indent, "cache", cache, write);
         add(indent, "address", address, write);
         add(indent, "label", label, write);
-        add(indent, "value", value, write);
         add(indent, "data", data, write);
+        add_list(indent, "child", child, write);
         add_list(indent, "xref", xref, write, true);
     }
 };

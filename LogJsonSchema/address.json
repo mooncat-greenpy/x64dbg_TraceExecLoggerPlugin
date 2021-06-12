@@ -11,11 +11,14 @@
         "label": {
             "type": "string"
         },
-        "value": {
-            "type": "integer"
-        },
         "data": {
             "type": "string"
+        },
+        "child": {
+            "type": "array",
+            "items": {
+                "$ref": "address.json"
+            }
         },
         "xref": {
             "type": "array",
@@ -51,8 +54,8 @@
         "cache",
         "address",
         "label",
-        "value",
         "data",
+        "child",
         "xref"
     ]
 }

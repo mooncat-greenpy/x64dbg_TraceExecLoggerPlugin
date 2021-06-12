@@ -174,7 +174,8 @@ bool save_command_callback(int argc, char* argv[])
             "    TElogger.save.help\n"
             "    TElogger.save.save\n"
             "    TElogger.save.setdir dirname\n"
-            "    TElogger.save.hex.size size");
+            "    TElogger.save.hex.size [size]\n"
+            "    TElogger.save.address.recursive.count [count]");
     }
     else if (strstr(argv[0], "save.save"))
     {
@@ -206,11 +207,30 @@ bool save_command_callback(int argc, char* argv[])
         {
             telogger_logputs("Save Log: Failed to set hex size\n"
                 "Command:\n"
-                "    TElogger.save.hex.size size");
+                "    TElogger.save.hex.size [size]");
             return false;
         }
         set_hex_log_size(value);
         telogger_logprintf("Save Log: Hex size %#x\n", get_hex_log_size());
+    }
+    else if (strstr(argv[0], "save.address.recursive.count"))
+    {
+        if (argc < 2)
+        {
+            telogger_logprintf("Save Log: Address recursive count %#x\n", get_address_recursive_count());
+            return true;
+        }
+        bool result_eval = false;
+        duint value = DbgEval(argv[1], &result_eval);
+        if (!result_eval)
+        {
+            telogger_logputs("Save Log: Failed to set address recursive count\n"
+                "Command:\n"
+                "    TElogger.save.address.recursive.count [count]");
+            return false;
+        }
+        set_address_recursive_count(value);
+        telogger_logprintf("Save Log: Address recursive count %#x\n", get_address_recursive_count());
     }
 
     return true;
@@ -225,6 +245,7 @@ bool init_save(PLUG_INITSTRUCT* init_struct)
     _plugin_registercommand(pluginHandle, "TElogger.save.save", save_command_callback, false);
     _plugin_registercommand(pluginHandle, "TElogger.save.setdir", save_command_callback, false);
     _plugin_registercommand(pluginHandle, "TElogger.save.hex.size", save_command_callback, false);
+    _plugin_registercommand(pluginHandle, "TElogger.save.address.recursive.count", save_command_callback, false);
 
     return true;
 }
@@ -236,6 +257,7 @@ bool stop_save()
     _plugin_unregistercommand(pluginHandle, "TElogger.save.save");
     _plugin_unregistercommand(pluginHandle, "TElogger.save.setdir");
     _plugin_unregistercommand(pluginHandle, "TElogger.save.hex.size");
+    _plugin_unregistercommand(pluginHandle, "TElogger.save.address.recursive.count");
 
     DeleteCriticalSection(&save_critical);
 

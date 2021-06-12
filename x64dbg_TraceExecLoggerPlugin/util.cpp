@@ -80,7 +80,7 @@ void make_hex_string(char* data, size_t data_size, char* text, size_t text_size)
 }
 
 
-void make_address_json(LOG_ADDRESS& address_json, duint addr)
+void make_address_json_recursive(LOG_ADDRESS& address_json, duint addr, duint recursive_count = 0)
 {
 	address_json.xref.clear();
 	bool cache_result = false;
@@ -111,7 +111,17 @@ void make_address_json(LOG_ADDRESS& address_json, duint addr)
 		duint data_size = get_hex_log_size() < sizeof(data) ? get_hex_log_size() : sizeof(data);
 		has_hex = DbgMemRead(addr, data, data_size);
 		make_hex_string(data, data_size, hex_string, sizeof(hex_string));
-		address_json.value = *(duint*)data;
+		// Does not support cache
+		if (recursive_count > 0)
+		{
+			duint* child_addresses = (duint*)data;
+			for (duint i = 0; i < (data_size / sizeof(duint)); i++)
+			{
+				LOG_ADDRESS child_address_json;
+				make_address_json_recursive(child_address_json, *(child_addresses + i), recursive_count - 1);
+				address_json.child.push_back(child_address_json);
+			}
+		}
 	}
 	if (has_string)
 	{
@@ -162,4 +172,9 @@ void make_address_json(LOG_ADDRESS& address_json, duint addr)
 	{
 		set_address_json_cache_data(addr, address_json);
 	}
+}
+
+void make_address_json(LOG_ADDRESS& address_json, duint addr)
+{
+	make_address_json_recursive(address_json, addr, get_address_recursive_count());
 }

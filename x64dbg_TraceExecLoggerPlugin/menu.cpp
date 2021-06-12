@@ -19,6 +19,7 @@ static bool compact_log_enabled = true;
 
 static char save_dir[MAX_SETTING_SIZE] = { 0 };
 static duint hex_log_size = 0x30;
+static duint address_recursive_count = 0;
 static duint stack_log_count = 0x10;
 
 bool get_telogger_enabled()
@@ -197,6 +198,15 @@ void set_hex_log_size(duint value)
 	hex_log_size = value;
 	BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_HEX_LOG_SIZE, hex_log_size);
 }
+duint get_address_recursive_count()
+{
+	return address_recursive_count;
+}
+void set_address_recursive_count(duint value)
+{
+	address_recursive_count = value;
+	BridgeSettingSetUint(PLUGIN_NAME, MENU_LABEL_ADDRESS_RECURSIVE_COUNT, address_recursive_count);
+}
 duint get_stack_log_count()
 {
 	return stack_log_count;
@@ -362,6 +372,10 @@ void init_menu()
 	if (BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_HEX_LOG_SIZE, &setting))
 	{
 		hex_log_size = setting;
+	}
+	if (BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_ADDRESS_RECURSIVE_COUNT, &setting))
+	{
+		address_recursive_count = setting;
 	}
 	if (BridgeSettingGetUint(PLUGIN_NAME, MENU_LABEL_STACK_LOG_COUNT, &setting))
 	{
