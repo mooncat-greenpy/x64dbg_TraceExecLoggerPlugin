@@ -178,3 +178,9 @@ void make_address_json(LOG_ADDRESS& address_json, duint addr)
 {
 	make_address_json_recursive(address_json, addr, get_address_recursive_count());
 }
+
+
+bool isCommand(const char* command, const char* str)
+{
+	return !_strnicmp(command, str, strlen(str));
+}

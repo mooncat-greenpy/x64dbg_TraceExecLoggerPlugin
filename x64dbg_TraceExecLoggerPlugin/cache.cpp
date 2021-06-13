@@ -86,7 +86,7 @@ bool cache_command_callback(int argc, char* argv[])
 	{
 		return false;
 	}
-	if (strstr(argv[0], "help"))
+	if (isCommand(argv[0], "TElogger.cache.help"))
 	{
 		telogger_logputs("Cache: Help\n"
 			"Command:\n"
@@ -94,12 +94,12 @@ bool cache_command_callback(int argc, char* argv[])
 			"    TElogger.cache.enable\n"
 			"    TElogger.cache.disable");
 	}
-	else if (strstr(argv[0], "enable"))
+	else if (isCommand(argv[0], "TElogger.cache.enable"))
 	{
 		set_cache_enabled(true);
 		telogger_logputs("Cache: Enabled");
 	}
-	else if (strstr(argv[0], "disable"))
+	else if (isCommand(argv[0], "TElogger.cache.disable"))
 	{
 		set_cache_enabled(false);
 		telogger_logputs("Cache: Disabled");

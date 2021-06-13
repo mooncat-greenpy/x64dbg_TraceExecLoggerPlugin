@@ -146,7 +146,7 @@ bool filter_command_callback(int argc, char* argv[])
     {
         return false;
     }
-    if (strstr(argv[0], "help"))
+    if (isCommand(argv[0], "TElogger.filt.help"))
     {
         telogger_logputs("Log Filter: Help\n"
             "Command:\n"
@@ -156,7 +156,7 @@ bool filter_command_callback(int argc, char* argv[])
             "    TElogger.filt.ip.range.pass start, end, [comment]\n"
             "    TElogger.filt.asm.contain [asm]");
     }
-    else if (strstr(argv[0], "mod.pass"))
+    else if (isCommand(argv[0], "TElogger.filt.mod.pass"))
     {
         if (argc < 2)
         {
@@ -174,7 +174,7 @@ bool filter_command_callback(int argc, char* argv[])
             add_pass_module(argv[1]);
         }
     }
-    else if (strstr(argv[0], "ip.range.pass"))
+    else if (isCommand(argv[0], "TElogger.filt.ip.range.pass"))
     {
         if (argc < 2)
         {
@@ -223,7 +223,7 @@ bool filter_command_callback(int argc, char* argv[])
             }
         }
     }
-    else if (strstr(argv[0], "asm.contain"))
+    else if (isCommand(argv[0], "TElogger.filt.asm.contain"))
     {
         if (argc < 2)
         {

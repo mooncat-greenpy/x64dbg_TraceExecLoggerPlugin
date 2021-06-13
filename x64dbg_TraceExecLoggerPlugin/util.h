@@ -22,3 +22,4 @@ public:
 void make_address_label_string(duint addr, char* text, size_t text_size);
 void make_hex_string(char* data, size_t data_size, char* text, size_t text_size);
 void make_address_json(LOG_ADDRESS& address_json, duint addr);
+bool isCommand(const char* command, const char* str);

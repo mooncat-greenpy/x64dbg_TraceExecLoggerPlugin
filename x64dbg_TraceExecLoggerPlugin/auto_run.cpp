@@ -311,7 +311,7 @@ bool auto_run_command_callback(int argc, char* argv[])
 	{
 		return false;
 	}
-	if (strstr(argv[0], "help"))
+	if (isCommand(argv[0], "TElogger.auto.help"))
 	{
 		telogger_logputs("Auto Run Log: Help\n"
 			"Command:\n"
@@ -332,17 +332,17 @@ bool auto_run_command_callback(int argc, char* argv[])
 			"    TElogger.auto.startr address\n"
 			"    TElogger.auto.call");
 	}
-	else if (strstr(argv[0], "auto.enable"))
+	else if (isCommand(argv[0], "TElogger.auto.enable"))
 	{
 		set_auto_run_enabled(true);
 		telogger_logputs("Auto Run Log: Enabled");
 	}
-	else if (strstr(argv[0], "auto.disable"))
+	else if (isCommand(argv[0], "TElogger.auto.disable"))
 	{
 		set_auto_run_enabled(false);
 		telogger_logputs("Auto Run Log: Disabled");
 	}
-	else if (strstr(argv[0], "auto.bp.add") || strstr(argv[0], "auto.start"))
+	else if (isCommand(argv[0], " TElogger.auto.bp.add") || isCommand(argv[0], "TElogger.auto.start"))
 	{
 		if (argc < 2)
 		{
@@ -364,21 +364,21 @@ bool auto_run_command_callback(int argc, char* argv[])
 		add_breakpoint(value);
 		telogger_logprintf("Auto Run Log: BP %p\n", (char*)value);
 
-		if (strstr(argv[0], "auto.starti"))
+		if (isCommand(argv[0], "TElogger.auto.starti"))
 		{
 			set_auto_run_enabled(true);
 			auto_run_state = AUTO_RUN_TYPE::AUTO_STEP_INTO;
 			DbgCmdExec("StepInto");
 			telogger_logputs("Auto Run Log: Start StepInto");
 		}
-		else if (strstr(argv[0], "auto.starto"))
+		else if (isCommand(argv[0], "TElogger.auto.starto"))
 		{
 			set_auto_run_enabled(true);
 			auto_run_state = AUTO_RUN_TYPE::AUTO_STEP_OVER;
 			DbgCmdExec("StepOver");
 			telogger_logputs("Auto Run Log: Start StepOver");
 		}
-		else if (strstr(argv[0], "auto.startr"))
+		else if (isCommand(argv[0], "TElogger.auto.startr"))
 		{
 			set_auto_run_enabled(true);
 			auto_run_state = AUTO_RUN_TYPE::AUTO_RUN;
@@ -386,12 +386,12 @@ bool auto_run_command_callback(int argc, char* argv[])
 			telogger_logputs("Auto Run Log: Start Run");
 		}
 	}
-	else if (strstr(argv[0], "auto.bp.rm"))
+	else if (isCommand(argv[0], "TElogger.auto.bp.rm"))
 	{
 		remove_all_breakpoint("TEloggerAutoRunBP");
 		telogger_logputs("Auto Run Log: Remove all breakpoints");
 	}
-	else if (strstr(argv[0], "auto.call"))
+	else if (isCommand(argv[0], "TElogger.auto.call"))
 	{
 		duint cip = 0;
 		bool result_eval = false;
@@ -418,7 +418,7 @@ bool auto_run_command_callback(int argc, char* argv[])
 		DbgCmdExec("StepInto");
 		telogger_logputs("Auto Run Log: Start call");
 	}
-	else if (strstr(argv[0], "auto.logbp.add.dll.import"))
+	else if (isCommand(argv[0], "TElogger.auto.logbp.add.dll.import"))
 	{
 		telogger_logputs("Auto Run Log: Start addlogbp.dll.import ...");
 		if (argc < 2)
@@ -444,7 +444,7 @@ bool auto_run_command_callback(int argc, char* argv[])
 		}
 		telogger_logputs("Auto Run Log: Finish addlogbp.dll.import");
 	}
-	else if (strstr(argv[0], "auto.logbp.add.dll.export.without"))
+	else if (isCommand(argv[0], "TElogger.auto.logbp.add.dll.export.without"))
 	{
 		telogger_logputs("Auto Run Log: Start addlogbp.dll.export.without ...");
 		if (argc < 2)
@@ -464,7 +464,7 @@ bool auto_run_command_callback(int argc, char* argv[])
 		}
 		telogger_logputs("Auto Run Log: Finish addlogbp.dll.export.without");
 	}
-	else if (strstr(argv[0], "auto.logbp.add.dll.export"))
+	else if (isCommand(argv[0], "TElogger.auto.logbp.add.dll.export"))
 	{
 		telogger_logputs("Auto Run Log: Start addlogbp.dll.export ...");
 		if (argc < 2)
@@ -490,7 +490,7 @@ bool auto_run_command_callback(int argc, char* argv[])
 		}
 		telogger_logputs("Auto Run Log: Finish addlogbp.dll.export");
 	}
-	else if (strstr(argv[0], "auto.logbp.add"))
+	else if (isCommand(argv[0], "TElogger.auto.logbp.add"))
 	{
 		if (argc < 3)
 		{
@@ -518,17 +518,17 @@ bool auto_run_command_callback(int argc, char* argv[])
 		}
 		telogger_logprintf("Auto Run Log: LBP %p\n", (char*)value);
 	}
-	else if (strstr(argv[0], "auto.logbp.rm"))
+	else if (isCommand(argv[0], "TElogger.auto.logbp.rm"))
 	{
 		remove_all_breakpoint("TEloggerAutoRunLogBP");
 		telogger_logputs("Auto Run Log: Remove all log breakpoints");
 	}
-	else if (strstr(argv[0], "auto.logbp.enable"))
+	else if (isCommand(argv[0], "TElogger.auto.logbp.enable"))
 	{
 		enable_all_breakpoint("TEloggerAutoRunLogBP");
 		telogger_logputs("Auto Run Log: Enable all log breakpoints");
 	}
-	else if (strstr(argv[0], "auto.logbp.disable"))
+	else if (isCommand(argv[0], "TElogger.auto.logbp.disable"))
 	{
 		disable_all_breakpoint("TEloggerAutoRunLogBP");
 		telogger_logputs("Auto Run Log: Disable all log breakpoints");

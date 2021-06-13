@@ -52,7 +52,7 @@ bool command_callback(int argc, char* argv[])
 		return false;
 	}
 
-	if (strstr(argv[0], "help"))
+	if (isCommand(argv[0], "TElogger.help"))
 	{
 		telogger_logputs("Log: Help\n"
 			"Command:\n"
@@ -74,42 +74,42 @@ bool command_callback(int argc, char* argv[])
 			"    TElogger.filt.help\n"
 			"    TElogger.auto.help");
 	}
-	else if (strstr(argv[0], "threadstop.enable"))
+	else if (isCommand(argv[0], "TElogger.threadstop.enable"))
 	{
 		set_thread_stop_enabled(true);
 		telogger_logputs("Thread Stop: Enabled");
 	}
-	else if (strstr(argv[0], "threadstop.disable"))
+	else if (isCommand(argv[0], "TElogger.threadstop.disable"))
 	{
 		set_thread_stop_enabled(false);
 		telogger_logputs("Thread Stop: Disabled");
 	}
-	else if (strstr(argv[0], "dllstop.enable"))
+	else if (isCommand(argv[0], "TElogger.dllstop.enable"))
 	{
 		set_dll_stop_enabled(true);
 		telogger_logputs("Dll Stop: Enabled");
 	}
-	else if (strstr(argv[0], "dllstop.disable"))
+	else if (isCommand(argv[0], "TElogger.dllstop.disable"))
 	{
 		set_dll_stop_enabled(false);
 		telogger_logputs("Dll Stop: Disabled");
 	}
-	else if (strstr(argv[0], "compactlog.enable"))
+	else if (isCommand(argv[0], "TElogger.compactlog.enable"))
 	{
 		set_compact_log_enabled(true);
 		telogger_logputs("Compact Log: Enabled");
 	}
-	else if (strstr(argv[0], "compactlog.disable"))
+	else if (isCommand(argv[0], "TElogger.compactlog.disable"))
 	{
 		set_compact_log_enabled(false);
 		telogger_logputs("Compact Log: Disabled");
 	}
-	else if (strstr(argv[0], "enable"))
+	else if (isCommand(argv[0], "TElogger.enable"))
 	{
 		set_telogger_enabled(true);
 		telogger_logputs("Log: Enabled");
 	}
-	else if (strstr(argv[0], "disable"))
+	else if (isCommand(argv[0], "TElogger.disable"))
 	{
 		set_telogger_enabled(false);
 		telogger_logputs("Log: Disabled");

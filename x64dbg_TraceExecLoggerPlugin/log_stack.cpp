@@ -72,7 +72,7 @@ bool stack_command_callback(int argc, char* argv[])
 	{
 		return false;
 	}
-	if (strstr(argv[0], "help"))
+	if (isCommand(argv[0], "TElogger.stack.help"))
 	{
 		telogger_logputs("Stack Log: Help\n"
 			"Command:\n"
@@ -81,17 +81,17 @@ bool stack_command_callback(int argc, char* argv[])
 			"    TElogger.stack.disable\n"
 			"    TElogger.stack.stacklogcount [num]");
 	}
-	else if (strstr(argv[0], "enable"))
+	else if (isCommand(argv[0], "TElogger.stack.enable"))
 	{
 		set_stack_enabled(true);
 		telogger_logputs("Stack Log: Enabled");
 	}
-	else if (strstr(argv[0], "disable"))
+	else if (isCommand(argv[0], "TElogger.stack.disable"))
 	{
 		set_stack_enabled(false);
 		telogger_logputs("Stack Log: Disabled");
 	}
-	else if (strstr(argv[0], "stacklogcount"))
+	else if (isCommand(argv[0], "TElogger.stack.stacklogcount"))
 	{
 		if (argc < 2)
 		{

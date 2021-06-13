@@ -357,7 +357,7 @@ bool proc_command_callback(int argc, char* argv[])
 	{
 		return false;
 	}
-	if (strstr(argv[0], "help"))
+	if (isCommand(argv[0], "TElogger.proc.help"))
 	{
 		telogger_logputs("Proc Log: Help\n"
 			"Command:\n"
@@ -371,17 +371,17 @@ bool proc_command_callback(int argc, char* argv[])
 			"    TElogger.proc.handle.help\n"
 			"    TElogger.proc.network.help");
 	}
-	else if (strstr(argv[0], "log"))
+	else if (isCommand(argv[0], "TElogger.proc.log"))
 	{
 		log_proc_info("Command Log");
 		telogger_logputs("Proc Log: Log");
 	}
-	else if (strstr(argv[0], "enable"))
+	else if (isCommand(argv[0], "TElogger.proc.enable"))
 	{
 		set_proc_enabled(true);
 		telogger_logputs("Proc Log: Enabled");
 	}
-	else if (strstr(argv[0], "disable"))
+	else if (isCommand(argv[0], "TElogger.proc.disable"))
 	{
 		set_proc_enabled(false);
 		telogger_logputs("Proc Log: Disabled");
@@ -397,7 +397,7 @@ bool module_command_callback(int argc, char* argv[])
 	{
 		return false;
 	}
-	if (strstr(argv[0], "help"))
+	if (isCommand(argv[0], "TElogger.proc.module.help"))
 	{
 		telogger_logputs("Module Log: Help\n"
 			"Command:\n"
@@ -405,12 +405,12 @@ bool module_command_callback(int argc, char* argv[])
 			"    TElogger.proc.module.enable\n"
 			"    TElogger.proc.module.disable");
 	}
-	else if (strstr(argv[0], "enable"))
+	else if (isCommand(argv[0], "TElogger.proc.module.enable"))
 	{
 		set_module_enabled(true);
 		telogger_logputs("Module Log: Enabled");
 	}
-	else if (strstr(argv[0], "disable"))
+	else if (isCommand(argv[0], "TElogger.proc.module.disable"))
 	{
 		set_module_enabled(false);
 		telogger_logputs("Module Log: Disabled");
@@ -426,7 +426,7 @@ bool thread_command_callback(int argc, char* argv[])
 	{
 		return false;
 	}
-	if (strstr(argv[0], "help"))
+	if (isCommand(argv[0], "TElogger.proc.thread.help"))
 	{
 		telogger_logputs("Thread Log: Help\n"
 			"Command:\n"
@@ -434,12 +434,12 @@ bool thread_command_callback(int argc, char* argv[])
 			"    TElogger.proc.thread.enable\n"
 			"    TElogger.proc.thread.disable");
 	}
-	else if (strstr(argv[0], "enable"))
+	else if (isCommand(argv[0], "TElogger.proc.thread.enable"))
 	{
 		set_thread_enabled(true);
 		telogger_logputs("Thread Log: Enabled");
 	}
-	else if (strstr(argv[0], "disable"))
+	else if (isCommand(argv[0], "TElogger.proc.thread.disable"))
 	{
 		set_thread_enabled(false);
 		telogger_logputs("Thread Log: Disabled");
@@ -455,7 +455,7 @@ bool memory_command_callback(int argc, char* argv[])
 	{
 		return false;
 	}
-	if (strstr(argv[0], "help"))
+	if (isCommand(argv[0], "TElogger.proc.memory.help"))
 	{
 		telogger_logputs("Memory Log: Help\n"
 			"Command:\n"
@@ -463,12 +463,12 @@ bool memory_command_callback(int argc, char* argv[])
 			"    TElogger.proc.memory.enable\n"
 			"    TElogger.proc.memory.disable");
 	}
-	else if (strstr(argv[0], "enable"))
+	else if (isCommand(argv[0], "TElogger.proc.memory.enable"))
 	{
 		set_memory_enabled(true);
 		telogger_logputs("Memory Log: Enabled");
 	}
-	else if (strstr(argv[0], "disable"))
+	else if (isCommand(argv[0], "TElogger.proc.memory.disable"))
 	{
 		set_memory_enabled(false);
 		telogger_logputs("Memory Log: Disabled");
@@ -484,7 +484,7 @@ bool handle_command_callback(int argc, char* argv[])
 	{
 		return false;
 	}
-	if (strstr(argv[0], "help"))
+	if (isCommand(argv[0], "TElogger.proc.handle.help"))
 	{
 		telogger_logputs("Handle Log: Help\n"
 			"Command:\n"
@@ -492,12 +492,12 @@ bool handle_command_callback(int argc, char* argv[])
 			"    TElogger.proc.handle.enable\n"
 			"    TElogger.proc.handle.disable");
 	}
-	else if (strstr(argv[0], "enable"))
+	else if (isCommand(argv[0], "TElogger.proc.handle.enable"))
 	{
 		set_handle_enabled(true);
 		telogger_logputs("Handle Log: Enabled");
 	}
-	else if (strstr(argv[0], "disable"))
+	else if (isCommand(argv[0], "TElogger.proc.handle.disable"))
 	{
 		set_handle_enabled(false);
 		telogger_logputs("Handle Log: Disabled");
@@ -513,7 +513,7 @@ bool network_command_callback(int argc, char* argv[])
 	{
 		return false;
 	}
-	if (strstr(argv[0], "help"))
+	if (isCommand(argv[0], "TElogger.proc.network.help"))
 	{
 		telogger_logputs("Network Log: Help\n"
 			"Command:\n"
@@ -521,12 +521,12 @@ bool network_command_callback(int argc, char* argv[])
 			"    TElogger.proc.network.enable\n"
 			"    TElogger.proc.network.disable");
 	}
-	else if (strstr(argv[0], "enable"))
+	else if (isCommand(argv[0], "TElogger.proc.network.enable"))
 	{
 		set_network_enabled(true);
 		telogger_logputs("Network Log: Enabled");
 	}
-	else if (strstr(argv[0], "disable"))
+	else if (isCommand(argv[0], "TElogger.proc.network.disable"))
 	{
 		set_network_enabled(false);
 		telogger_logputs("Network Log: Disabled");

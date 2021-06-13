@@ -167,7 +167,7 @@ bool save_command_callback(int argc, char* argv[])
     {
         return false;
     }
-    if (strstr(argv[0], "help"))
+    if (isCommand(argv[0], "TElogger.save.help"))
     {
         telogger_logputs("Save Log: Help\n"
             "Command:\n"
@@ -177,12 +177,12 @@ bool save_command_callback(int argc, char* argv[])
             "    TElogger.save.hex.size [size]\n"
             "    TElogger.save.address.recursive.count [count]");
     }
-    else if (strstr(argv[0], "save.save"))
+    else if (isCommand(argv[0], "TElogger.save.save"))
     {
         save_all_thread_log();
         telogger_logputs("Save Log: Save");
     }
-    else if (strstr(argv[0], "save.setdir"))
+    else if (isCommand(argv[0], "TElogger.save.setdir"))
     {
         if (argc < 2)
         {
@@ -194,7 +194,7 @@ bool save_command_callback(int argc, char* argv[])
         set_save_dir(argv[1]);
         telogger_logputs("Save Log: Setdir");
     }
-    else if (strstr(argv[0], "save.hex.size"))
+    else if (isCommand(argv[0], "TElogger.save.hex.size"))
     {
         if (argc < 2)
         {
@@ -213,7 +213,7 @@ bool save_command_callback(int argc, char* argv[])
         set_hex_log_size(value);
         telogger_logprintf("Save Log: Hex size %#x\n", get_hex_log_size());
     }
-    else if (strstr(argv[0], "save.address.recursive.count"))
+    else if (isCommand(argv[0], "TElogger.save.address.recursive.count"))
     {
         if (argc < 2)
         {
