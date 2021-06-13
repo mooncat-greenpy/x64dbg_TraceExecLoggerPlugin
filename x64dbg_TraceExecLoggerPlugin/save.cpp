@@ -116,7 +116,7 @@ void add_log(int thread_id, LOG_CONTAINER* log)
     log_state[thread_id].log.push_back(*log);
     log_state[thread_id].count++;
 
-    if (log_state[thread_id].count % (MAX_LOG_COUNT - 1) == 0)
+    if (log_state[thread_id].count % (get_max_log_count() - 1) == 0)
     {
         if (get_proc_enabled())
         {
@@ -232,6 +232,25 @@ bool save_command_callback(int argc, char* argv[])
         set_address_recursive_count(value);
         telogger_logprintf("Save Log: Address recursive count %#x\n", get_address_recursive_count());
     }
+    else if (isCommand(argv[0], "TElogger.save.max.log.count"))
+    {
+        if (argc < 2)
+        {
+            telogger_logprintf("Save Log: Max log count %#x\n", get_max_log_count());
+            return true;
+        }
+        bool result_eval = false;
+        duint value = DbgEval(argv[1], &result_eval);
+        if (!result_eval)
+        {
+            telogger_logputs("Save Log: Failed to set max log count\n"
+                "Command:\n"
+                "    TElogger.save.max.log.count [count]");
+            return false;
+        }
+        set_max_log_count(value);
+        telogger_logprintf("Save Log: Max log count %#x\n", get_max_log_count());
+    }
 
     return true;
 }
@@ -246,6 +265,7 @@ bool init_save(PLUG_INITSTRUCT* init_struct)
     _plugin_registercommand(pluginHandle, "TElogger.save.setdir", save_command_callback, false);
     _plugin_registercommand(pluginHandle, "TElogger.save.hex.size", save_command_callback, false);
     _plugin_registercommand(pluginHandle, "TElogger.save.address.recursive.count", save_command_callback, false);
+    _plugin_registercommand(pluginHandle, "TElogger.save.max.log.count", save_command_callback, false);
 
     return true;
 }
@@ -258,6 +278,7 @@ bool stop_save()
     _plugin_unregistercommand(pluginHandle, "TElogger.save.setdir");
     _plugin_unregistercommand(pluginHandle, "TElogger.save.hex.size");
     _plugin_unregistercommand(pluginHandle, "TElogger.save.address.recursive.count");
+    _plugin_unregistercommand(pluginHandle, "TElogger.save.max.log.count");
 
     DeleteCriticalSection(&save_critical);
 

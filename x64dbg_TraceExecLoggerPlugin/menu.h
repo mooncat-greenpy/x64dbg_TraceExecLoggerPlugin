@@ -22,6 +22,7 @@
 #define MENU_LABEL_SAVE_DIR "Save Dir"
 #define MENU_LABEL_HEX_LOG_SIZE "Hex Log Size"
 #define MENU_LABEL_ADDRESS_RECURSIVE_COUNT "Address Recursive Count"
+#define MENU_LABEL_MAX_LOG_COUNT "Max Log Count"
 #define MENU_LABEL_STACK_LOG_COUNT "Stack Log Count"
 
 enum
@@ -81,6 +82,8 @@ duint get_hex_log_size();
 void set_hex_log_size(duint value);
 duint get_address_recursive_count();
 void set_address_recursive_count(duint value);
+duint get_max_log_count();
+void set_max_log_count(duint value);
 duint get_stack_log_count();
 void set_stack_log_count(duint value);
 
