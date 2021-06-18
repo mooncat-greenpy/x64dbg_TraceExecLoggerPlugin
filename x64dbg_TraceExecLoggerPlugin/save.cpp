@@ -175,7 +175,8 @@ bool save_command_callback(int argc, char* argv[])
             "    TElogger.save.save\n"
             "    TElogger.save.setdir dirname\n"
             "    TElogger.save.hex.size [size]\n"
-            "    TElogger.save.address.recursive.count [count]");
+            "    TElogger.save.address.recursive.count [count]\n"
+            "    TElogger.save.max.log.count [count]");
     }
     else if (isCommand(argv[0], "TElogger.save.save"))
     {

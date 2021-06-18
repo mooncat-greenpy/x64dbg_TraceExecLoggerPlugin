@@ -79,7 +79,7 @@ bool stack_command_callback(int argc, char* argv[])
 			"    TElogger.stack.help\n"
 			"    TElogger.stack.enable\n"
 			"    TElogger.stack.disable\n"
-			"    TElogger.stack.stacklogcount [num]");
+			"    TElogger.stack.stack.log.count [count]");
 	}
 	else if (isCommand(argv[0], "TElogger.stack.enable"))
 	{
@@ -91,7 +91,7 @@ bool stack_command_callback(int argc, char* argv[])
 		set_stack_enabled(false);
 		telogger_logputs("Stack Log: Disabled");
 	}
-	else if (isCommand(argv[0], "TElogger.stack.stacklogcount"))
+	else if (isCommand(argv[0], "TElogger.stack.stack.log.count"))
 	{
 		if (argc < 2)
 		{
@@ -104,7 +104,7 @@ bool stack_command_callback(int argc, char* argv[])
 		{
 			telogger_logputs("Stack Log: Failed\n"
 				"Command:\n"
-				"    TElogger.stack.stacklogcount [num]");
+				"    TElogger.stack.stack.log.count [count]");
 			return false;
 		}
 		set_stack_log_count(value);
@@ -120,7 +120,7 @@ bool init_stack_log(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.stack.help", stack_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.stack.enable", stack_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.stack.disable", stack_command_callback, false);
-	_plugin_registercommand(pluginHandle, "TElogger.stack.stacklogcount", stack_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.stack.stack.log.count", stack_command_callback, false);
 	return true;
 }
 
@@ -130,7 +130,7 @@ bool stop_stack_log()
 	_plugin_unregistercommand(pluginHandle, "TElogger.stack.help");
 	_plugin_unregistercommand(pluginHandle, "TElogger.stack.enable");
 	_plugin_unregistercommand(pluginHandle, "TElogger.stack.disable");
-	_plugin_unregistercommand(pluginHandle, "TElogger.stack.stacklogcount");
+	_plugin_unregistercommand(pluginHandle, "TElogger.stack.stack.log.count");
 	return true;
 }
 
