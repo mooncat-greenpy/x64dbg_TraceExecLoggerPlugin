@@ -1,25 +1,25 @@
 #include "log_instruction.h"
 
 
-void make_asm_json(LOG_ASSEMBLY& asm_json, REGDUMP* reg_dump)
+void make_asm_json(LOG_ASSEMBLY& asm_json, StepInfo& step_info)
 {
 	asm_json.arg.clear();
-	DISASM_INSTR instr = {};
-	DbgDisasmAt(reg_dump->regcontext.cip, &instr);
-	if (instr.type == instr_normal)
+	DISASM_INSTR* instr = step_info.get_disasm_instr();
+	REGDUMP* reg_dump = step_info.get_reg_dump();
+	if (instr->type == instr_normal)
 	{
 		asm_json.type = "normal";
 	}
-	else if (instr.type == instr_branch)
+	else if (instr->type == instr_branch)
 	{
 		asm_json.type = "branch";
-		if (strncmp(instr.instruction, "call", strlen("call")) == 0)
+		if (strncmp(instr->instruction, "call", strlen("call")) == 0)
 		{
 			asm_json.type = "call";
 			add_changed_memory(reg_dump->regcontext.csp - sizeof(duint));
 		}
 	}
-	else if (instr.type == instr_stack)
+	else if (instr->type == instr_stack)
 	{
 		asm_json.type = "stack";
 	}
@@ -28,62 +28,62 @@ void make_asm_json(LOG_ASSEMBLY& asm_json, REGDUMP* reg_dump)
 		asm_json.type = "other";
 	}
 
-	if (strncmp(instr.instruction, "push", strlen("push")) == 0)
+	if (strncmp(instr->instruction, "push", strlen("push")) == 0)
 	{
 		add_changed_memory(reg_dump->regcontext.csp - sizeof(duint));
 	}
-	if (strstr(instr.instruction, "movs") != NULL || strstr(instr.instruction, "stos") != NULL)
+	if (strstr(instr->instruction, "movs") != NULL || strstr(instr->instruction, "stos") != NULL)
 	{
 		add_changed_memory(reg_dump->regcontext.cdi);
 	}
 
-	asm_json.instruction = instr.instruction;
-	asm_json.size = instr.instr_size;
-	asm_json.argcount = instr.argcount;
-	for (int i = 0; i < instr.argcount; i++)
+	asm_json.instruction = instr->instruction;
+	asm_json.size = instr->instr_size;
+	asm_json.argcount = instr->argcount;
+	for (int i = 0; i < instr->argcount; i++)
 	{
 		LOG_ARGUMENT arg = LOG_ARGUMENT();
-		if (instr.arg[i].type == arg_normal)
+		if (instr->arg[i].type == arg_normal)
 		{
 			arg.type = "normal";
 		}
-		else if (instr.arg[i].type == arg_memory)
+		else if (instr->arg[i].type == arg_memory)
 		{
 			arg.type = "memory";
 			if (i == 0)
 			{
-				add_changed_memory(instr.arg[i].value);
+				add_changed_memory(instr->arg[i].value);
 			}
 		}
 		else
 		{
 			arg.type = "other";
 		}
-		if (instr.arg[i].segment == SEG_DEFAULT)
+		if (instr->arg[i].segment == SEG_DEFAULT)
 		{
 			arg.segment = "default";
 		}
-		else if (instr.arg[i].segment == SEG_CS)
+		else if (instr->arg[i].segment == SEG_CS)
 		{
 			arg.segment = "cs";
 		}
-		else if (instr.arg[i].segment == SEG_DS)
+		else if (instr->arg[i].segment == SEG_DS)
 		{
 			arg.segment = "ds";
 		}
-		else if (instr.arg[i].segment == SEG_ES)
+		else if (instr->arg[i].segment == SEG_ES)
 		{
 			arg.segment = "es";
 		}
-		else if (instr.arg[i].segment == SEG_FS)
+		else if (instr->arg[i].segment == SEG_FS)
 		{
 			arg.segment = "fs";
 		}
-		else if (instr.arg[i].segment == SEG_GS)
+		else if (instr->arg[i].segment == SEG_GS)
 		{
 			arg.segment = "gs";
 		}
-		else if (instr.arg[i].segment == SEG_SS)
+		else if (instr->arg[i].segment == SEG_SS)
 		{
 			arg.segment = "ss";
 		}
@@ -91,10 +91,10 @@ void make_asm_json(LOG_ASSEMBLY& asm_json, REGDUMP* reg_dump)
 		{
 			arg.segment = "other";
 		}
-		arg.mnemonic = instr.arg[i].mnemonic;
-		arg.constant = instr.arg[i].constant;
-		make_address_json(arg.value, instr.arg[i].value);
-		make_address_json(arg.memvalue, instr.arg[i].memvalue);
+		arg.mnemonic = instr->arg[i].mnemonic;
+		arg.constant = instr->arg[i].constant;
+		make_address_json(arg.value, instr->arg[i].value);
+		make_address_json(arg.memvalue, instr->arg[i].memvalue);
 		asm_json.arg.push_back(arg);
 	}
 }
@@ -130,7 +130,7 @@ void log_instruction(LOG_INSTRUCTION& inst_json, StepInfo& step_info)
 		set_gui_asm_string_cache_data(reg_dump->regcontext.cip, std::string(asm_string));
 	}
 
-	make_asm_json(inst_json.assembly, reg_dump);
+	make_asm_json(inst_json.assembly, step_info);
 
 	char comment_text[MAX_COMMENT_SIZE] = { 0 };
 	cache_result = false;

@@ -18,7 +18,7 @@ struct BP_INFO
 };
 
 
-void run_debug();
+void run_debug(StepInfo& step_info);
 void skip_system_break_point(duint addr);
 bool init_auto_run(PLUG_INITSTRUCT* init_struct);
 bool stop_auto_run();

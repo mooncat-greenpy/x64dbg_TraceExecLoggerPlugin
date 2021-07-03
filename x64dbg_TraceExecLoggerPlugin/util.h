@@ -12,10 +12,24 @@
 class StepInfo
 {
 public:
+	bool trace_execute_flag;
+	bool stepped_flag;
+	bool breakpoint_flag;
+	bool pause_debug_flag;
+
+	bool is_disasm_instr_initialized;
+	DISASM_INSTR disasm_instr;
 	bool is_reg_dump_initialized;
 	REGDUMP reg_dump;
 
 	StepInfo();
+	void reset();
+	int count_flags();
+	void init_trace_execute();
+	void init_stepped();
+	void init_breakpoint_flag();
+	void init_pause_debug_flag();
+	DISASM_INSTR* get_disasm_instr();
 	REGDUMP* get_reg_dump();
 };
 

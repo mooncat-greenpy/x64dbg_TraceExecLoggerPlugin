@@ -247,7 +247,7 @@ void add_export_log_breakpoint_without(std::vector<std::string>& mod_list)
 }
 
 
-void run_debug()
+void run_debug(StepInfo& step_info)
 {
 	if (!get_auto_run_enabled())
 	{

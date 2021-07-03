@@ -2,6 +2,7 @@
 
 
 static duint skip_breakpoints_log_addr = 0;
+StepInfo step_info;
 
 
 void log_proc_info(const char* msg)
@@ -22,7 +23,7 @@ void log_proc_info(const char* msg)
 }
 
 
-void log_exec(const char* msg, duint cip)
+void log_exec(const char* msg, duint cip, StepInfo& step_info)
 {
 	if (msg == NULL || !get_telogger_enabled() || !should_log(cip))
 	{
@@ -32,8 +33,6 @@ void log_exec(const char* msg, duint cip)
 	LOG_CONTAINER entry = { false, LOG() };
 
 	entry.exec.type = "log";
-
-	StepInfo step_info;
 
 	log_instruction(entry.exec.inst, step_info);
 	log_register(entry.exec.reg, step_info);
@@ -127,7 +126,8 @@ extern "C" __declspec(dllexport) void CBMENUENTRY(CBTYPE, PLUG_CB_MENUENTRY* inf
 
 extern "C" __declspec(dllexport) void CBTRACEEXECUTE(CBTYPE, PLUG_CB_TRACEEXECUTE* info)
 {
-	log_exec("Trace Execute Log", info->cip);
+	step_info.init_trace_execute();
+	log_exec("Trace Execute Log", info->cip, step_info);
 	skip_breakpoints_log_addr = info->cip;
 }
 
@@ -136,7 +136,8 @@ extern "C" __declspec(dllexport) void CBSTEPPED(CBTYPE, PLUG_CB_STEPPED* info)
 {
 	bool result = false;
 	duint cip = DbgEval("cip", &result);
-	log_exec("Stepped Log", cip);
+	step_info.init_stepped();
+	log_exec("Stepped Log", cip, step_info);
 	if (result)
 	{
 		skip_breakpoints_log_addr = cip;
@@ -146,18 +147,20 @@ extern "C" __declspec(dllexport) void CBSTEPPED(CBTYPE, PLUG_CB_STEPPED* info)
 
 extern "C" __declspec(dllexport) void CBBREAKPOINT(CBTYPE, PLUG_CB_BREAKPOINT* info)
 {
+	step_info.init_breakpoint_flag();
 	if (skip_breakpoints_log_addr == 0 || skip_breakpoints_log_addr != info->breakpoint->addr)
 	{
-		log_exec("Breakpoint Log", info->breakpoint->addr);
+		log_exec("Breakpoint Log", info->breakpoint->addr, step_info);
 	}
-	run_debug();
+	//run_debug(step_info);
 	skip_breakpoints_log_addr = 0;
 }
 
 
 extern "C" __declspec(dllexport) void CBPAUSEDEBUG(CBTYPE, PLUG_CB_PAUSEDEBUG* info)
 {
-	run_debug();
+	step_info.init_pause_debug_flag();
+	run_debug(step_info);
 }
 
 

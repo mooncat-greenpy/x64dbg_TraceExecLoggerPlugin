@@ -23,13 +23,88 @@ constexpr char hex_database[][4] = {
 
 StepInfo::StepInfo()
 {
+	reset();
+}
+void StepInfo::reset()
+{
+	trace_execute_flag = false;
+	stepped_flag = false;
+	breakpoint_flag = false;
+	pause_debug_flag = false;
+
+	is_disasm_instr_initialized = false;
+	disasm_instr = {};
 	is_reg_dump_initialized = false;
 	reg_dump = {};
 }
+int StepInfo::count_flags()
+{
+	int count = 0;
+	if (trace_execute_flag)
+	{
+		count++;
+	}
+	if (stepped_flag)
+	{
+		count++;
+	}
+	if (breakpoint_flag)
+	{
+		count++;
+	}
+	if (pause_debug_flag)
+	{
+		count++;
+	}
+	return count;
+}
+void StepInfo::init_trace_execute()
+{
+	if (trace_execute_flag || count_flags() >= 2 || pause_debug_flag)
+	{
+		reset();
+	}
+	trace_execute_flag = true;
+}
+void StepInfo::init_stepped()
+{
+	if (stepped_flag || count_flags() >= 2)
+	{
+		reset();
+	}
+	stepped_flag = true;
+}
+void StepInfo::init_breakpoint_flag()
+{
+	if (breakpoint_flag || count_flags() >= 2)
+	{
+		reset();
+	}
+	breakpoint_flag = true;
+}
+void StepInfo::init_pause_debug_flag()
+{
+	if (pause_debug_flag || count_flags() >= 2 || trace_execute_flag)
+	{
+		reset();
+	}
+	pause_debug_flag = true;
+}
+DISASM_INSTR* StepInfo::get_disasm_instr()
+{
+	if (!is_disasm_instr_initialized)
+	{
+		REGDUMP* tmp_reg_dump = get_reg_dump();
+		DbgDisasmAt(tmp_reg_dump->regcontext.cip, &disasm_instr);
+		is_disasm_instr_initialized = true;
+	}
+	return &disasm_instr;
+}
 REGDUMP* StepInfo::get_reg_dump()
 {
-	if (!is_reg_dump_initialized && DbgGetRegDumpEx(&reg_dump, sizeof(reg_dump)))
+	if (!is_reg_dump_initialized)
 	{
+		DbgGetRegDumpEx(&reg_dump, sizeof(reg_dump));
 		is_reg_dump_initialized = true;
 	}
 	return &reg_dump;
