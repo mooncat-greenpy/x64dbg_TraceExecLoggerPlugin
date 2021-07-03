@@ -8,6 +8,7 @@ enum class AUTO_RUN_TYPE
 	AUTO_RUN,
 	AUTO_STEP_INTO,
 	AUTO_STEP_OVER,
+	AUTO_MANUAL,
 };
 
 struct BP_INFO

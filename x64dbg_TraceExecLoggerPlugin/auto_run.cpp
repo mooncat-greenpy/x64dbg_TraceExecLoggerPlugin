@@ -4,6 +4,9 @@ static duint skip_addr = 0;
 std::vector<duint> auto_run_breakpoints;
 static AUTO_RUN_TYPE auto_run_state = AUTO_RUN_TYPE::AUTO_STOP;
 static std::map<duint, BP_INFO> log_breakpoints_info;
+duint current_address = 0;
+duint next_address = 0;
+duint jamp_address = 0;
 
 
 void add_breakpoint(duint addr)
@@ -274,6 +277,10 @@ void run_debug(StepInfo& step_info)
 	{
 		remove_breakpoint(cip);
 		set_auto_run_enabled(false);
+		if (auto_run_state == AUTO_RUN_TYPE::AUTO_MANUAL)
+		{
+			remove_all_breakpoint("TEloggerAutoManual");
+		}
 		auto_run_state = AUTO_RUN_TYPE::AUTO_STOP;
 		telogger_logprintf("Auto Run Log: Break at %p\n", cip);
 		return;
@@ -294,6 +301,48 @@ void run_debug(StepInfo& step_info)
 	}
 	else if (auto_run_state == AUTO_RUN_TYPE::AUTO_RUN)
 	{
+		DbgCmdExec("run");
+	}
+	else if (auto_run_state == AUTO_RUN_TYPE::AUTO_MANUAL)
+	{
+		char cmd[DEFAULT_BUF_SIZE] = { 0 };
+		if (current_address != 0)
+		{
+			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteBPX %p", (char*)current_address);
+			DbgCmdExecDirect(cmd);
+		}
+		if (next_address != 0)
+		{
+			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteBPX %p", (char*)next_address);
+			DbgCmdExecDirect(cmd);
+		}
+		if (jamp_address != 0)
+		{
+			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteBPX %p", (char*)jamp_address);
+			DbgCmdExecDirect(cmd);
+		}
+
+		DISASM_INSTR* instr = step_info.get_disasm_instr();
+		current_address = cip;
+		_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerAutoManual_%p", (char*)current_address, (char*)current_address);
+		DbgCmdExecDirect(cmd);
+		next_address = cip + instr->instr_size;
+		_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerAutoManualNext_%p", (char*)next_address, (char*)next_address);
+		DbgCmdExecDirect(cmd);
+		if (instr->type == instr_branch && instr->argcount > 0)
+		{
+			jamp_address = instr->arg[0].constant;
+			if (instr->arg[0].type == arg_memory)
+			{
+				jamp_address = instr->arg[0].memvalue;
+			}
+			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerAutoManualJamp_%p", (char*)jamp_address, (char*)jamp_address);
+			DbgCmdExecDirect(cmd);
+			if (strncmp(instr->instruction, "call", strlen("call")) == 0)
+			{
+				next_address = 0;
+			}
+		}
 		DbgCmdExec("run");
 	}
 }
@@ -330,6 +379,7 @@ bool auto_run_command_callback(int argc, char* argv[])
 			"    TElogger.auto.starti address\n"
 			"    TElogger.auto.starto address\n"
 			"    TElogger.auto.startr address\n"
+			"    TElogger.auto.startm address\n"
 			"    TElogger.auto.call");
 	}
 	else if (isCommand(argv[0], "TElogger.auto.enable"))
@@ -384,6 +434,18 @@ bool auto_run_command_callback(int argc, char* argv[])
 			auto_run_state = AUTO_RUN_TYPE::AUTO_RUN;
 			DbgCmdExec("run");
 			telogger_logputs("Auto Run Log: Start Run");
+		}
+		else if (isCommand(argv[0], "TElogger.auto.startm"))
+		{
+			// This command renders the GUI screen inoperable.
+			set_auto_run_enabled(true);
+			auto_run_state = AUTO_RUN_TYPE::AUTO_MANUAL;
+			current_address = 0;
+			next_address = 0;
+			jamp_address = 0;
+			StepInfo step_info;
+			run_debug(step_info);
+			telogger_logputs("Auto Run Log: Start Manual");
 		}
 	}
 	else if (isCommand(argv[0], "TElogger.auto.bp.rm"))
@@ -555,6 +617,7 @@ bool init_auto_run(PLUG_INITSTRUCT* init_struct)
 	_plugin_registercommand(pluginHandle, "TElogger.auto.starti", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.starto", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.startr", auto_run_command_callback, false);
+	_plugin_registercommand(pluginHandle, "TElogger.auto.startm", auto_run_command_callback, false);
 	_plugin_registercommand(pluginHandle, "TElogger.auto.call", auto_run_command_callback, false);
 	return true;
 }
@@ -577,6 +640,7 @@ bool stop_auto_run()
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.starti");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.starto");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.startr");
+	_plugin_unregistercommand(pluginHandle, "TElogger.auto.startm");
 	_plugin_unregistercommand(pluginHandle, "TElogger.auto.call");
 	return true;
 }
