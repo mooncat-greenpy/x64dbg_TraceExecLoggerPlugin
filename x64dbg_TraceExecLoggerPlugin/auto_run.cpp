@@ -345,6 +345,61 @@ void run_debug(StepInfo& step_info)
 		}
 		DbgCmdExec("run");
 	}
+	else if (auto_run_state == AUTO_RUN_TYPE::AUTO_MANUAL_HARDWARE)
+	{
+		char cmd[DEFAULT_BUF_SIZE] = { 0 };
+		if (current_address != 0 && current_address != cip)
+		{
+			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteHardwareBreakpoint %p", (char*)current_address);
+			DbgCmdExecDirect(cmd);
+		}
+		if (next_address != 0 && next_address != cip)
+		{
+			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteHardwareBreakpoint %p", (char*)next_address);
+			DbgCmdExecDirect(cmd);
+		}
+		if (jamp_address != 0 && jamp_address != cip)
+		{
+			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteHardwareBreakpoint %p", (char*)jamp_address);
+			DbgCmdExecDirect(cmd);
+		}
+
+		DISASM_INSTR* instr = step_info.get_disasm_instr();
+		current_address = cip;
+		next_address = 0;
+		if (!strstr(instr->instruction, "ret") && !strstr(instr->instruction, "jmp far 0x0033:"))
+		{
+			next_address = cip + instr->instr_size;
+			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetHardwareBreakpoint %p, x", (char*)next_address);
+			DbgCmdExecDirect(cmd);
+		}
+		jamp_address = 0;
+		if (strstr(instr->instruction, "ret") || strstr(instr->instruction, "jmp far 0x0033:"))
+		{
+			REGDUMP* reg_dump = step_info.get_reg_dump();
+			if (DbgMemIsValidReadPtr(reg_dump->regcontext.csp))
+			{
+				DbgMemRead(reg_dump->regcontext.csp, &jamp_address, sizeof(jamp_address));
+				_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetHardwareBreakpoint %p, x", (char*)jamp_address);
+				DbgCmdExecDirect(cmd);
+			}
+			else
+			{
+				telogger_logprintf("Auto Run: Invalid ptr %p\n", reg_dump->regcontext.csp);
+			}
+		}
+		else if (instr->type == instr_branch && instr->argcount > 0)
+		{
+			jamp_address = instr->arg[0].value;
+			if (instr->arg[0].type == arg_memory)
+			{
+				jamp_address = instr->arg[0].memvalue;
+			}
+			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetHardwareBreakpoint %p, x", (char*)jamp_address);
+			DbgCmdExecDirect(cmd);
+		}
+		DbgCmdExec("run");
+	}
 }
 
 
@@ -379,7 +434,7 @@ bool auto_run_command_callback(int argc, char* argv[])
 			"    TElogger.auto.starti address\n"
 			"    TElogger.auto.starto address\n"
 			"    TElogger.auto.startr address\n"
-			"    TElogger.auto.startm address\n"
+			"    TElogger.auto.startm address, [|h]\n"
 			"    TElogger.auto.call");
 	}
 	else if (isCommand(argv[0], "TElogger.auto.enable"))
@@ -444,6 +499,13 @@ bool auto_run_command_callback(int argc, char* argv[])
 			next_address = 0;
 			jamp_address = 0;
 			StepInfo step_info;
+			if (argc >= 3)
+			{
+				if (stricmp(argv[2], "h") == 0)
+				{
+					auto_run_state = AUTO_RUN_TYPE::AUTO_MANUAL_HARDWARE;
+				}
+			}
 			run_debug(step_info);
 			telogger_logputs("Auto Run Log: Start Manual");
 		}
