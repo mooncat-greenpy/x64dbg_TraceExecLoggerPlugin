@@ -305,6 +305,7 @@ void run_debug(StepInfo& step_info)
 	}
 	else if (auto_run_state == AUTO_RUN_TYPE::AUTO_MANUAL)
 	{
+		// This command renders the GUI screen inoperable.
 		char cmd[DEFAULT_BUF_SIZE] = { 0 };
 		if (current_address != 0)
 		{
@@ -400,6 +401,76 @@ void run_debug(StepInfo& step_info)
 		}
 		DbgCmdExec("run");
 	}
+	else if (auto_run_state == AUTO_RUN_TYPE::AUTO_MANUAL_MEMORY)
+	{
+		// Intercepted by seh
+		duint mem_size = 0;
+		duint base_address = DbgMemFindBaseAddr(current_address, &mem_size);
+		char cmd[DEFAULT_BUF_SIZE] = { 0 };
+		if (current_address != 0 && (cip < base_address || base_address + mem_size <= cip))
+		{
+			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteMemoryBPX %p", (char*)base_address);
+			DbgCmdExecDirect(cmd);
+		}
+		base_address = DbgMemFindBaseAddr(next_address, &mem_size);
+		if (next_address != 0 && (cip < base_address || base_address + mem_size <= cip))
+		{
+			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteMemoryBPX %p", (char*)base_address);
+			DbgCmdExecDirect(cmd);
+		}
+		base_address = DbgMemFindBaseAddr(jamp_address, &mem_size);
+		if (jamp_address != 0 && (cip < base_address || base_address + mem_size <= cip))
+		{
+			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteMemoryBPX %p", (char*)base_address);
+			DbgCmdExecDirect(cmd);
+		}
+
+		DISASM_INSTR* instr = step_info.get_disasm_instr();
+		current_address = cip;
+		base_address = DbgMemFindBaseAddr(current_address, &mem_size);
+		next_address = 0;
+		if (!strstr(instr->instruction, "ret") && !strstr(instr->instruction, "jmp far 0x0033:"))
+		{
+			next_address = cip + instr->instr_size;
+			if (next_address < base_address || base_address + mem_size <= next_address)
+			{
+				_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetMemoryBPX %p, 1, x", (char*)next_address);
+				DbgCmdExecDirect(cmd);
+			}
+		}
+		jamp_address = 0;
+		if (strstr(instr->instruction, "ret") || strstr(instr->instruction, "jmp far 0x0033:"))
+		{
+			REGDUMP* reg_dump = step_info.get_reg_dump();
+			if (DbgMemIsValidReadPtr(reg_dump->regcontext.csp))
+			{
+				DbgMemRead(reg_dump->regcontext.csp, &jamp_address, sizeof(jamp_address));
+				if (jamp_address < base_address || base_address + mem_size <= jamp_address)
+				{
+					_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetMemoryBPX %p, 1, x", (char*)jamp_address);
+					DbgCmdExecDirect(cmd);
+				}
+			}
+			else
+			{
+				telogger_logprintf("Auto Run: Invalid ptr %p\n", reg_dump->regcontext.csp);
+			}
+		}
+		else if (instr->type == instr_branch && instr->argcount > 0)
+		{
+			jamp_address = instr->arg[0].value;
+			if (instr->arg[0].type == arg_memory)
+			{
+				jamp_address = instr->arg[0].memvalue;
+			}
+			if (jamp_address < base_address || base_address + mem_size <= jamp_address)
+			{
+				_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetMemoryBPX %p, 1, x", (char*)jamp_address);
+				DbgCmdExecDirect(cmd);
+			}
+		}
+		DbgCmdExec("run");
+	}
 }
 
 
@@ -434,7 +505,7 @@ bool auto_run_command_callback(int argc, char* argv[])
 			"    TElogger.auto.starti address\n"
 			"    TElogger.auto.starto address\n"
 			"    TElogger.auto.startr address\n"
-			"    TElogger.auto.startm address, [|h]\n"
+			"    TElogger.auto.startm address, [|h|m]\n"
 			"    TElogger.auto.call");
 	}
 	else if (isCommand(argv[0], "TElogger.auto.enable"))
@@ -492,7 +563,6 @@ bool auto_run_command_callback(int argc, char* argv[])
 		}
 		else if (isCommand(argv[0], "TElogger.auto.startm"))
 		{
-			// This command renders the GUI screen inoperable.
 			set_auto_run_enabled(true);
 			auto_run_state = AUTO_RUN_TYPE::AUTO_MANUAL;
 			current_address = 0;
@@ -505,6 +575,22 @@ bool auto_run_command_callback(int argc, char* argv[])
 				{
 					auto_run_state = AUTO_RUN_TYPE::AUTO_MANUAL_HARDWARE;
 				}
+				else if (stricmp(argv[2], "m") == 0)
+				{
+					auto_run_state = AUTO_RUN_TYPE::AUTO_MANUAL_MEMORY;
+					duint cip = 0;
+					bool result_eval = false;
+					cip = DbgEval("cip", &result_eval);
+					if (!result_eval)
+					{
+						telogger_logputs("Auto Run Log: Failed to get cip");
+						return false;
+					}
+					char cmd[DEFAULT_BUF_SIZE] = { 0 };
+					_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetMemoryBPX %p, 1, x", (char*)cip);
+					DbgCmdExecDirect(cmd);
+				}
+
 			}
 			run_debug(step_info);
 			telogger_logputs("Auto Run Log: Start Manual");
