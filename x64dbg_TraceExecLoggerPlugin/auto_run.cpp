@@ -478,6 +478,24 @@ void run_debug(StepInfo& step_info)
 		}
 		DbgCmdExec("run");
 	}
+	else if(auto_run_state == AUTO_RUN_TYPE::AUTO_MANUAL_STEP)
+	{
+		DISASM_INSTR* instr = step_info.get_disasm_instr();
+		char cmd[DEFAULT_BUF_SIZE] = "StepOver";
+		if (instr->type == instr_branch && instr->argcount > 0)
+		{
+			jamp_address = instr->arg[0].constant;
+			if (instr->arg[0].type == arg_memory)
+			{
+				jamp_address = instr->arg[0].memvalue;
+			}
+			if (should_log(jamp_address))
+			{
+				strcpy_s(cmd, _countof(cmd), "StepInto");
+			}
+		}
+		DbgCmdExecDirect(cmd);
+	}
 }
 
 
@@ -512,7 +530,7 @@ bool auto_run_command_callback(int argc, char* argv[])
 			"    TElogger.auto.starti address\n"
 			"    TElogger.auto.starto address\n"
 			"    TElogger.auto.startr address\n"
-			"    TElogger.auto.startm address, [|h|m]\n"
+			"    TElogger.auto.startm address, [|h|m|s]\n"
 			"    TElogger.auto.call");
 	}
 	else if (isCommand(argv[0], "TElogger.auto.enable"))
@@ -597,7 +615,10 @@ bool auto_run_command_callback(int argc, char* argv[])
 					_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetMemoryBPX %p, 1, x", (char*)cip);
 					DbgCmdExecDirect(cmd);
 				}
-
+				else if (stricmp(argv[2], "s") == 0)
+				{
+					auto_run_state = AUTO_RUN_TYPE::AUTO_MANUAL_STEP;
+				}
 			}
 			run_debug(step_info);
 			telogger_logputs("Auto Run Log: Start Manual");
