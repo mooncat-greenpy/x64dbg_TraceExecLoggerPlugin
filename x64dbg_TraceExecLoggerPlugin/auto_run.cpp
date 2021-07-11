@@ -337,8 +337,11 @@ void run_debug(StepInfo& step_info)
 			{
 				jamp_address = instr->arg[0].memvalue;
 			}
-			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerAutoManualJamp_%p", (char*)jamp_address, (char*)jamp_address);
-			DbgCmdExecDirect(cmd);
+			if (strncmp(instr->instruction, "call", strlen("call")) != 0 || should_log(jamp_address))
+			{
+				_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerAutoManualJamp_%p", (char*)jamp_address, (char*)jamp_address);
+				DbgCmdExecDirect(cmd);
+			}
 			if (strncmp(instr->instruction, "call", strlen("call")) == 0)
 			{
 				next_address = 0;
@@ -396,8 +399,11 @@ void run_debug(StepInfo& step_info)
 			{
 				jamp_address = instr->arg[0].memvalue;
 			}
-			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetHardwareBreakpoint %p, x", (char*)jamp_address);
-			DbgCmdExecDirect(cmd);
+			if (strncmp(instr->instruction, "call", strlen("call")) != 0 || should_log(jamp_address))
+			{
+				_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetHardwareBreakpoint %p, x", (char*)jamp_address);
+				DbgCmdExecDirect(cmd);
+			}
 		}
 		DbgCmdExec("run");
 	}
@@ -463,7 +469,8 @@ void run_debug(StepInfo& step_info)
 			{
 				jamp_address = instr->arg[0].memvalue;
 			}
-			if (jamp_address < base_address || base_address + mem_size <= jamp_address)
+			if ((jamp_address < base_address || base_address + mem_size <= jamp_address) &&
+				(strncmp(instr->instruction, "call", strlen("call")) != 0 || should_log(jamp_address)))
 			{
 				_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetMemoryBPX %p, 1, x", (char*)jamp_address);
 				DbgCmdExecDirect(cmd);
