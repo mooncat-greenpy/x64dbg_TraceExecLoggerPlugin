@@ -250,6 +250,15 @@ void add_export_log_breakpoint_without(std::vector<std::string>& mod_list)
 }
 
 
+DWORD WINAPI run_command_thread(LPVOID lpParameter)
+{
+	UNREFERENCED_PARAMETER(lpParameter);
+	Sleep(100);
+	DbgCmdExec("run");
+	return 0;
+}
+
+
 void run_debug(StepInfo& step_info)
 {
 	if (!get_auto_run_enabled())
@@ -451,7 +460,7 @@ void run_debug(StepInfo& step_info)
 			if (DbgMemIsValidReadPtr(reg_dump->regcontext.csp))
 			{
 				DbgMemRead(reg_dump->regcontext.csp, &jamp_address, sizeof(jamp_address));
-				if (jamp_address < base_address || base_address + mem_size <= jamp_address)
+				if ((jamp_address < base_address || base_address + mem_size <= jamp_address) && should_log(jamp_address))
 				{
 					_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetMemoryBPX %p, 1, x", (char*)jamp_address);
 					DbgCmdExecDirect(cmd);
@@ -469,14 +478,22 @@ void run_debug(StepInfo& step_info)
 			{
 				jamp_address = instr->arg[0].memvalue;
 			}
-			if ((jamp_address < base_address || base_address + mem_size <= jamp_address) &&
-				(strncmp(instr->instruction, "call", strlen("call")) != 0 || should_log(jamp_address)))
+			if ((jamp_address < base_address || base_address + mem_size <= jamp_address) && should_log(jamp_address))
 			{
 				_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetMemoryBPX %p, 1, x", (char*)jamp_address);
 				DbgCmdExecDirect(cmd);
 			}
 		}
-		DbgCmdExec("run");
+		// Must be run after debugging
+		HANDLE hThread = CreateThread(NULL, 0, run_command_thread, NULL, 0, NULL);
+		if (hThread == NULL)
+		{
+			DbgCmdExec("run");
+		}
+		else
+		{
+			CloseHandle(hThread);
+		}
 	}
 	else if(auto_run_state == AUTO_RUN_TYPE::AUTO_MANUAL_STEP)
 	{
