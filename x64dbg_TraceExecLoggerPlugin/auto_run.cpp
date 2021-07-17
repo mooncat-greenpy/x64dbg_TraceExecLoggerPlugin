@@ -258,6 +258,217 @@ DWORD WINAPI run_command_thread(LPVOID lpParameter)
 	return 0;
 }
 
+void run_debug_manual(StepInfo& step_info, duint cip)
+{
+	// This command renders the GUI screen inoperable.
+	char cmd[DEFAULT_BUF_SIZE] = { 0 };
+	if (current_address != 0)
+	{
+		_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteBPX %p", (char*)current_address);
+		DbgCmdExecDirect(cmd);
+	}
+	if (next_address != 0)
+	{
+		_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteBPX %p", (char*)next_address);
+		DbgCmdExecDirect(cmd);
+	}
+	if (jamp_address != 0)
+	{
+		_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteBPX %p", (char*)jamp_address);
+		DbgCmdExecDirect(cmd);
+	}
+
+	DISASM_INSTR* instr = step_info.get_disasm_instr();
+	current_address = cip;
+	_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerAutoManual_%p", (char*)current_address, (char*)current_address);
+	DbgCmdExecDirect(cmd);
+	next_address = cip + instr->instr_size;
+	_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerAutoManualNext_%p", (char*)next_address, (char*)next_address);
+	DbgCmdExecDirect(cmd);
+	if (instr->type == instr_branch && instr->argcount > 0)
+	{
+		jamp_address = instr->arg[0].constant;
+		if (instr->arg[0].type == arg_memory)
+		{
+			jamp_address = instr->arg[0].memvalue;
+		}
+		if (should_log(jamp_address))
+		{
+			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerAutoManualJamp_%p", (char*)jamp_address, (char*)jamp_address);
+			DbgCmdExecDirect(cmd);
+		}
+		if (strncmp(instr->instruction, "call", strlen("call")) == 0)
+		{
+			next_address = 0;
+		}
+	}
+	DbgCmdExec("run");
+}
+
+void run_debug_manual_hardware(StepInfo& step_info, duint cip)
+{
+	char cmd[DEFAULT_BUF_SIZE] = { 0 };
+	if (current_address != 0 && current_address != cip)
+	{
+		_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteHardwareBreakpoint %p", (char*)current_address);
+		DbgCmdExecDirect(cmd);
+	}
+	if (next_address != 0 && next_address != cip)
+	{
+		_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteHardwareBreakpoint %p", (char*)next_address);
+		DbgCmdExecDirect(cmd);
+	}
+	if (jamp_address != 0 && jamp_address != cip)
+	{
+		_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteHardwareBreakpoint %p", (char*)jamp_address);
+		DbgCmdExecDirect(cmd);
+	}
+
+	DISASM_INSTR* instr = step_info.get_disasm_instr();
+	current_address = cip;
+	next_address = 0;
+	if (!strstr(instr->instruction, "ret") && !strstr(instr->instruction, "jmp far 0x0033:"))
+	{
+		next_address = cip + instr->instr_size;
+		_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetHardwareBreakpoint %p, x", (char*)next_address);
+		DbgCmdExecDirect(cmd);
+	}
+	jamp_address = 0;
+	if (strstr(instr->instruction, "ret") || strstr(instr->instruction, "jmp far 0x0033:"))
+	{
+		REGDUMP* reg_dump = step_info.get_reg_dump();
+		if (DbgMemIsValidReadPtr(reg_dump->regcontext.csp))
+		{
+			DbgMemRead(reg_dump->regcontext.csp, &jamp_address, sizeof(jamp_address));
+			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetHardwareBreakpoint %p, x", (char*)jamp_address);
+			DbgCmdExecDirect(cmd);
+		}
+		else
+		{
+			telogger_logprintf("Auto Run: Invalid ptr %p\n", reg_dump->regcontext.csp);
+		}
+	}
+	else if (instr->type == instr_branch && instr->argcount > 0)
+	{
+		jamp_address = instr->arg[0].value;
+		if (instr->arg[0].type == arg_memory)
+		{
+			jamp_address = instr->arg[0].memvalue;
+		}
+		if (strncmp(instr->instruction, "call", strlen("call")) != 0 || should_log(jamp_address))
+		{
+			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetHardwareBreakpoint %p, x", (char*)jamp_address);
+			DbgCmdExecDirect(cmd);
+		}
+	}
+	DbgCmdExec("run");
+}
+
+void run_debug_manual_memory(StepInfo& step_info, duint cip)
+{
+	// Intercepted by seh
+	duint mem_size = 0;
+	duint base_address = DbgMemFindBaseAddr(current_address, &mem_size);
+	char cmd[DEFAULT_BUF_SIZE] = { 0 };
+	if (current_address != 0 && (cip < base_address || base_address + mem_size <= cip))
+	{
+		_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteMemoryBPX %p", (char*)base_address);
+		DbgCmdExecDirect(cmd);
+	}
+	base_address = DbgMemFindBaseAddr(next_address, &mem_size);
+	if (next_address != 0 && (cip < base_address || base_address + mem_size <= cip))
+	{
+		_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteMemoryBPX %p", (char*)base_address);
+		DbgCmdExecDirect(cmd);
+	}
+	base_address = DbgMemFindBaseAddr(jamp_address, &mem_size);
+	if (jamp_address != 0 && (cip < base_address || base_address + mem_size <= cip))
+	{
+		_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteMemoryBPX %p", (char*)base_address);
+		DbgCmdExecDirect(cmd);
+	}
+
+	if (current_address == 0)
+	{
+		_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetMemoryBPX %p, 1, x", (char*)cip);
+		DbgCmdExecDirect(cmd);
+	}
+	current_address = cip;
+
+	DISASM_INSTR* instr = step_info.get_disasm_instr();
+	base_address = DbgMemFindBaseAddr(current_address, &mem_size);
+	next_address = 0;
+	if (!strstr(instr->instruction, "ret") && !strstr(instr->instruction, "jmp far 0x0033:"))
+	{
+		next_address = cip + instr->instr_size;
+		if (next_address < base_address || base_address + mem_size <= next_address)
+		{
+			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetMemoryBPX %p, 1, x", (char*)next_address);
+			DbgCmdExecDirect(cmd);
+		}
+	}
+	jamp_address = 0;
+	if (strstr(instr->instruction, "ret") || strstr(instr->instruction, "jmp far 0x0033:"))
+	{
+		REGDUMP* reg_dump = step_info.get_reg_dump();
+		if (DbgMemIsValidReadPtr(reg_dump->regcontext.csp))
+		{
+			DbgMemRead(reg_dump->regcontext.csp, &jamp_address, sizeof(jamp_address));
+			if ((jamp_address < base_address || base_address + mem_size <= jamp_address) && should_log(jamp_address))
+			{
+				_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetMemoryBPX %p, 1, x", (char*)jamp_address);
+				DbgCmdExecDirect(cmd);
+			}
+		}
+		else
+		{
+			telogger_logprintf("Auto Run: Invalid ptr %p\n", reg_dump->regcontext.csp);
+		}
+	}
+	else if (instr->type == instr_branch && instr->argcount > 0)
+	{
+		jamp_address = instr->arg[0].value;
+		if (instr->arg[0].type == arg_memory)
+		{
+			jamp_address = instr->arg[0].memvalue;
+		}
+		if ((jamp_address < base_address || base_address + mem_size <= jamp_address) && should_log(jamp_address))
+		{
+			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetMemoryBPX %p, 1, x", (char*)jamp_address);
+			DbgCmdExecDirect(cmd);
+		}
+	}
+
+	// Must be run after debugging
+	HANDLE hThread = CreateThread(NULL, 0, run_command_thread, NULL, 0, NULL);
+	if (hThread == NULL)
+	{
+		DbgCmdExec("run");
+	}
+	else
+	{
+		CloseHandle(hThread);
+	}
+}
+
+void run_debug_manual_step(StepInfo& step_info)
+{
+	DISASM_INSTR* instr = step_info.get_disasm_instr();
+	char cmd[DEFAULT_BUF_SIZE] = "StepOver";
+	if (instr->type == instr_branch && instr->argcount > 0)
+	{
+		jamp_address = instr->arg[0].constant;
+		if (instr->arg[0].type == arg_memory)
+		{
+			jamp_address = instr->arg[0].memvalue;
+		}
+		if (should_log(jamp_address))
+		{
+			strcpy_s(cmd, _countof(cmd), "StepInto");
+		}
+	}
+	DbgCmdExecDirect(cmd);
+}
 
 void run_debug(StepInfo& step_info)
 {
@@ -290,6 +501,14 @@ void run_debug(StepInfo& step_info)
 		{
 			remove_all_breakpoint("TEloggerAutoManual");
 		}
+		else if (auto_run_state == AUTO_RUN_TYPE::AUTO_MANUAL_HARDWARE)
+		{
+			DbgCmdExecDirect("DeleteHardwareBreakpoint");
+		}
+		else if (auto_run_state == AUTO_RUN_TYPE::AUTO_MANUAL_MEMORY)
+		{
+			DbgCmdExecDirect("DeleteMemoryBPX");
+		}
 		auto_run_state = AUTO_RUN_TYPE::AUTO_STOP;
 		telogger_logprintf("Auto Run Log: Break at %p\n", cip);
 		return;
@@ -314,204 +533,19 @@ void run_debug(StepInfo& step_info)
 	}
 	else if (auto_run_state == AUTO_RUN_TYPE::AUTO_MANUAL)
 	{
-		// This command renders the GUI screen inoperable.
-		char cmd[DEFAULT_BUF_SIZE] = { 0 };
-		if (current_address != 0)
-		{
-			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteBPX %p", (char*)current_address);
-			DbgCmdExecDirect(cmd);
-		}
-		if (next_address != 0)
-		{
-			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteBPX %p", (char*)next_address);
-			DbgCmdExecDirect(cmd);
-		}
-		if (jamp_address != 0)
-		{
-			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteBPX %p", (char*)jamp_address);
-			DbgCmdExecDirect(cmd);
-		}
-
-		DISASM_INSTR* instr = step_info.get_disasm_instr();
-		current_address = cip;
-		_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerAutoManual_%p", (char*)current_address, (char*)current_address);
-		DbgCmdExecDirect(cmd);
-		next_address = cip + instr->instr_size;
-		_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerAutoManualNext_%p", (char*)next_address, (char*)next_address);
-		DbgCmdExecDirect(cmd);
-		if (instr->type == instr_branch && instr->argcount > 0)
-		{
-			jamp_address = instr->arg[0].constant;
-			if (instr->arg[0].type == arg_memory)
-			{
-				jamp_address = instr->arg[0].memvalue;
-			}
-			if (strncmp(instr->instruction, "call", strlen("call")) != 0 || should_log(jamp_address))
-			{
-				_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetBPX %p, TEloggerAutoManualJamp_%p", (char*)jamp_address, (char*)jamp_address);
-				DbgCmdExecDirect(cmd);
-			}
-			if (strncmp(instr->instruction, "call", strlen("call")) == 0)
-			{
-				next_address = 0;
-			}
-		}
-		DbgCmdExec("run");
+		run_debug_manual(step_info, cip);
 	}
 	else if (auto_run_state == AUTO_RUN_TYPE::AUTO_MANUAL_HARDWARE)
 	{
-		char cmd[DEFAULT_BUF_SIZE] = { 0 };
-		if (current_address != 0 && current_address != cip)
-		{
-			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteHardwareBreakpoint %p", (char*)current_address);
-			DbgCmdExecDirect(cmd);
-		}
-		if (next_address != 0 && next_address != cip)
-		{
-			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteHardwareBreakpoint %p", (char*)next_address);
-			DbgCmdExecDirect(cmd);
-		}
-		if (jamp_address != 0 && jamp_address != cip)
-		{
-			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteHardwareBreakpoint %p", (char*)jamp_address);
-			DbgCmdExecDirect(cmd);
-		}
-
-		DISASM_INSTR* instr = step_info.get_disasm_instr();
-		current_address = cip;
-		next_address = 0;
-		if (!strstr(instr->instruction, "ret") && !strstr(instr->instruction, "jmp far 0x0033:"))
-		{
-			next_address = cip + instr->instr_size;
-			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetHardwareBreakpoint %p, x", (char*)next_address);
-			DbgCmdExecDirect(cmd);
-		}
-		jamp_address = 0;
-		if (strstr(instr->instruction, "ret") || strstr(instr->instruction, "jmp far 0x0033:"))
-		{
-			REGDUMP* reg_dump = step_info.get_reg_dump();
-			if (DbgMemIsValidReadPtr(reg_dump->regcontext.csp))
-			{
-				DbgMemRead(reg_dump->regcontext.csp, &jamp_address, sizeof(jamp_address));
-				_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetHardwareBreakpoint %p, x", (char*)jamp_address);
-				DbgCmdExecDirect(cmd);
-			}
-			else
-			{
-				telogger_logprintf("Auto Run: Invalid ptr %p\n", reg_dump->regcontext.csp);
-			}
-		}
-		else if (instr->type == instr_branch && instr->argcount > 0)
-		{
-			jamp_address = instr->arg[0].value;
-			if (instr->arg[0].type == arg_memory)
-			{
-				jamp_address = instr->arg[0].memvalue;
-			}
-			if (strncmp(instr->instruction, "call", strlen("call")) != 0 || should_log(jamp_address))
-			{
-				_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetHardwareBreakpoint %p, x", (char*)jamp_address);
-				DbgCmdExecDirect(cmd);
-			}
-		}
-		DbgCmdExec("run");
+		run_debug_manual_hardware(step_info, cip);
 	}
 	else if (auto_run_state == AUTO_RUN_TYPE::AUTO_MANUAL_MEMORY)
 	{
-		// Intercepted by seh
-		duint mem_size = 0;
-		duint base_address = DbgMemFindBaseAddr(current_address, &mem_size);
-		char cmd[DEFAULT_BUF_SIZE] = { 0 };
-		if (current_address != 0 && (cip < base_address || base_address + mem_size <= cip))
-		{
-			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteMemoryBPX %p", (char*)base_address);
-			DbgCmdExecDirect(cmd);
-		}
-		base_address = DbgMemFindBaseAddr(next_address, &mem_size);
-		if (next_address != 0 && (cip < base_address || base_address + mem_size <= cip))
-		{
-			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteMemoryBPX %p", (char*)base_address);
-			DbgCmdExecDirect(cmd);
-		}
-		base_address = DbgMemFindBaseAddr(jamp_address, &mem_size);
-		if (jamp_address != 0 && (cip < base_address || base_address + mem_size <= cip))
-		{
-			_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "DeleteMemoryBPX %p", (char*)base_address);
-			DbgCmdExecDirect(cmd);
-		}
-
-		DISASM_INSTR* instr = step_info.get_disasm_instr();
-		current_address = cip;
-		base_address = DbgMemFindBaseAddr(current_address, &mem_size);
-		next_address = 0;
-		if (!strstr(instr->instruction, "ret") && !strstr(instr->instruction, "jmp far 0x0033:"))
-		{
-			next_address = cip + instr->instr_size;
-			if (next_address < base_address || base_address + mem_size <= next_address)
-			{
-				_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetMemoryBPX %p, 1, x", (char*)next_address);
-				DbgCmdExecDirect(cmd);
-			}
-		}
-		jamp_address = 0;
-		if (strstr(instr->instruction, "ret") || strstr(instr->instruction, "jmp far 0x0033:"))
-		{
-			REGDUMP* reg_dump = step_info.get_reg_dump();
-			if (DbgMemIsValidReadPtr(reg_dump->regcontext.csp))
-			{
-				DbgMemRead(reg_dump->regcontext.csp, &jamp_address, sizeof(jamp_address));
-				if ((jamp_address < base_address || base_address + mem_size <= jamp_address) && should_log(jamp_address))
-				{
-					_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetMemoryBPX %p, 1, x", (char*)jamp_address);
-					DbgCmdExecDirect(cmd);
-				}
-			}
-			else
-			{
-				telogger_logprintf("Auto Run: Invalid ptr %p\n", reg_dump->regcontext.csp);
-			}
-		}
-		else if (instr->type == instr_branch && instr->argcount > 0)
-		{
-			jamp_address = instr->arg[0].value;
-			if (instr->arg[0].type == arg_memory)
-			{
-				jamp_address = instr->arg[0].memvalue;
-			}
-			if ((jamp_address < base_address || base_address + mem_size <= jamp_address) && should_log(jamp_address))
-			{
-				_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetMemoryBPX %p, 1, x", (char*)jamp_address);
-				DbgCmdExecDirect(cmd);
-			}
-		}
-		// Must be run after debugging
-		HANDLE hThread = CreateThread(NULL, 0, run_command_thread, NULL, 0, NULL);
-		if (hThread == NULL)
-		{
-			DbgCmdExec("run");
-		}
-		else
-		{
-			CloseHandle(hThread);
-		}
+		run_debug_manual_memory(step_info, cip);
 	}
 	else if(auto_run_state == AUTO_RUN_TYPE::AUTO_MANUAL_STEP)
 	{
-		DISASM_INSTR* instr = step_info.get_disasm_instr();
-		char cmd[DEFAULT_BUF_SIZE] = "StepOver";
-		if (instr->type == instr_branch && instr->argcount > 0)
-		{
-			jamp_address = instr->arg[0].constant;
-			if (instr->arg[0].type == arg_memory)
-			{
-				jamp_address = instr->arg[0].memvalue;
-			}
-			if (should_log(jamp_address))
-			{
-				strcpy_s(cmd, _countof(cmd), "StepInto");
-			}
-		}
-		DbgCmdExecDirect(cmd);
+		run_debug_manual_step(step_info);
 	}
 }
 
@@ -613,26 +647,15 @@ bool auto_run_command_callback(int argc, char* argv[])
 			StepInfo step_info;
 			if (argc >= 3)
 			{
-				if (stricmp(argv[2], "h") == 0)
+				if (_stricmp(argv[2], "h") == 0)
 				{
 					auto_run_state = AUTO_RUN_TYPE::AUTO_MANUAL_HARDWARE;
 				}
-				else if (stricmp(argv[2], "m") == 0)
+				else if (_stricmp(argv[2], "m") == 0)
 				{
 					auto_run_state = AUTO_RUN_TYPE::AUTO_MANUAL_MEMORY;
-					duint cip = 0;
-					bool result_eval = false;
-					cip = DbgEval("cip", &result_eval);
-					if (!result_eval)
-					{
-						telogger_logputs("Auto Run Log: Failed to get cip");
-						return false;
-					}
-					char cmd[DEFAULT_BUF_SIZE] = { 0 };
-					_snprintf_s(cmd, sizeof(cmd), _TRUNCATE, "SetMemoryBPX %p, 1, x", (char*)cip);
-					DbgCmdExecDirect(cmd);
 				}
-				else if (stricmp(argv[2], "s") == 0)
+				else if (_stricmp(argv[2], "s") == 0)
 				{
 					auto_run_state = AUTO_RUN_TYPE::AUTO_MANUAL_STEP;
 				}
